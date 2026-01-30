@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Lock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface LoginPromptDialogProps {
   isOpen: boolean;
@@ -27,16 +27,13 @@ const LoginPromptDialog = ({ isOpen, onClose, milestone }: LoginPromptDialogProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md border-border">
         <DialogHeader>
-          <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-accent/10">
-            <Lock className="w-6 h-6 text-accent" />
-          </div>
-          <DialogTitle className="text-center font-serif">
-            Yêu cầu đăng nhập
+          <DialogTitle className="font-serif text-2xl">
+            Đăng nhập để tiếp tục
           </DialogTitle>
-          <DialogDescription className="text-center">
-            Để xem nội dung chi tiết về{" "}
+          <DialogDescription className="text-base pt-2">
+            Để xem chi tiết về{" "}
             <span className="font-medium text-foreground">
               "{milestone?.title}"
             </span>
@@ -44,20 +41,20 @@ const LoginPromptDialog = ({ isOpen, onClose, milestone }: LoginPromptDialogProp
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+        <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
           <Button
             variant="outline"
             onClick={onClose}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto uppercase tracking-widest text-xs"
           >
             Đóng
           </Button>
           <Button
-            variant="gold"
             onClick={handleLogin}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto bg-foreground text-background hover:bg-foreground/90 uppercase tracking-widest text-xs group"
           >
-            Đăng nhập ngay
+            Đăng nhập
+            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
         </DialogFooter>
       </DialogContent>

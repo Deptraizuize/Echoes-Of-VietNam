@@ -2,117 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Echoes of Vietnam Design System
-   Inspired by Vietnamese heritage - Phoenix, traditional patterns
-   Typography: Cormorant Garamond (elegant serif) + Be Vietnam Pro (modern Vietnamese)
+/* Echoes of Vietnam - Modern Editorial Design
+   Bold typography, asymmetric layouts, magazine-style aesthetics
+   Typography: DM Serif Display + Space Grotesk
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Core Colors - Vietnamese Heritage Palette */
-    --background: 40 20% 97%;
-    --foreground: 180 35% 12%;
+    /* Editorial Color Palette - High Contrast */
+    --background: 60 10% 98%;
+    --foreground: 0 0% 8%;
 
-    --card: 40 30% 99%;
-    --card-foreground: 180 35% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
 
-    --popover: 40 30% 99%;
-    --popover-foreground: 180 35% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Primary: Deep Teal - Like ancient Vietnamese lacquer */
-    --primary: 175 45% 18%;
-    --primary-foreground: 40 30% 97%;
+    /* Primary: Near Black - Editorial sophistication */
+    --primary: 0 0% 8%;
+    --primary-foreground: 60 10% 98%;
 
-    /* Secondary: Warm Cream */
-    --secondary: 40 25% 94%;
-    --secondary-foreground: 180 35% 18%;
+    /* Secondary: Warm off-white */
+    --secondary: 45 20% 95%;
+    --secondary-foreground: 0 0% 15%;
 
-    /* Muted tones */
-    --muted: 40 15% 92%;
-    --muted-foreground: 180 15% 45%;
+    /* Muted: Soft gray */
+    --muted: 45 10% 92%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Accent: Bronze Gold - Vietnamese traditional gold */
-    --accent: 38 60% 55%;
-    --accent-foreground: 180 35% 12%;
+    /* Accent: Rich Terracotta Gold */
+    --accent: 32 85% 50%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 88%;
-    --input: 40 15% 90%;
-    --ring: 38 60% 55%;
+    --border: 45 10% 88%;
+    --input: 45 10% 90%;
+    --ring: 32 85% 50%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
 
     /* Custom tokens */
-    --gold: 38 60% 55%;
-    --gold-light: 38 65% 72%;
-    --teal-dark: 175 45% 12%;
-    --teal-medium: 175 40% 22%;
-    --cream: 40 30% 97%;
-    --cream-dark: 40 20% 92%;
+    --gold: 32 85% 50%;
+    --gold-light: 38 80% 65%;
+    --ink: 0 0% 8%;
+    --paper: 60 10% 98%;
+    --cream: 45 25% 96%;
 
-    /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(38 60% 55%), hsl(32 55% 42%));
-    --gradient-teal: linear-gradient(135deg, hsl(175 45% 18%), hsl(175 40% 28%));
-    --gradient-heritage: linear-gradient(180deg, hsl(40 30% 99%) 0%, hsl(40 20% 94%) 100%);
-
-    /* Shadows - More refined */
-    --shadow-soft: 0 2px 15px -3px hsl(175 40% 12% / 0.08), 0 4px 6px -4px hsl(175 40% 12% / 0.05);
-    --shadow-gold: 0 4px 25px -5px hsl(38 60% 55% / 0.25);
-    --shadow-elevated: 0 10px 40px -10px hsl(175 40% 12% / 0.12), 0 4px 6px -4px hsl(175 40% 12% / 0.05);
-    --shadow-card: 0 1px 3px 0 hsl(175 40% 12% / 0.05), 0 1px 2px -1px hsl(175 40% 12% / 0.05);
+    /* Editorial Shadows */
+    --shadow-editorial: 0 1px 2px hsl(0 0% 0% / 0.05);
+    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.08);
+    --shadow-hover: 0 12px 40px hsl(0 0% 0% / 0.12);
 
     /* Sidebar */
-    --sidebar-background: 40 30% 99%;
-    --sidebar-foreground: 180 35% 18%;
-    --sidebar-primary: 175 45% 18%;
-    --sidebar-primary-foreground: 40 30% 97%;
-    --sidebar-accent: 38 60% 55%;
-    --sidebar-accent-foreground: 180 35% 12%;
-    --sidebar-border: 40 15% 88%;
-    --sidebar-ring: 38 60% 55%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-primary: 0 0% 8%;
+    --sidebar-primary-foreground: 60 10% 98%;
+    --sidebar-accent: 32 85% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 45 10% 88%;
+    --sidebar-ring: 32 85% 50%;
   }
 
   .dark {
-    --background: 175 35% 6%;
-    --foreground: 40 30% 95%;
+    --background: 0 0% 6%;
+    --foreground: 60 10% 95%;
 
-    --card: 175 30% 9%;
-    --card-foreground: 40 30% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 60 10% 95%;
 
-    --popover: 175 30% 9%;
-    --popover-foreground: 40 30% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 60 10% 95%;
 
-    --primary: 38 60% 55%;
-    --primary-foreground: 175 35% 8%;
+    --primary: 60 10% 95%;
+    --primary-foreground: 0 0% 6%;
 
-    --secondary: 175 25% 14%;
-    --secondary-foreground: 40 30% 92%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 60 10% 90%;
 
-    --muted: 175 20% 16%;
-    --muted-foreground: 40 15% 62%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 60 5% 55%;
 
-    --accent: 38 60% 55%;
-    --accent-foreground: 175 35% 8%;
+    --accent: 32 85% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 175 20% 16%;
-    --input: 175 20% 18%;
-    --ring: 38 60% 55%;
+    --border: 0 0% 18%;
+    --input: 0 0% 20%;
+    --ring: 32 85% 55%;
 
-    --sidebar-background: 175 30% 8%;
-    --sidebar-foreground: 40 30% 92%;
-    --sidebar-primary: 38 60% 55%;
-    --sidebar-primary-foreground: 175 35% 8%;
-    --sidebar-accent: 175 25% 14%;
-    --sidebar-accent-foreground: 40 30% 92%;
-    --sidebar-border: 175 20% 14%;
-    --sidebar-ring: 38 60% 55%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 60 10% 90%;
+    --sidebar-primary: 60 10% 95%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 32 85% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 32 85% 55%;
   }
 }
 
@@ -127,85 +120,112 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
     font-weight: 400;
-    letter-spacing: -0.01em;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 600;
     letter-spacing: -0.02em;
   }
 
-  /* Refined typography scale */
-  h1 { @apply text-4xl md:text-5xl lg:text-6xl leading-tight; }
-  h2 { @apply text-3xl md:text-4xl leading-tight; }
-  h3 { @apply text-xl md:text-2xl leading-snug; }
-  h4 { @apply text-lg md:text-xl leading-snug; }
+  /* Editorial Typography - Large & Bold */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  h1 { 
+    @apply text-5xl md:text-7xl lg:text-8xl;
+  }
+  
+  h2 { 
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h3 { 
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  h4 { 
+    @apply text-xl md:text-2xl;
+  }
 
   p {
     @apply leading-relaxed;
+    letter-spacing: -0.01em;
+  }
+
+  /* Editorial Link Style */
+  a {
+    @apply transition-colors duration-200;
   }
 }
 
 @layer components {
-  /* Heritage pattern background - more subtle */
-  .heritage-pattern {
-    background-image: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--gold) / 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--gold) / 0.03) 0%, transparent 50%);
-  }
-
-  /* Section divider */
-  .section-divider {
-    @apply relative;
-  }
-
-  .section-divider::before {
-    content: '';
-    @apply absolute top-0 left-1/2 -translate-x-1/2 w-24 h-px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold)), transparent);
-  }
-
-  /* Gold underline effect */
-  .gold-underline {
+  /* Editorial underline */
+  .editorial-link {
     @apply relative inline-block;
   }
-  
-  .gold-underline::after {
+
+  .editorial-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 origin-left;
-    background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--gold-light)));
-    transform: scaleX(0.4);
-    transition: transform 0.3s ease;
+    @apply absolute bottom-0 left-0 w-full h-[2px] bg-accent origin-right scale-x-0 transition-transform duration-300;
   }
 
-  .gold-underline:hover::after {
-    transform: scaleX(1);
+  .editorial-link:hover::after {
+    @apply origin-left scale-x-100;
   }
 
-  /* Floating animation - more subtle */
+  /* Large number styling */
+  .editorial-number {
+    font-family: 'DM Serif Display', serif;
+    @apply text-8xl md:text-9xl font-normal leading-none;
+    color: hsl(var(--accent) / 0.15);
+  }
+
+  /* Vertical text */
+  .vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  /* Editorial divider */
+  .editorial-divider {
+    @apply h-px bg-foreground/10;
+  }
+
+  /* Accent bar */
+  .accent-bar {
+    @apply w-12 h-1 bg-accent;
+  }
+
+  /* Heritage pattern - subtle editorial */
+  .heritage-pattern {
+    background-image: 
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  /* Float animation - refined */
   .float-gentle {
-    animation: floatGentle 8s ease-in-out infinite;
+    animation: floatGentle 10s ease-in-out infinite;
   }
 
   @keyframes floatGentle {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-8px) rotate(1deg); }
-    75% { transform: translateY(-4px) rotate(-0.5deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
   }
 
-  /* Fade in animation - refined */
+  /* Fade in - editorial timing */
   .fade-in-up {
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     opacity: 0;
   }
 
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(60px);
     }
     to {
       opacity: 1;
@@ -215,14 +235,14 @@
 
   /* Slide in from left */
   .slide-in-left {
-    animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideInLeft 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     opacity: 0;
   }
 
   @keyframes slideInLeft {
     from {
       opacity: 0;
-      transform: translateX(-40px);
+      transform: translateX(-80px);
     }
     to {
       opacity: 1;
@@ -230,91 +250,108 @@
     }
   }
 
-  /* Scale in */
-  .scale-in {
-    animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Reveal animation */
+  .reveal {
+    animation: reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     opacity: 0;
   }
 
-  @keyframes scaleIn {
+  @keyframes reveal {
     from {
       opacity: 0;
-      transform: scale(0.9);
+      clip-path: inset(0 100% 0 0);
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      clip-path: inset(0 0 0 0);
     }
   }
 
-  /* Stagger delay utilities - refined */
+  /* Stagger delays */
   .delay-100 { animation-delay: 100ms; }
   .delay-200 { animation-delay: 200ms; }
   .delay-300 { animation-delay: 300ms; }
   .delay-400 { animation-delay: 400ms; }
   .delay-500 { animation-delay: 500ms; }
   .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
 
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-500 ease-out;
+  /* Editorial card */
+  .editorial-card {
+    @apply bg-card border border-border/50 transition-all duration-500;
   }
 
-  .card-hover:hover {
-    @apply -translate-y-1;
-    box-shadow: var(--shadow-elevated);
+  .editorial-card:hover {
+    @apply border-foreground/20;
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-4px);
   }
 
-  /* Glass effect */
-  .glass {
-    @apply bg-card/70 backdrop-blur-xl border-border/40;
+  /* Marquee text */
+  .marquee {
+    @apply overflow-hidden whitespace-nowrap;
   }
 
-  /* Glow effect on hover */
-  .glow-hover {
-    @apply transition-all duration-500;
+  .marquee-content {
+    @apply inline-block;
+    animation: marquee 20s linear infinite;
   }
 
-  .glow-hover:hover {
-    box-shadow: 0 0 30px -5px hsl(var(--gold) / 0.3);
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Grid overlay */
+  .grid-overlay {
+    background-image: 
+      linear-gradient(to right, hsl(var(--foreground) / 0.03) 1px, transparent 1px);
+    background-size: 25% 100%;
   }
 }
 
 @layer utilities {
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)), hsl(32 55% 45%));
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-light)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .bg-gradient-heritage {
-    background: linear-gradient(180deg, hsl(var(--cream)) 0%, hsl(var(--cream-dark)) 100%);
+  .bg-gradient-editorial {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--cream)) 100%);
   }
 
-  .bg-gradient-section {
-    background: linear-gradient(180deg, transparent 0%, hsl(var(--muted) / 0.3) 50%, transparent 100%);
-  }
-
-  .shadow-heritage {
-    box-shadow: var(--shadow-soft);
-  }
-
-  .shadow-gold-glow {
-    box-shadow: var(--shadow-gold);
+  .shadow-editorial {
+    box-shadow: var(--shadow-editorial);
   }
 
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
 
-  /* Text balance for better typography */
+  .shadow-hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* Clip path utilities */
+  .clip-diagonal {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+
+  /* Text utilities */
   .text-balance {
     text-wrap: balance;
   }
 
-  /* Smooth image rendering */
-  .image-render-smooth {
-    image-rendering: -webkit-optimize-contrast;
+  .text-outline {
+    -webkit-text-stroke: 1px currentColor;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Mix blend */
+  .mix-difference {
+    mix-blend-mode: difference;
   }
 }

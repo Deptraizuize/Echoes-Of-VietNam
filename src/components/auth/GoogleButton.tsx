@@ -9,9 +9,9 @@ export const GoogleButton = ({ onClick, isLoading }: GoogleButtonProps) => {
   return (
     <Button
       type="button"
-      variant="google"
+      variant="outline"
       size="lg"
-      className="w-full font-medium"
+      className="w-full h-12 font-medium border-border hover:bg-muted"
       onClick={onClick}
       disabled={isLoading}
     >
