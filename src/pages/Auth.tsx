@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Divider } from "@/components/auth/Divider";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -41,66 +45,73 @@ const Auth = () => {
   const isLogin = mode === "login";
 
   return (
-    <div className="min-h-screen bg-gradient-heritage heritage-pattern flex items-center justify-center p-4 md:p-8">
-      {/* Decorative elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-md relative">
-        {/* Logo Section */}
-        <div className="text-center mb-8 fade-in-up">
-          <div className="inline-block float-gentle">
+    <div className="min-h-screen bg-background flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-foreground relative overflow-hidden">
+        <div className="absolute inset-0 heritage-pattern opacity-10" />
+        
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </div>
+          
+          <div className="flex-1 flex flex-col justify-center items-center">
             <img
               src={logo}
               alt="Echoes of Vietnam"
-              className="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain drop-shadow-lg"
+              className="w-40 h-40 object-contain mb-10 float-gentle"
             />
+            <h1 className="text-primary-foreground text-center mb-4">
+              Echoes of
+              <br />
+              <span className="italic">Vietnam</span>
+            </h1>
+            <p className="text-primary-foreground/50 text-center max-w-sm text-lg">
+              Hành trình khám phá lịch sử hào hùng của dân tộc
+            </p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-serif font-bold text-primary mt-4">
-            Echoes of Vietnam
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
-            Khám phá lịch sử hào hùng của dân tộc
-          </p>
+          
+          <div className="text-sm text-primary-foreground/30">
+            © 2024 Echoes of Vietnam
+          </div>
         </div>
+      </div>
 
-        {/* Auth Card */}
-        <div className="bg-card rounded-2xl shadow-elevated p-6 md:p-8 border border-border/50 backdrop-blur-sm fade-in-up delay-200">
-          {/* Tab Switcher */}
-          <div className="flex rounded-xl bg-secondary p-1 mb-6">
-            <button
-              onClick={() => setMode("login")}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
-                isLogin
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+      {/* Right Side - Auth Form */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-16">
+        <div className="mx-auto w-full max-w-sm">
+          {/* Mobile Header */}
+          <div className="lg:hidden mb-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="mb-6"
             >
-              Đăng nhập
-            </button>
-            <button
-              onClick={() => setMode("register")}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
-                !isLogin
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Đăng ký
-            </button>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex items-center gap-4">
+              <img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
+              <span className="font-serif text-xl">Echoes of Vietnam</span>
+            </div>
           </div>
 
-          {/* Welcome Text */}
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-serif font-semibold text-foreground">
-              {isLogin ? "Chào mừng trở lại!" : "Tạo tài khoản mới"}
+          {/* Form Header */}
+          <div className="mb-8">
+            <h2 className="font-serif text-3xl text-foreground mb-2">
+              {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
             </h2>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground">
               {isLogin
-                ? "Đăng nhập để tiếp tục hành trình khám phá"
-                : "Tham gia cùng cộng đồng yêu lịch sử Việt Nam"}
+                ? "Chào mừng trở lại! Đăng nhập để tiếp tục."
+                : "Tạo tài khoản để khám phá lịch sử Việt Nam."}
             </p>
           </div>
 
@@ -113,25 +124,44 @@ const Auth = () => {
           {/* Auth Form */}
           <AuthForm mode={mode} onSubmit={handleSubmit} isLoading={isLoading} />
 
+          {/* Toggle */}
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setMode(isLogin ? "register" : "login")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isLogin ? (
+                <>
+                  Chưa có tài khoản?{" "}
+                  <span className="text-foreground font-medium underline underline-offset-4">
+                    Đăng ký ngay
+                  </span>
+                </>
+              ) : (
+                <>
+                  Đã có tài khoản?{" "}
+                  <span className="text-foreground font-medium underline underline-offset-4">
+                    Đăng nhập
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Terms */}
           {!isLogin && (
-            <p className="text-xs text-muted-foreground text-center mt-6 fade-in-up">
+            <p className="text-xs text-muted-foreground text-center mt-6">
               Bằng việc đăng ký, bạn đồng ý với{" "}
-              <a href="#" className="text-accent hover:underline">
-                Điều khoản sử dụng
+              <a href="#" className="text-foreground hover:underline">
+                Điều khoản
               </a>{" "}
               và{" "}
-              <a href="#" className="text-accent hover:underline">
+              <a href="#" className="text-foreground hover:underline">
                 Chính sách bảo mật
               </a>
             </p>
           )}
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-6 fade-in-up delay-400">
-          © 2024 Echoes of Vietnam. Giữ gìn và lan tỏa lịch sử Việt Nam.
-        </p>
       </div>
     </div>
   );

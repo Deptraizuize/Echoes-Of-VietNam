@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ArrowUpRight } from "lucide-react";
 
 interface TimelinePeriodProps {
   period: Period;
@@ -17,27 +18,26 @@ const TimelinePeriod = ({ period, onMilestoneClick }: TimelinePeriodProps) => {
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem 
         value={period.id} 
-        className="border border-border/50 rounded-xl bg-card/60 backdrop-blur-sm overflow-hidden"
+        className="border border-border bg-card overflow-hidden"
       >
-        <AccordionTrigger className="px-6 py-5 hover:no-underline hover:bg-muted/30 transition-colors">
-          <div className="flex flex-col items-start text-left gap-2">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-serif font-bold text-lg">
-                {period.number}
-              </span>
-              <div>
-                <h2 className="font-serif font-bold text-xl text-foreground">
-                  {period.title}
-                </h2>
-                <p className="text-sm text-accent font-medium">{period.timeRange}</p>
-              </div>
+        <AccordionTrigger className="px-6 py-6 hover:no-underline hover:bg-muted/30 transition-colors group">
+          <div className="flex items-center gap-6 w-full text-left">
+            <span className="font-serif text-4xl text-muted-foreground/40 group-hover:text-accent transition-colors">
+              {period.number}
+            </span>
+            <div className="flex-1">
+              <h3 className="font-serif text-xl text-foreground group-hover:text-accent transition-colors mb-1">
+                {period.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">{period.timeRange}</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{period.focus}</p>
+            <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
           </div>
         </AccordionTrigger>
         
         <AccordionContent className="px-6 pb-6">
-          <div className="pt-4 border-t border-border/50">
+          <div className="pt-6 border-t border-border">
+            <p className="text-muted-foreground mb-8">{period.focus}</p>
             {period.phases.map((phase, index) => (
               <TimelinePhase
                 key={phase.id}
