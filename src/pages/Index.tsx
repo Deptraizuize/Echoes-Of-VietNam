@@ -69,25 +69,29 @@ const Index = () => {
             {
               title: "Dòng thời gian",
               description: "Khám phá lịch sử qua các thời kỳ",
+              link: "/timeline",
             },
             {
-              title: "Nhân vật lịch sử",
-              description: "Gặp gỡ các anh hùng dân tộc",
+              title: "Về chúng tôi",
+              description: "Gặp gỡ nhóm phát triển",
+              link: "/team",
             },
             {
               title: "Di sản văn hóa",
               description: "Tìm hiểu văn hóa truyền thống",
+              link: "/auth",
             },
           ].map((feature, index) => (
-            <div
+            <button
               key={index}
-              className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-5 text-center hover:shadow-heritage hover:border-accent/30 transition-all duration-300"
+              onClick={() => navigate(feature.link)}
+              className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-5 text-center hover:shadow-heritage hover:border-accent/30 transition-all duration-300 cursor-pointer"
             >
               <h3 className="font-serif font-semibold text-foreground mb-2">
                 {feature.title}
               </h3>
               <p className="text-sm text-muted-foreground">{feature.description}</p>
-            </div>
+            </button>
           ))}
         </div>
       </div>
