@@ -25,13 +25,13 @@ const TimelinePeriod = ({ period, onMilestoneClick }: TimelinePeriodProps) => {
             <span className="font-serif text-4xl text-muted-foreground/40 group-hover:text-accent transition-colors">
               {period.number}
             </span>
-            <div className="flex-1">
-              <h3 className="font-serif text-xl text-foreground group-hover:text-accent transition-colors mb-1">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-serif text-lg md:text-xl text-foreground group-hover:text-accent transition-colors mb-1">
                 {period.title}
               </h3>
               <p className="text-sm text-muted-foreground">{period.timeRange}</p>
             </div>
-            <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
+            <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors flex-shrink-0" />
           </div>
         </AccordionTrigger>
         

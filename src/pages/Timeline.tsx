@@ -38,19 +38,19 @@ const Timeline = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center gap-3">
-                <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
-                <div>
-                  <h1 className="font-serif text-xl text-foreground">
-                    Dòng thời gian
-                  </h1>
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-accent/30 bg-muted flex items-center justify-center">
+                  <img src={logo} alt="Logo" className="w-7 h-7 object-contain" />
                 </div>
+                <h1 className="font-serif text-xl text-foreground">
+                  Dòng thời gian
+                </h1>
               </div>
             </div>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => navigate("/auth")}
-              className="uppercase tracking-widest text-xs"
+              className="text-sm"
             >
               Đăng nhập
             </Button>
@@ -63,7 +63,7 @@ const Timeline = () => {
         <div className="container mx-auto">
           <div className="grid md:grid-cols-12 gap-8">
             <div className="md:col-span-6 fade-in-up">
-              <p className="text-muted-foreground uppercase tracking-[0.3em] text-sm mb-4">
+              <p className="text-muted-foreground uppercase tracking-wider text-sm mb-4">
                 Khám phá
               </p>
               <h2 className="text-foreground mb-6">
@@ -77,11 +77,11 @@ const Timeline = () => {
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <div className="font-serif text-4xl text-foreground mb-1">40+</div>
-                  <div className="text-sm text-muted-foreground uppercase tracking-wider">Cột mốc</div>
+                  <div className="text-sm text-muted-foreground">Cột mốc</div>
                 </div>
                 <div>
                   <div className="font-serif text-4xl text-foreground mb-1">4000</div>
-                  <div className="text-sm text-muted-foreground uppercase tracking-wider">Năm</div>
+                  <div className="text-sm text-muted-foreground">Năm</div>
                 </div>
               </div>
             </div>
@@ -122,7 +122,7 @@ const Timeline = () => {
           <Button 
             size="lg" 
             onClick={() => navigate("/auth")}
-            className="bg-foreground text-background hover:bg-foreground/90 uppercase tracking-widest text-sm fade-in-up delay-200"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 fade-in-up delay-200"
           >
             Đăng nhập ngay
           </Button>
