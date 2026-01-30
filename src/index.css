@@ -2,95 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Echoes of Vietnam Design System
+   Inspired by Vietnamese heritage - Phoenix, traditional patterns
+   Colors: Deep Teal + Bronze Gold + Warm Cream
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Colors - Vietnamese Heritage Palette */
+    --background: 40 20% 96%;
+    --foreground: 180 40% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 40 30% 98%;
+    --card-foreground: 180 40% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 180 40% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Deep Teal - Like ancient Vietnamese lacquer */
+    --primary: 180 45% 20%;
+    --primary-foreground: 40 30% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Warm Cream */
+    --secondary: 40 25% 92%;
+    --secondary-foreground: 180 40% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted tones */
+    --muted: 40 15% 90%;
+    --muted-foreground: 180 20% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent: Bronze Gold - Vietnamese traditional gold */
+    --accent: 42 55% 58%;
+    --accent-foreground: 180 40% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 40 20% 85%;
+    --input: 40 20% 88%;
+    --ring: 42 55% 58%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom tokens for this project */
+    --gold: 42 55% 58%;
+    --gold-light: 42 60% 75%;
+    --teal-dark: 180 45% 15%;
+    --teal-medium: 180 40% 25%;
+    --cream: 40 30% 96%;
+    --cream-dark: 40 20% 90%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(42 55% 58%), hsl(35 50% 45%));
+    --gradient-teal: linear-gradient(135deg, hsl(180 45% 20%), hsl(180 40% 30%));
+    --gradient-heritage: linear-gradient(180deg, hsl(40 30% 98%) 0%, hsl(40 20% 92%) 100%);
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(180 40% 15% / 0.1);
+    --shadow-gold: 0 4px 20px -4px hsl(42 55% 58% / 0.3);
+    --shadow-elevated: 0 8px 40px -8px hsl(180 40% 15% / 0.15);
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 40 30% 98%;
+    --sidebar-foreground: 180 40% 20%;
+    --sidebar-primary: 180 45% 20%;
+    --sidebar-primary-foreground: 40 30% 95%;
+    --sidebar-accent: 42 55% 58%;
+    --sidebar-accent-foreground: 180 40% 15%;
+    --sidebar-border: 40 20% 85%;
+    --sidebar-ring: 42 55% 58%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 180 40% 8%;
+    --foreground: 40 30% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 180 35% 12%;
+    --card-foreground: 40 30% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 180 35% 12%;
+    --popover-foreground: 40 30% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 42 55% 58%;
+    --primary-foreground: 180 40% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 180 30% 18%;
+    --secondary-foreground: 40 30% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 180 25% 20%;
+    --muted-foreground: 40 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 42 55% 58%;
+    --accent-foreground: 180 40% 10%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 180 25% 20%;
+    --input: 180 25% 22%;
+    --ring: 42 55% 58%;
+
+    --sidebar-background: 180 35% 10%;
+    --sidebar-foreground: 40 30% 90%;
+    --sidebar-primary: 42 55% 58%;
+    --sidebar-primary-foreground: 180 40% 10%;
+    --sidebar-accent: 180 30% 18%;
+    --sidebar-accent-foreground: 40 30% 90%;
+    --sidebar-border: 180 25% 18%;
+    --sidebar-ring: 42 55% 58%;
   }
 }
 
@@ -100,6 +121,90 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  /* Heritage pattern background */
+  .heritage-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(var(--gold) / 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(var(--gold) / 0.03) 0%, transparent 50%);
+  }
+
+  /* Gold underline effect */
+  .gold-underline {
+    position: relative;
+  }
+  
+  .gold-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: hsl(var(--gold));
+    border-radius: 1px;
+  }
+
+  /* Floating animation */
+  .float-gentle {
+    animation: floatGentle 6s ease-in-out infinite;
+  }
+
+  @keyframes floatGentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Fade in animation */
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Stagger delay utilities */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(35 50% 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-heritage {
+    background: linear-gradient(180deg, hsl(var(--cream)) 0%, hsl(var(--cream-dark)) 100%);
+  }
+
+  .shadow-heritage {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-gold-glow {
+    box-shadow: var(--shadow-gold);
   }
 }
