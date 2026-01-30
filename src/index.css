@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Echoes of Vietnam - Modern Editorial Design
-   Bold typography, asymmetric layouts, magazine-style aesthetics
-   Typography: DM Serif Display + Space Grotesk
+/* Echoes of Vietnam - International Magazine Design
+   Typography optimized for Vietnamese: Lora + Inter
+   Clean, bold, editorial aesthetics
 */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -120,38 +120,47 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    line-height: 1.6;
   }
 
-  /* Editorial Typography - Large & Bold */
+  /* Editorial Typography - Lora for Vietnamese support */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-weight: 400;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   h1 { 
-    @apply text-5xl md:text-7xl lg:text-8xl;
+    @apply text-4xl md:text-6xl lg:text-7xl;
+    font-weight: 600;
   }
   
   h2 { 
-    @apply text-4xl md:text-5xl lg:text-6xl;
+    @apply text-3xl md:text-4xl lg:text-5xl;
+    font-weight: 500;
   }
   
   h3 { 
-    @apply text-2xl md:text-3xl lg:text-4xl;
+    @apply text-xl md:text-2xl lg:text-3xl;
+    font-weight: 500;
   }
   
   h4 { 
-    @apply text-xl md:text-2xl;
+    @apply text-lg md:text-xl;
+    font-weight: 500;
   }
 
   p {
     @apply leading-relaxed;
-    letter-spacing: -0.01em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   /* Editorial Link Style */
