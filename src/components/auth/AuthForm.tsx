@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Mail, Lock, User } from "lucide-react";
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -26,11 +26,12 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
   const isLogin = mode === "login";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Name field - only for registration */}
       {!isLogin && (
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-medium text-foreground">
+          <Label htmlFor="name" className="text-sm font-medium text-foreground flex items-center gap-2">
+            <User className="w-4 h-4 text-muted-foreground" />
             Họ và tên
           </Label>
           <Input
@@ -40,14 +41,15 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            className="h-12 border-border bg-background"
+            className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
           />
         </div>
       )}
 
       {/* Email field */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-foreground">
+        <Label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Mail className="w-4 h-4 text-muted-foreground" />
           Email
         </Label>
         <Input
@@ -57,13 +59,14 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
-          className="h-12 border-border bg-background"
+          className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
         />
       </div>
 
       {/* Password field */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-foreground">
+        <Label htmlFor="password" className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Lock className="w-4 h-4 text-muted-foreground" />
           Mật khẩu
         </Label>
         <div className="relative">
@@ -75,7 +78,7 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
             minLength={6}
-            className="h-12 pr-12 border-border bg-background"
+            className="h-12 pr-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
           />
           <button
             type="button"
@@ -92,7 +95,7 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
         <div className="flex justify-end">
           <button
             type="button"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-accent hover:text-accent/80 transition-colors"
           >
             Quên mật khẩu?
           </button>
@@ -104,12 +107,12 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
         <Button
           type="submit"
           size="lg"
-          className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-medium uppercase tracking-widest text-sm group"
+          className="w-full h-12 bg-accent text-accent-foreground hover:bg-accent/90 font-medium text-sm tracking-wide group shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 transition-all duration-300"
           disabled={isLoading}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+              <div className="h-4 w-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
               Đang xử lý...
             </div>
           ) : (
