@@ -97,9 +97,9 @@ const Auth = () => {
             className="flex-1 flex flex-col justify-center items-center px-8"
           >
             <div className="relative mb-10">
-              <div className="absolute inset-0 bg-accent/20 blur-[60px] rounded-full scale-150" />
-              <div className="relative w-36 h-36 xl:w-44 xl:h-44 rounded-full bg-gradient-to-br from-accent/20 via-primary-foreground/5 to-accent/10 border border-primary-foreground/10 flex items-center justify-center overflow-hidden backdrop-blur-sm">
-                <img src={logo} alt="Echoes of Vietnam" className="w-[85%] h-[85%] object-contain float-gentle" />
+              <div className="absolute inset-0 bg-accent/20 blur-[60px] rounded-2xl scale-150" />
+              <div className="relative w-36 h-36 xl:w-44 xl:h-44 rounded-2xl bg-gradient-to-br from-accent/20 via-primary-foreground/5 to-accent/10 border border-primary-foreground/10 flex items-center justify-center overflow-hidden backdrop-blur-sm">
+                <img src={logo} alt="Echoes of Vietnam" className="w-[90%] h-[90%] object-contain float-gentle" />
               </div>
             </div>
 
@@ -145,9 +145,7 @@ const Auth = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-accent/30 bg-muted flex items-center justify-center">
-                <img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
-              </div>
+              <img src={logo} alt="Logo" className="w-12 h-12 rounded-lg object-contain" />
               <div>
                 <span className="text-xl font-bold">Echoes of </span>
                 <span className="text-xl font-bold italic text-accent">Vietnam</span>

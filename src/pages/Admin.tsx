@@ -201,9 +201,7 @@ const Admin = () => {
       <header className="sticky top-0 z-40 bg-foreground text-primary-foreground border-b border-border">
         <div className="container mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-accent/20 flex items-center justify-center">
-              <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
-            </div>
+            <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
             <span className="font-serif text-lg">Admin Dashboard</span>
           </div>
           <Button

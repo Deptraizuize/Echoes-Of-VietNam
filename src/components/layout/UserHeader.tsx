@@ -55,9 +55,7 @@ const UserHeader = () => {
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <div className="w-9 h-9 rounded-full overflow-hidden border border-accent/30 bg-muted flex items-center justify-center">
-              <img src={logo} alt="Logo" className="w-7 h-7 object-contain" />
-            </div>
+            <img src={logo} alt="Logo" className="w-9 h-9 rounded-lg object-contain" />
             <span className="font-serif text-lg text-foreground hidden sm:block">
               Echoes of <span className="italic text-accent">Vietnam</span>
             </span>

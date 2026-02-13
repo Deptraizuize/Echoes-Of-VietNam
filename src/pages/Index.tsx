@@ -17,9 +17,7 @@ const Index = () => {
         <div className="container mx-auto px-6 md:px-12 py-4">
           <div className="flex items-center justify-between">
             <a href="#" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-accent/30 bg-muted flex items-center justify-center">
-                <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
-              </div>
+              <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
               <span className="text-lg font-semibold text-primary-foreground">
                 Echoes of <span className="italic text-accent">Vietnam</span>
               </span>
@@ -89,12 +87,12 @@ const Index = () => {
             {/* Logo */}
             <div className="md:col-span-5 order-1 md:order-2 flex justify-center fade-in-up delay-100">
               <div className="relative">
-                <div className="absolute inset-0 bg-accent/10 blur-[60px] rounded-full scale-125" />
-                <div className="relative w-48 h-48 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full bg-gradient-to-br from-primary-foreground/10 via-transparent to-accent/10 border border-primary-foreground/10 flex items-center justify-center float-gentle">
+                <div className="absolute inset-0 bg-accent/10 blur-[60px] rounded-2xl scale-125" />
+                <div className="relative w-48 h-48 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-2xl bg-gradient-to-br from-primary-foreground/10 via-transparent to-accent/10 border border-primary-foreground/10 flex items-center justify-center float-gentle overflow-hidden">
                   <img
                     src={logo}
                     alt="Echoes of Vietnam"
-                    className="w-[75%] h-[75%] object-contain"
+                    className="w-[85%] h-[85%] object-contain"
                   />
                 </div>
               </div>
@@ -427,13 +425,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full overflow-hidden border border-accent/30 bg-muted flex items-center justify-center">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className="w-5 h-5 object-contain"
-                />
-              </div>
+              <img src={logo} alt="Logo" className="w-7 h-7 rounded-md object-contain" />
               <span className="font-semibold">Echoes of Vietnam</span>
             </div>
 
