@@ -1,15 +1,26 @@
+import { useNavigate } from "react-router-dom";
 import { Milestone } from "@/data/timelineData";
 import { ArrowUpRight } from "lucide-react";
 
 interface MilestoneCardProps {
   milestone: Milestone;
-  onClick: (milestone: Milestone) => void;
+  onClick?: (milestone: Milestone) => void;
 }
 
 const MilestoneCard = ({ milestone, onClick }: MilestoneCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(milestone);
+    } else {
+      navigate(`/milestone/${milestone.id}`);
+    }
+  };
+
   return (
     <button
-      onClick={() => onClick(milestone)}
+      onClick={handleClick}
       className="group w-full text-left py-4 px-4 -mx-4 border-b border-border/50 last:border-b-0 
         hover:bg-muted/30 transition-all duration-300 cursor-pointer flex items-start justify-between gap-4"
     >
