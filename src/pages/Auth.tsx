@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
-import authHero from "@/assets/auth-hero.jpg";
+import vietnamMap from "@/assets/vietnam-map.jpg";
 import { motion } from "framer-motion";
 
 const Auth = () => {
@@ -68,16 +68,18 @@ const Auth = () => {
   const isLogin = mode === "login";
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left Side - Hero Image */}
+    <div className="min-h-screen bg-foreground flex">
+      {/* Left Side - Vietnam Map Hero */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
+        {/* Vietnam map as background */}
         <img
-          src={authHero}
-          alt="Vietnamese landscape"
+          src={vietnamMap}
+          alt="Bản đồ Việt Nam"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-foreground/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-transparent to-foreground/30" />
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/40 via-transparent to-foreground/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/50" />
 
         {/* Content overlay */}
         <div className="relative z-10 flex flex-col justify-between p-10 xl:p-16 w-full">
@@ -85,7 +87,7 @@ const Auth = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
-            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 w-10 h-10"
+            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 w-10 h-10 self-start"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -94,38 +96,37 @@ const Auth = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex-1 flex flex-col justify-center items-center px-8"
+            className="flex-1 flex flex-col justify-end pb-12"
           >
-            <div className="relative mb-10">
-              <div className="absolute inset-0 bg-accent/20 blur-[60px] rounded-2xl scale-150" />
-              <div className="relative w-36 h-36 xl:w-44 xl:h-44 rounded-2xl bg-gradient-to-br from-accent/20 via-primary-foreground/5 to-accent/10 border border-primary-foreground/10 flex items-center justify-center overflow-hidden backdrop-blur-sm">
-                <img src={logo} alt="Echoes of Vietnam" className="w-[90%] h-[90%] object-contain float-gentle" />
+            <div className="flex items-center gap-4 mb-6">
+              <img src={logo} alt="Logo" className="w-14 h-14 xl:w-16 xl:h-16 rounded-xl object-contain" />
+              <div>
+                <h1 className="text-primary-foreground text-3xl xl:text-4xl font-bold">
+                  Echoes of <span className="italic text-accent">Vietnam</span>
+                </h1>
+                <div className="w-12 h-0.5 bg-accent rounded-full mt-2" />
               </div>
             </div>
 
-            <h1 className="text-primary-foreground text-center mb-4 text-4xl xl:text-5xl">
-              Echoes of <span className="italic text-accent">Vietnam</span>
-            </h1>
-            <div className="w-16 h-1 bg-accent rounded-full mb-6" />
-            <p className="text-primary-foreground/50 text-center max-w-sm text-base xl:text-lg leading-relaxed">
-              Hành trình khám phá lịch sử hào hùng của dân tộc Việt Nam
+            <p className="text-primary-foreground/50 max-w-md text-base xl:text-lg leading-relaxed mb-8">
+              Hành trình khám phá lịch sử hào hùng của dân tộc Việt Nam qua hơn 4000 năm văn hiến
             </p>
 
-            <div className="flex items-center gap-8 xl:gap-12 mt-10">
+            <div className="flex items-center gap-10">
               {[
                 { value: "4000+", label: "Năm lịch sử" },
                 { value: "5", label: "Thời kỳ" },
                 { value: "41", label: "Cột mốc" },
               ].map((stat, index) => (
-                <div key={index} className="text-center">
+                <div key={index}>
                   <div className="text-2xl xl:text-3xl text-accent font-bold">{stat.value}</div>
-                  <div className="text-primary-foreground/40 text-xs xl:text-sm mt-1">{stat.label}</div>
+                  <div className="text-primary-foreground/40 text-xs xl:text-sm mt-0.5">{stat.label}</div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          <div className="text-sm text-primary-foreground/30 text-center">
+          <div className="text-xs text-primary-foreground/25">
             © 2024 Echoes of Vietnam — Team Tryyourbest
           </div>
         </div>
@@ -136,7 +137,7 @@ const Auth = () => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-12 xl:px-20"
+        className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-12 xl:px-20 bg-background"
       >
         <div className="mx-auto w-full max-w-sm">
           {/* Mobile Header */}
