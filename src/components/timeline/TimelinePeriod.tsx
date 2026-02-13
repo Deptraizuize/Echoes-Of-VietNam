@@ -1,4 +1,4 @@
-import { Period, Milestone } from "@/data/timelineData";
+import { Period } from "@/data/timelineData";
 import TimelinePhase from "./TimelinePhase";
 import {
   Accordion,
@@ -10,10 +10,9 @@ import { ArrowUpRight } from "lucide-react";
 
 interface TimelinePeriodProps {
   period: Period;
-  onMilestoneClick: (milestone: Milestone) => void;
 }
 
-const TimelinePeriod = ({ period, onMilestoneClick }: TimelinePeriodProps) => {
+const TimelinePeriod = ({ period }: TimelinePeriodProps) => {
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem 
@@ -43,7 +42,6 @@ const TimelinePeriod = ({ period, onMilestoneClick }: TimelinePeriodProps) => {
                 key={phase.id}
                 phase={phase}
                 phaseIndex={index}
-                onMilestoneClick={onMilestoneClick}
               />
             ))}
           </div>

@@ -1,13 +1,12 @@
-import { Phase, Milestone } from "@/data/timelineData";
+import { Phase } from "@/data/timelineData";
 import MilestoneCard from "./MilestoneCard";
 
 interface TimelinePhaseProps {
   phase: Phase;
   phaseIndex: number;
-  onMilestoneClick: (milestone: Milestone) => void;
 }
 
-const TimelinePhase = ({ phase, phaseIndex, onMilestoneClick }: TimelinePhaseProps) => {
+const TimelinePhase = ({ phase, phaseIndex }: TimelinePhaseProps) => {
   return (
     <div className="relative pl-8 pb-8 last:pb-0">
       {/* Timeline connector */}
@@ -27,7 +26,6 @@ const TimelinePhase = ({ phase, phaseIndex, onMilestoneClick }: TimelinePhasePro
             <MilestoneCard
               key={milestone.id}
               milestone={milestone}
-              onClick={onMilestoneClick}
             />
           ))}
         </div>
