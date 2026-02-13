@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ['Playfair Display', 'serif'],
+        serif: ['Lora', 'Georgia', 'serif'],
         sans: ['Be Vietnam Pro', 'system-ui', 'sans-serif'],
       },
       colors: {

@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 /* Echoes of Vietnam - Editorial Design
-   Typography: Playfair Display (headings) + Be Vietnam Pro (body - Vietnamese optimized)
+   Typography: Lora (headings - Vietnamese optimized) + Be Vietnam Pro (body)
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -127,7 +127,7 @@
 
   /* Editorial Typography - Playfair for headings */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Lora', Georgia, serif;
     font-weight: 500;
     letter-spacing: normal;
     line-height: 1.2;
