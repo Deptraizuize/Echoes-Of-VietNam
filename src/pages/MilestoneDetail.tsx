@@ -24,12 +24,18 @@ interface MilestoneDetail {
 const MilestoneDetail = () => {
   const { milestoneId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [detail, setDetail] = useState<MilestoneDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [milestoneTitle, setMilestoneTitle] = useState("");
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
     const fetchDetail = async () => {
       if (!milestoneId) return;
 
@@ -54,7 +60,7 @@ const MilestoneDetail = () => {
     };
 
     fetchDetail();
-  }, [milestoneId]);
+  }, [milestoneId, user, authLoading, navigate]);
 
   if (loading) {
     return (
