@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Timeline from "./pages/Timeline";
 import MilestoneDetail from "./pages/MilestoneDetail";
 import Quiz from "./pages/Quiz";
+import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/milestone/:milestoneId" element={<MilestoneDetail />} />
             <Route path="/quiz/:milestoneId" element={<Quiz />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

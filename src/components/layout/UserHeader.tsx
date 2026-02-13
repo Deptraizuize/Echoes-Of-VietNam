@@ -83,11 +83,14 @@ const UserHeader = () => {
                   </div>
                 )}
 
-                {/* Points */}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full">
+                {/* Points - clickable to profile */}
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full hover:bg-accent/20 transition-colors"
+                >
                   <Star className="w-4 h-4 text-accent fill-accent" />
                   <span className="text-sm font-medium text-accent">{points}</span>
-                </div>
+                </button>
 
                 {/* Admin */}
                 {isAdmin && (
