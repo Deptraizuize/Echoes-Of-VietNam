@@ -1,11 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import TimelinePeriod from "@/components/timeline/TimelinePeriod";
 import { timelineData } from "@/data/timelineData";
 import UserHeader from "@/components/layout/UserHeader";
 
 const Timeline = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-background">
       <UserHeader />
@@ -17,23 +15,43 @@ const Timeline = () => {
 
         <div className="container mx-auto relative z-10">
           <div className="grid md:grid-cols-12 gap-8 items-end">
-            <div className="md:col-span-7 fade-in-up">
-              <p className="text-primary-foreground/40 uppercase tracking-wider text-sm mb-4">
+            <div className="md:col-span-7">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-primary-foreground/40 uppercase tracking-wider text-sm mb-4"
+              >
                 Khám phá
-              </p>
-              <h2 className="text-primary-foreground mb-4 leading-tight">
+              </motion.p>
+              <motion.h2
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
+                className="text-primary-foreground mb-4 leading-tight"
+              >
                 Dòng chảy{" "}
                 <span className="italic text-accent">lịch sử</span>
-              </h2>
-              <div className="flex items-start gap-4">
+              </motion.h2>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex items-start gap-4"
+              >
                 <div className="w-10 h-[2px] bg-accent mt-3 flex-shrink-0" />
                 <p className="text-primary-foreground/50 text-lg max-w-md">
                   Từ buổi bình minh của nền văn minh sông Hồng đến thời đại đổi mới.
                 </p>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="md:col-span-4 md:col-start-9 fade-in-up delay-200">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="md:col-span-4 md:col-start-9"
+            >
               <div className="grid grid-cols-2 gap-8">
                 <div className="border-l-2 border-accent/40 pl-4">
                   <div className="text-4xl font-bold text-primary-foreground mb-1">41</div>
@@ -44,31 +62,29 @@ const Timeline = () => {
                   <div className="text-sm text-primary-foreground/40">Năm</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="py-16 md:py-24 px-6 md:px-12">
-        <div className="container mx-auto max-w-5xl">
-          {/* Period Navigation Hint */}
-          <div className="flex items-center gap-3 mb-10 fade-in-up">
+        <div className="container mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex items-center gap-3 mb-10"
+          >
             <div className="w-3 h-3 rounded-full bg-accent" />
             <p className="text-sm text-muted-foreground">
               Chọn thời kỳ để khám phá chi tiết từng cột mốc lịch sử
             </p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-6">
-            {timelineData.map((period, index) => (
-              <div
-                key={period.id}
-                className="fade-in-up"
-                style={{ animationDelay: `${index * 120}ms` }}
-              >
-                <TimelinePeriod period={period} />
-              </div>
+          <div className="space-y-4">
+            {timelineData.map((period) => (
+              <TimelinePeriod key={period.id} period={period} />
             ))}
           </div>
         </div>

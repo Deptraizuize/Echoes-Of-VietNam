@@ -1,5 +1,11 @@
+import period1 from "@/assets/period-1.jpg";
+import period2 from "@/assets/period-2.jpg";
+import period3 from "@/assets/period-3.jpg";
+import period4 from "@/assets/period-4.jpg";
+import period5 from "@/assets/period-5.jpg";
+
 export interface Milestone {
-  id: string; // matches DB milestone id
+  id: string;
   title: string;
   year?: string;
   description?: string;
@@ -17,6 +23,7 @@ export interface Period {
   title: string;
   timeRange: string;
   focus: string;
+  image: string;
   phases: Phase[];
 }
 
@@ -27,6 +34,7 @@ export const timelineData: Period[] = [
     title: "KHỞI NGUYÊN & DỰNG NƯỚC",
     timeRange: "Từ nguồn gốc → 179 TCN",
     focus: "Văn minh sông Hồng và các nhà nước sơ khai.",
+    image: period1,
     phases: [
       {
         id: "tien-su",
@@ -60,6 +68,7 @@ export const timelineData: Period[] = [
     title: "BẮC THUỘC & ĐẤU TRANH GIÀNH ĐỘC LẬP",
     timeRange: "179 TCN → 938",
     focus: "Sự kiên cường chống đồng hóa và các cuộc khởi nghĩa lớn.",
+    image: period2,
     phases: [
       {
         id: "tk1-6",
@@ -88,6 +97,7 @@ export const timelineData: Period[] = [
     title: "XÂY DỰNG & BẢO VỆ QUỐC GIA ĐẠI VIỆT",
     timeRange: "939 → 1858",
     focus: "Sự phát triển vượt bậc của các triều đại phong kiến.",
+    image: period3,
     phases: [
       {
         id: "cung-co",
@@ -133,6 +143,7 @@ export const timelineData: Period[] = [
     title: "KHÁNG CHIẾN CHỐNG PHÁP & GIẢI PHÓNG DÂN TỘC",
     timeRange: "1858 → 1945",
     focus: "Từ mất nước đến độc lập.",
+    image: period4,
     phases: [
       {
         id: "gd1",
@@ -161,6 +172,7 @@ export const timelineData: Period[] = [
     title: "BẢO VỆ ĐỘC LẬP & ĐỔI MỚI",
     timeRange: "1945 → Nay",
     focus: "Hai cuộc kháng chiến trường kỳ và xây dựng đất nước.",
+    image: period5,
     phases: [
       {
         id: "chong-phap-2",
