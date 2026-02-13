@@ -14,16 +14,384 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      badges: {
+        Row: {
+          badge_icon: string | null
+          badge_name: string
+          earned_at: string
+          id: string
+          milestone_id: string
+          user_id: string
+        }
+        Insert: {
+          badge_icon?: string | null
+          badge_name: string
+          earned_at?: string
+          id?: string
+          milestone_id: string
+          user_id: string
+        }
+        Update: {
+          badge_icon?: string | null
+          badge_name?: string
+          earned_at?: string
+          id?: string
+          milestone_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestone_details: {
+        Row: {
+          created_at: string
+          events: string | null
+          hero_names: string[] | null
+          id: string
+          image_urls: string[] | null
+          landmark_names: string[] | null
+          milestone_id: string
+          results: string | null
+          significance: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          events?: string | null
+          hero_names?: string[] | null
+          id?: string
+          image_urls?: string[] | null
+          landmark_names?: string[] | null
+          milestone_id: string
+          results?: string | null
+          significance?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          events?: string | null
+          hero_names?: string[] | null
+          id?: string
+          image_urls?: string[] | null
+          landmark_names?: string[] | null
+          milestone_id?: string
+          results?: string | null
+          significance?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_details_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: true
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          created_at: string
+          id: string
+          period_id: string
+          period_title: string
+          phase_id: string
+          phase_title: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          period_id: string
+          period_title: string
+          phase_id: string
+          phase_title: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          period_id?: string
+          period_title?: string
+          phase_id?: string
+          phase_title?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_premium: boolean
+          premium_expires_at: string | null
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_premium?: boolean
+          premium_expires_at?: string | null
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_premium?: boolean
+          premium_expires_at?: string | null
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json | null
+          created_at: string
+          double_points_used: boolean
+          hearts_lost: number
+          id: string
+          milestone_id: string
+          points_earned: number
+          quiz_score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          created_at?: string
+          double_points_used?: boolean
+          hearts_lost?: number
+          id?: string
+          milestone_id: string
+          points_earned?: number
+          quiz_score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          created_at?: string
+          double_points_used?: boolean
+          hearts_lost?: number
+          id?: string
+          milestone_id?: string
+          points_earned?: number
+          quiz_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: number
+          created_at: string
+          id: string
+          image_url: string | null
+          milestone_id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          milestone_id: string
+          options?: Json
+          question: string
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          milestone_id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_daily_limits: {
+        Row: {
+          created_at: string
+          date: string
+          double_points_used: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          double_points_used?: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          double_points_used?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_hearts: {
+        Row: {
+          created_at: string
+          hearts_remaining: number
+          id: string
+          last_reset_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hearts_remaining?: number
+          id?: string
+          last_reset_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hearts_remaining?: number
+          id?: string
+          last_reset_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          attempts_count: number
+          best_score: number | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          milestone_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts_count?: number
+          best_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          milestone_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts_count?: number
+          best_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          milestone_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_hearts: {
+        Args: never
+        Returns: {
+          hearts_remaining: number
+          is_premium: boolean
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      submit_quiz: {
+        Args: { p_answers: number[]; p_milestone_id: string }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +518,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
