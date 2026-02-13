@@ -68,97 +68,45 @@ const Auth = () => {
   const isLogin = mode === "login";
 
   return (
-    <div className="min-h-screen bg-foreground flex">
-      {/* Left Side - Vietnam Map Hero */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
-        {/* Vietnam map as background */}
+    <div className="min-h-screen bg-background relative flex items-center justify-center">
+      {/* Background Vietnam map */}
+      <div className="absolute inset-0 overflow-hidden">
         <img
           src={vietnamMap}
-          alt="Bản đồ Việt Nam"
-          className="absolute inset-0 w-full h-full object-cover"
+          alt=""
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] w-auto object-cover opacity-[0.06]"
         />
-        {/* Subtle overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/40 via-transparent to-foreground/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/50" />
-
-        {/* Content overlay */}
-        <div className="relative z-10 flex flex-col justify-between p-10 xl:p-16 w-full">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 w-10 h-10 self-start"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex-1 flex flex-col justify-end pb-12"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <img src={logo} alt="Logo" className="w-14 h-14 xl:w-16 xl:h-16 rounded-xl object-contain" />
-              <div>
-                <h1 className="text-primary-foreground text-3xl xl:text-4xl font-bold">
-                  Echoes of <span className="italic text-accent">Vietnam</span>
-                </h1>
-                <div className="w-12 h-0.5 bg-accent rounded-full mt-2" />
-              </div>
-            </div>
-
-            <p className="text-primary-foreground/50 max-w-md text-base xl:text-lg leading-relaxed mb-8">
-              Hành trình khám phá lịch sử hào hùng của dân tộc Việt Nam qua hơn 4000 năm văn hiến
-            </p>
-
-            <div className="flex items-center gap-10">
-              {[
-                { value: "4000+", label: "Năm lịch sử" },
-                { value: "5", label: "Thời kỳ" },
-                { value: "41", label: "Cột mốc" },
-              ].map((stat, index) => (
-                <div key={index}>
-                  <div className="text-2xl xl:text-3xl text-accent font-bold">{stat.value}</div>
-                  <div className="text-primary-foreground/40 text-xs xl:text-sm mt-0.5">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <div className="text-xs text-primary-foreground/25">
-            © 2024 Echoes of Vietnam — Team Tryyourbest
-          </div>
-        </div>
       </div>
 
-      {/* Right Side - Auth Form */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-12 xl:px-20 bg-background"
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate("/")}
+        className="absolute top-6 left-6 z-20 text-muted-foreground hover:text-foreground"
       >
-        <div className="mx-auto w-full max-w-sm">
-          {/* Mobile Header */}
-          <div className="lg:hidden mb-10">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="mb-6">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="Logo" className="w-12 h-12 rounded-lg object-contain" />
-              <div>
-                <span className="text-xl font-bold">Echoes of </span>
-                <span className="text-xl font-bold italic text-accent">Vietnam</span>
-              </div>
-            </div>
-          </div>
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
 
-          <div className="mb-8">
-            <h2 className="text-2xl xl:text-3xl font-bold text-foreground mb-2">
+      {/* Auth Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md mx-6"
+      >
+        <div className="bg-card border border-border rounded-2xl p-8 md:p-10 shadow-card">
+          {/* Logo & Title */}
+          <div className="flex flex-col items-center mb-8">
+            <img src={logo} alt="Logo" className="w-16 h-16 rounded-xl object-contain mb-4" />
+            <h1 className="text-xl font-bold text-foreground">
+              Echoes of <span className="italic text-accent">Vietnam</span>
+            </h1>
+            <div className="w-8 h-0.5 bg-accent rounded-full mt-3 mb-4" />
+            <h2 className="text-2xl font-bold text-foreground">
               {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1 text-center">
               {isLogin ? "Chào mừng trở lại! Đăng nhập để tiếp tục." : "Tạo tài khoản để khám phá lịch sử Việt Nam."}
             </p>
           </div>
@@ -167,7 +115,7 @@ const Auth = () => {
           <Divider />
           <AuthForm mode={mode} onSubmit={handleSubmit} isLoading={isLoading} />
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <button onClick={() => setMode(isLogin ? "register" : "login")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               {isLogin ? (
                 <>Chưa có tài khoản? <span className="text-accent font-medium hover:underline underline-offset-4">Đăng ký ngay</span></>
@@ -178,13 +126,18 @@ const Auth = () => {
           </div>
 
           {!isLogin && (
-            <p className="text-xs text-muted-foreground text-center mt-6 leading-relaxed">
+            <p className="text-xs text-muted-foreground text-center mt-4 leading-relaxed">
               Bằng việc đăng ký, bạn đồng ý với{" "}
               <a href="#" className="text-foreground hover:text-accent transition-colors">Điều khoản</a> và{" "}
               <a href="#" className="text-foreground hover:text-accent transition-colors">Chính sách bảo mật</a>
             </p>
           )}
         </div>
+
+        {/* Footer */}
+        <p className="text-xs text-muted-foreground/50 text-center mt-6">
+          © 2024 Echoes of Vietnam — Team Tryyourbest
+        </p>
       </motion.div>
     </div>
   );

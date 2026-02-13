@@ -91,11 +91,10 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
                 onClick={() => navigate("/auth")}
-                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6"
+                className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6 min-w-[160px]"
               >
-                Đăng ký miễn phí
+                ✦ Đăng ký miễn phí
               </Button>
             </div>
           </div>
@@ -142,37 +141,43 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Timeline Items */}
-          <div className="space-y-0">
+          {/* Timeline Items - Card Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {timelineData.map((period, index) => (
               <div
                 key={period.id}
                 onClick={() => navigate("/timeline")}
-                className="group cursor-pointer fade-in-up"
-                style={{ animationDelay: `${index * 80}ms` }}
+                className="group cursor-pointer fade-in-up editorial-card rounded-xl overflow-hidden"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="grid md:grid-cols-12 gap-4 py-6 border-t border-border hover:bg-muted/30 transition-colors duration-300 px-4 -mx-4">
-                  <div className="md:col-span-1">
-                    <span className="text-3xl font-light text-muted-foreground/30 group-hover:text-accent transition-colors">
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={period.image}
+                    alt={period.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent" />
+                  <div className="absolute top-4 left-4">
+                    <span className="text-4xl font-bold text-accent/80 group-hover:text-accent transition-colors">
                       {period.number}
                     </span>
                   </div>
-                  <div className="md:col-span-5">
-                    <h3 className="text-lg font-semibold text-foreground group-hover:text-accent transition-colors mb-1">
-                      {period.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {period.timeRange}
-                    </p>
+                  <div className="absolute bottom-4 right-4">
+                    <div className="w-9 h-9 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-accent/40 transition-colors">
+                      <ArrowUpRight className="w-4 h-4 text-primary-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </div>
                   </div>
-                  <div className="md:col-span-4">
-                    <p className="text-sm text-muted-foreground">
-                      {period.focus}
-                    </p>
-                  </div>
-                  <div className="md:col-span-2 flex items-center justify-end">
-                    <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-sm font-bold text-foreground group-hover:text-accent transition-colors mb-2 line-clamp-1">
+                    {period.title}
+                  </h3>
+                  <p className="text-xs text-accent font-medium mb-2">
+                    {period.timeRange}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                    {period.focus}
+                  </p>
                 </div>
               </div>
             ))}
