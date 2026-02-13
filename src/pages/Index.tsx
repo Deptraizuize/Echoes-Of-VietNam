@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowRight, ArrowUpRight, Mail, MapPin, Heart, Star, Zap, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import vietnamMap from "@/assets/vietnam-map.jpg";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
 import { timelineData } from "@/data/timelineData";
 
@@ -49,66 +50,66 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center overflow-hidden bg-foreground">
-        <div className="absolute inset-0 heritage-pattern opacity-10" />
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-foreground to-transparent" />
+        {/* Vietnam map background */}
+        <div className="absolute inset-0">
+          <img src={vietnamMap} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-30 md:opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/90 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground via-transparent to-foreground/60" />
+        </div>
+        <div className="absolute inset-0 heritage-pattern opacity-5" />
 
         <div className="container mx-auto px-6 md:px-12 relative z-10 pt-20">
-          <div className="grid md:grid-cols-12 gap-8 items-center">
-            {/* Text content */}
-            <div className="md:col-span-7 order-2 md:order-1">
-              <p className="text-primary-foreground/50 uppercase tracking-wider text-sm mb-6 fade-in-up">
-                Hành trình lịch sử
-              </p>
+          <div className="max-w-2xl">
+            <p className="text-primary-foreground/50 uppercase tracking-wider text-sm mb-6 fade-in-up">
+              Hành trình lịch sử
+            </p>
 
-              <h1 className="text-primary-foreground text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 fade-in-up delay-200">
+            <div className="flex items-center gap-5 mb-8 fade-in-up delay-100">
+              <img src={logo} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-contain" />
+              <h1 className="text-primary-foreground text-4xl md:text-6xl lg:text-7xl font-extrabold leading-none">
                 Echoes of
                 <br />
                 <span className="italic text-accent">Vietnam</span>
               </h1>
+            </div>
 
-              <div className="flex items-start gap-4 mb-10 fade-in-up delay-300">
-                <div className="w-10 h-[2px] bg-accent mt-3 flex-shrink-0" />
-                <p className="text-primary-foreground/60 text-lg max-w-md leading-relaxed">
-                  Khám phá hàng nghìn năm lịch sử hào hùng qua từng trang sử
-                  vàng son
-                </p>
-              </div>
+            <div className="flex items-start gap-4 mb-10 fade-in-up delay-300">
+              <div className="w-10 h-[2px] bg-accent mt-3 flex-shrink-0" />
+              <p className="text-primary-foreground/60 text-lg max-w-md leading-relaxed">
+                Khám phá hàng nghìn năm lịch sử hào hùng qua từng trang sử vàng son
+              </p>
+            </div>
 
+            <div className="flex flex-col sm:flex-row gap-4 mb-16 fade-in-up delay-400">
               <Button
                 size="lg"
                 onClick={() => navigate("/timeline")}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6 group fade-in-up delay-400"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6 group"
               >
                 Khám phá ngay
                 <ArrowRight className="w-4 h-4 ml-3 transition-transform group-hover:translate-x-1" />
               </Button>
-            </div>
-
-            {/* Logo */}
-            <div className="md:col-span-5 order-1 md:order-2 flex justify-center fade-in-up delay-100">
-              <div className="relative">
-                <div className="absolute inset-0 bg-accent/10 blur-[60px] rounded-2xl scale-125" />
-                <div className="relative w-48 h-48 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-2xl bg-gradient-to-br from-primary-foreground/10 via-transparent to-accent/10 border border-primary-foreground/10 flex items-center justify-center float-gentle overflow-hidden">
-                  <img
-                    src={logo}
-                    alt="Echoes of Vietnam"
-                    className="w-[85%] h-[85%] object-contain"
-                  />
-                </div>
-              </div>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/auth")}
+                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6"
+              >
+                Đăng ký miễn phí
+              </Button>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="mt-16 pt-8 border-t border-primary-foreground/10 fade-in-up delay-500">
-            <div className="grid grid-cols-3 gap-8">
+          <div className="pt-8 border-t border-primary-foreground/10 fade-in-up delay-500">
+            <div className="grid grid-cols-3 gap-8 max-w-lg">
               {[
                 { value: "5", label: "Thời kỳ" },
-                { value: "40+", label: "Cột mốc" },
-                { value: "4000", label: "Năm lịch sử" },
+                { value: "41", label: "Cột mốc" },
+                { value: "4000+", label: "Năm lịch sử" },
               ].map((stat, index) => (
                 <div key={index}>
-                  <div className="text-3xl md:text-4xl font-bold text-primary-foreground mb-1">
+                  <div className="text-3xl md:text-4xl font-bold text-accent mb-1">
                     {stat.value}
                   </div>
                   <div className="text-sm text-primary-foreground/40">
