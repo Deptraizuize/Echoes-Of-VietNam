@@ -2,14 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, ArrowUpRight, Mail, MapPin, Heart, Star, Zap, Crown } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Mail, MapPin, Heart, Star, Zap, Crown, LogOut, User } from "lucide-react";
 import logo from "@/assets/logo.png";
 import vietnamMap from "@/assets/vietnam-map.jpg";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
 import { timelineData } from "@/data/timelineData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -36,14 +38,36 @@ const Index = () => {
               ))}
             </nav>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/auth")}
-              className="text-primary-foreground border border-primary-foreground/20 hover:bg-primary-foreground hover:text-foreground text-sm"
-            >
-              Đăng nhập
-            </Button>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/profile")}
+                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-sm gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:inline">{user.user_metadata?.full_name || user.email?.split("@")[0] || "Profile"}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => { await signOut(); }}
+                  className="text-primary-foreground/50 hover:text-primary-foreground hover:bg-primary-foreground/10 w-8 h-8"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="text-primary-foreground border border-primary-foreground/20 hover:bg-primary-foreground hover:text-foreground text-sm"
+              >
+                Đăng nhập
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -89,13 +113,24 @@ const Index = () => {
                 Khám phá ngay
                 <ArrowRight className="w-4 h-4 ml-3 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate("/auth")}
-                className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6 min-w-[160px]"
-              >
-                ✦ Đăng ký miễn phí
-              </Button>
+              {!user && (
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6 min-w-[160px]"
+                >
+                  ✦ Đăng ký miễn phí
+                </Button>
+              )}
+              {user && (
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/profile")}
+                  className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-6 min-w-[160px]"
+                >
+                  Xem hồ sơ của tôi
+                </Button>
+              )}
             </div>
           </div>
 
@@ -402,26 +437,47 @@ const Index = () => {
       <section className="py-24 px-6 md:px-12 bg-foreground text-primary-foreground">
         <div className="container mx-auto text-center max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-6 fade-in-up">
-            Bắt đầu hành trình
+            {user ? "Tiếp tục hành trình" : "Bắt đầu hành trình"}
           </h2>
           <p className="text-primary-foreground/50 mb-10 fade-in-up delay-200">
-            Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử.
+            {user ? "Khám phá thêm nhiều cột mốc lịch sử và thử sức với các bài quiz." : "Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center fade-in-up delay-300">
-            <Button
-              size="lg"
-              onClick={() => navigate("/auth")}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6"
-            >
-              Đăng ký miễn phí
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => navigate("/timeline")}
-              className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-6"
-            >
-              Xem Timeline
-            </Button>
+            {user ? (
+              <>
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/timeline")}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6"
+                >
+                  Khám phá Timeline
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/profile")}
+                  className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-6"
+                >
+                  Xem hồ sơ
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6"
+                >
+                  Đăng ký miễn phí
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/timeline")}
+                  className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-6"
+                >
+                  Xem Timeline
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </section>
