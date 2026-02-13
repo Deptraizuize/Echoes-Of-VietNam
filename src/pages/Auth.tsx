@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { GoogleButton } from "@/components/auth/GoogleButton";
@@ -6,6 +6,9 @@ import { Divider } from "@/components/auth/Divider";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
@@ -13,31 +16,78 @@ const Auth = () => {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/timeline");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (data: { email: string; password: string; name?: string }) => {
     setIsLoading(true);
-    
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    toast({
-      title: mode === "login" ? "Đăng nhập thành công!" : "Đăng ký thành công!",
-      description: `Chào mừng bạn đến với Echoes of Vietnam${data.name ? `, ${data.name}` : ""}!`,
-    });
-    
-    setIsLoading(false);
+
+    try {
+      if (mode === "register") {
+        const { error } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              full_name: data.name || "",
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Đăng ký thành công!",
+          description: "Vui lòng kiểm tra email để xác nhận tài khoản.",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Đăng nhập thành công!",
+          description: "Chào mừng bạn trở lại Echoes of Vietnam!",
+        });
+        navigate("/timeline");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Lỗi",
+        description: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "Đăng nhập Google thành công!",
-      description: "Chào mừng bạn đến với Echoes of Vietnam!",
-    });
-    
-    setIsLoading(false);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Lỗi đăng nhập Google",
+        description: error.message || "Không thể kết nối với Google.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   const isLogin = mode === "login";
