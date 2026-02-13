@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, ArrowUpRight, Mail, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Mail, MapPin, Heart, Star, Zap, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
 import { timelineData } from "@/data/timelineData";
@@ -324,15 +324,84 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Premium Section - "Người Yêu Sử" */}
+      <section className="py-24 px-6 md:px-12 bg-gradient-to-b from-background to-muted/30">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-12 gap-12 items-center">
+            <div className="md:col-span-5 fade-in-up">
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
+                <Crown className="w-3 h-3 mr-1" />
+                Premium
+              </Badge>
+              <h2 className="text-foreground text-3xl md:text-4xl font-bold mb-4">
+                Người Yêu Sử
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-8">
+                Nâng cấp trải nghiệm học lịch sử với những đặc quyền dành riêng cho người yêu thích khám phá văn hóa Việt Nam.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => navigate("/auth")}
+                className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-6 group"
+              >
+                Nâng cấp ngay
+                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </div>
+
+            <div className="md:col-span-6 md:col-start-7 fade-in-up delay-200">
+              <div className="grid sm:grid-cols-2 gap-4">
+                {[
+                  {
+                    icon: <Heart className="w-5 h-5 text-destructive" />,
+                    title: "10 Tim mỗi ngày",
+                    desc: "Gấp đôi số tim, thêm cơ hội làm quiz mỗi ngày",
+                  },
+                  {
+                    icon: <Zap className="w-5 h-5 text-accent" />,
+                    title: "Nhân đôi điểm",
+                    desc: "Tự động x2 điểm khi đạt 6/10 trở lên (2 lần/ngày)",
+                  },
+                  {
+                    icon: <Star className="w-5 h-5 text-accent" />,
+                    title: "Huy hiệu đặc biệt",
+                    desc: "Nhận huy hiệu vàng và khung avatar Premium",
+                  },
+                  {
+                    icon: <Crown className="w-5 h-5 text-accent" />,
+                    title: "Truy cập sớm",
+                    desc: "Xem trước nội dung mới và tính năng độc quyền",
+                  },
+                ].map((perk, i) => (
+                  <div
+                    key={i}
+                    className="p-5 bg-card border border-border rounded-lg hover:border-accent/30 transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center mb-3">
+                      {perk.icon}
+                    </div>
+                    <h4 className="font-semibold text-foreground text-sm mb-1">
+                      {perk.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {perk.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 px-6 md:px-12 bg-foreground text-primary-foreground">
         <div className="container mx-auto text-center max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 fade-in-up">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-6 fade-in-up">
             Bắt đầu hành trình
           </h2>
           <p className="text-primary-foreground/50 mb-10 fade-in-up delay-200">
-            Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch
-            sử.
+            Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center fade-in-up delay-300">
             <Button
@@ -343,10 +412,9 @@ const Index = () => {
               Đăng ký miễn phí
             </Button>
             <Button
-              variant="outline"
               size="lg"
               onClick={() => navigate("/timeline")}
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground hover:text-foreground text-sm py-6"
+              className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-6"
             >
               Xem Timeline
             </Button>
