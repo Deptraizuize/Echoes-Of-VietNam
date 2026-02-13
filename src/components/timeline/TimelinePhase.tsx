@@ -8,27 +8,22 @@ interface TimelinePhaseProps {
 
 const TimelinePhase = ({ phase, phaseIndex }: TimelinePhaseProps) => {
   return (
-    <div className="relative pl-8 pb-8 last:pb-0">
-      {/* Timeline connector */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-border" />
-      
-      {/* Phase dot */}
-      <div className="absolute left-0 top-2 w-2 h-2 -translate-x-1/2 rounded-full bg-accent" />
-      
-      {/* Phase content */}
-      <div>
-        <h3 className="text-base font-semibold text-foreground mb-4">
-          Giai đoạn {phaseIndex + 1}: {phase.name}
-        </h3>
-        
-        <div className="grid gap-3">
-          {phase.milestones.map((milestone) => (
-            <MilestoneCard
-              key={milestone.id}
-              milestone={milestone}
-            />
-          ))}
+    <div className="relative">
+      {/* Phase header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-xs font-bold flex-shrink-0">
+          {phaseIndex + 1}
         </div>
+        <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+          {phase.name}
+        </h4>
+      </div>
+
+      {/* Milestones grid */}
+      <div className="ml-3.5 border-l-2 border-border pl-6 space-y-0">
+        {phase.milestones.map((milestone) => (
+          <MilestoneCard key={milestone.id} milestone={milestone} />
+        ))}
       </div>
     </div>
   );
