@@ -24,12 +24,14 @@ const Auth = () => {
     if (user) navigate("/timeline");
   }, [user, navigate]);
 
-  const handleSubmit = async (data: { email: string; password: string; name?: string; username?: string }) => {
+  const handleSubmit = async (data: { email: string; password: string; username?: string }) => {
     setIsLoading(true);
     try {
       if (mode === "register") {
-        // Validate username
         const username = data.username?.trim().toLowerCase();
+        const email = data.email.trim().toLowerCase();
+
+        // Validate username format
         if (!username || username.length < 3 || username.length > 30) {
           toast({ title: "Tên đăng nhập không hợp lệ", description: "Cần từ 3–30 ký tự.", variant: "destructive" });
           setIsLoading(false);
@@ -41,25 +43,85 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
-          email: data.email,
+        // Validate email format
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          toast({ title: "Email không hợp lệ", description: "Vui lòng nhập đúng định dạng email.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        // Validate password
+        if (data.password.length < 6) {
+          toast({ title: "Mật khẩu quá ngắn", description: "Mật khẩu cần tối thiểu 6 ký tự.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        // Check if username already exists
+        const { data: usernameExists, error: checkError } = await supabase.rpc("check_username_exists", { p_username: username });
+        if (checkError) {
+          toast({ title: "Lỗi kiểm tra", description: "Không thể kiểm tra tên đăng nhập. Vui lòng thử lại.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+        if (usernameExists) {
+          toast({ title: "Tên đăng nhập đã tồn tại", description: "Vui lòng chọn tên đăng nhập khác.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        // Sign up - Supabase Auth handles email uniqueness automatically
+        const { data: signUpData, error } = await supabase.auth.signUp({
+          email,
           password: data.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: data.name || "", username },
+            data: { username },
           },
         });
-        if (error) throw error;
-        toast({ title: "Đăng ký thành công!", description: "Vui lòng kiểm tra email để xác nhận tài khoản." });
+
+        if (error) {
+          if (error.message.includes("already registered") || error.message.includes("already been registered")) {
+            toast({ title: "Email đã được đăng ký", description: "Email này đã có tài khoản. Vui lòng đăng nhập hoặc dùng email khác.", variant: "destructive" });
+          } else {
+            toast({ title: "Lỗi đăng ký", description: error.message, variant: "destructive" });
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        // Check for fake signups (user_repeated_signup returns user but no session)
+        if (signUpData?.user && !signUpData?.session && signUpData.user.identities?.length === 0) {
+          toast({ title: "Email đã được đăng ký", description: "Email này đã có tài khoản. Vui lòng đăng nhập hoặc dùng email khác.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        toast({
+          title: "🎉 Đăng ký thành công!",
+          description: "Vui lòng kiểm tra email để xác nhận tài khoản trước khi đăng nhập.",
+        });
       } else {
-        // Login: check if input is username (no @) or email
+        // Login flow
         let email = data.email.trim();
 
+        if (!email) {
+          toast({ title: "Vui lòng nhập email hoặc tên đăng nhập", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        if (!data.password) {
+          toast({ title: "Vui lòng nhập mật khẩu", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        // If no @, treat as username lookup
         if (!email.includes("@")) {
-          // Look up email by username
           const { data: result, error: lookupError } = await supabase.rpc("get_email_by_username", { p_username: email });
           if (lookupError || !result) {
-            toast({ title: "Không tìm thấy tài khoản", description: "Tên đăng nhập không tồn tại.", variant: "destructive" });
+            toast({ title: "Không tìm thấy tài khoản", description: "Tên đăng nhập không tồn tại. Vui lòng kiểm tra lại.", variant: "destructive" });
             setIsLoading(false);
             return;
           }
@@ -70,12 +132,24 @@ const Auth = () => {
           email,
           password: data.password,
         });
-        if (error) throw error;
-        toast({ title: "Đăng nhập thành công!", description: "Chào mừng bạn trở lại Echoes of Vietnam!" });
+
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast({ title: "Sai thông tin đăng nhập", description: "Email/tên đăng nhập hoặc mật khẩu không đúng.", variant: "destructive" });
+          } else if (error.message.includes("Email not confirmed")) {
+            toast({ title: "Email chưa xác nhận", description: "Vui lòng kiểm tra hộp thư và xác nhận email trước khi đăng nhập.", variant: "destructive" });
+          } else {
+            toast({ title: "Lỗi đăng nhập", description: error.message, variant: "destructive" });
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        toast({ title: "Đăng nhập thành công! 👋", description: "Chào mừng bạn trở lại Echoes of Vietnam!" });
         navigate("/timeline");
       }
     } catch (error: any) {
-      toast({ title: "Lỗi", description: error.message || "Đã có lỗi xảy ra.", variant: "destructive" });
+      toast({ title: "Lỗi", description: error.message || "Đã có lỗi xảy ra. Vui lòng thử lại.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +161,7 @@ const Auth = () => {
       const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
       if (error) throw error;
     } catch (error: any) {
-      toast({ title: "Lỗi đăng nhập Google", description: error.message || "Không thể kết nối với Google.", variant: "destructive" });
+      toast({ title: "Lỗi đăng nhập Google", description: error.message || "Không thể kết nối với Google. Vui lòng thử lại.", variant: "destructive" });
       setIsLoading(false);
     }
   };
@@ -134,7 +208,9 @@ const Auth = () => {
               {isLogin ? "Đăng nhập" : "Tạo tài khoản"}
             </h2>
             <p className="text-sm text-muted-foreground mt-1 text-center">
-              {isLogin ? "Chào mừng trở lại! Đăng nhập để tiếp tục." : "Tạo tài khoản để khám phá lịch sử Việt Nam."}
+              {isLogin
+                ? "Đăng nhập bằng email hoặc tên đăng nhập."
+                : "Tạo tài khoản để khám phá lịch sử Việt Nam."}
             </p>
           </div>
 
