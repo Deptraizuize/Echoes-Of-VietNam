@@ -12,6 +12,7 @@ const UserHeader = () => {
   const [hearts, setHearts] = useState<number | null>(null);
   const [points, setPoints] = useState<number>(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -24,10 +25,13 @@ const UserHeader = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("total_points")
+        .select("total_points, is_premium")
         .eq("user_id", user.id)
         .single();
-      if (profile) setPoints(profile.total_points);
+      if (profile) {
+        setPoints(profile.total_points);
+        setIsPremium(profile.is_premium);
+      }
 
       const { data: roles } = await supabase
         .from("user_roles")
@@ -89,9 +93,11 @@ const UserHeader = () => {
                     <Button variant="ghost" size="sm" onClick={() => navigate("/rewards")} className="text-sm hidden sm:inline-flex">
                       <Gift className="w-4 h-4 mr-1" /> Đổi thưởng
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => navigate("/upgrade")} className="text-sm hidden sm:inline-flex text-accent">
-                      <Crown className="w-4 h-4 mr-1" /> Nâng cấp
-                    </Button>
+                    {!isPremium && (
+                      <Button variant="ghost" size="sm" onClick={() => navigate("/upgrade")} className="text-sm hidden sm:inline-flex text-accent">
+                        <Crown className="w-4 h-4 mr-1" /> Nâng cấp
+                      </Button>
+                    )}
                   </>
                 )}
 
