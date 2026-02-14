@@ -10,13 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import {
-  User, Camera, Save, Lock, Eye, EyeOff, Link2, ArrowLeft, CheckCircle2, AtSign,
+  User, Camera, Save, Lock, Eye, EyeOff, Link2, ArrowLeft, CheckCircle2, AtSign, Trash2, AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, refreshProfile } = useAuth();
+  const { user, loading: authLoading, refreshProfile, signOut } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [displayName, setDisplayName] = useState("");
@@ -441,9 +444,89 @@ const Settings = () => {
             <h2 className="text-base font-semibold mb-3">Email đăng nhập</h2>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
           </motion.section>
+
+          {/* Delete Account */}
+          <DeleteAccountSection user={user} signOut={signOut} navigate={navigate} />
         </div>
       </div>
     </div>
+  );
+};
+
+const DeleteAccountSection = ({ user, signOut, navigate }: { user: any; signOut: () => Promise<void>; navigate: (path: string) => void }) => {
+  const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+
+  const handleDelete = async () => {
+    if (confirmText !== "XÓA TÀI KHOẢN") return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ target_user_id: user.id }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Lỗi xóa tài khoản");
+      await signOut();
+      navigate("/");
+    } catch (err: any) {
+      toast({ title: "Lỗi", description: err.message, variant: "destructive" });
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="p-6 rounded-xl border border-destructive/30 bg-destructive/5"
+    >
+      <h2 className="text-base font-semibold mb-2 flex items-center gap-2 text-destructive">
+        <AlertTriangle className="w-4 h-4" /> Vùng nguy hiểm
+      </h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Xóa tài khoản sẽ xóa vĩnh viễn toàn bộ dữ liệu: hồ sơ, tiến trình, điểm thưởng và huy hiệu. Hành động này không thể hoàn tác.
+      </p>
+      <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
+        <Trash2 className="w-4 h-4 mr-1" /> Xóa tài khoản
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" /> Xác nhận xóa tài khoản
+            </DialogTitle>
+            <DialogDescription>
+              Toàn bộ dữ liệu sẽ bị xóa vĩnh viễn. Nhập <strong className="text-foreground">XÓA TÀI KHOẢN</strong> để xác nhận.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="Nhập XÓA TÀI KHOẢN"
+            className="mt-2"
+          />
+          <DialogFooter className="mt-4">
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={deleting}>Hủy</Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={confirmText !== "XÓA TÀI KHOẢN" || deleting}
+            >
+              {deleting ? "Đang xóa..." : "Xóa vĩnh viễn"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.section>
   );
 };
 
