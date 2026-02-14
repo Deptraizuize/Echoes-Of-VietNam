@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Award, Star, Heart, Trophy, Clock, CheckCircle2, XCircle,
-  ArrowRight, User, Crown, Sparkles, Shield,
+  ArrowRight, User, Crown, Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -52,7 +52,6 @@ const Profile = () => {
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [progress, setProgress] = useState<ProgressData[]>([]);
   const [hearts, setHearts] = useState<number>(0);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,20 +59,25 @@ const Profile = () => {
     if (!user) { navigate("/auth"); return; }
 
     const fetchAll = async () => {
-      const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes, rolesRes] = await Promise.all([
+      // Check admin role first for early redirect
+      const rolesRes = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (rolesRes.data?.some((r) => r.role === "admin")) {
+        navigate("/admin", { replace: true });
+        return;
+      }
+
+      const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes] = await Promise.all([
         supabase.from("profiles").select("display_name, total_points, is_premium, created_at").eq("user_id", user.id).single(),
         supabase.from("badges").select("*").order("earned_at", { ascending: false }),
         supabase.from("quiz_attempts").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("user_progress").select("*"),
         supabase.rpc("get_hearts"),
-        supabase.from("user_roles").select("role").eq("user_id", user.id),
       ]);
       if (profileRes.data) setProfile(profileRes.data);
       if (badgesRes.data) setBadges(badgesRes.data);
       if (attemptsRes.data) setAttempts(attemptsRes.data);
       if (progressRes.data) setProgress(progressRes.data);
       if (heartsRes.data && heartsRes.data.length > 0) setHearts(heartsRes.data[0].hearts_remaining);
-      if (rolesRes.data?.some((r) => r.role === "admin")) setIsAdmin(true);
       setLoading(false);
     };
     fetchAll();
@@ -136,15 +140,6 @@ const Profile = () => {
               <p className="text-primary-foreground/40 text-sm">
                 Thành viên từ {profile ? formatDate(profile.created_at) : ""}
               </p>
-              {isAdmin && (
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="mt-3 bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 text-xs gap-1.5"
-                >
-                  <Shield className="w-3.5 h-3.5" /> Chuyển sang Quản trị
-                </Button>
-              )}
             </div>
           </motion.div>
         </div>
