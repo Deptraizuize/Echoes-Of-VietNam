@@ -34,6 +34,9 @@ const QuizReview = ({ questions }: { questions: ReviewQuestion[] }) => {
           transition={{ delay: i * 0.08 }}
           className="bg-card border border-border rounded-xl p-4"
         >
+          {q.image_url && (
+            <img src={q.image_url} alt="Question" className="w-full h-36 object-cover rounded-lg mb-3" />
+          )}
           <p className="text-sm font-medium text-foreground mb-3">{q.question}</p>
           <div className="space-y-2">
             {q.options.map((opt, oi) => {
