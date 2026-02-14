@@ -25,6 +25,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
 
   // Password
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -113,22 +114,46 @@ const Settings = () => {
   };
 
   const handleChangePassword = async () => {
+    if (!currentPassword) {
+      toast({ title: "Vui lòng nhập mật khẩu hiện tại", variant: "destructive" });
+      return;
+    }
     if (newPassword.length < 6) {
-      toast({ title: "Mật khẩu quá ngắn", description: "Tối thiểu 6 ký tự", variant: "destructive" });
+      toast({ title: "Mật khẩu mới quá ngắn", description: "Tối thiểu 6 ký tự", variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: "Mật khẩu không khớp", variant: "destructive" });
+      toast({ title: "Mật khẩu mới không khớp", variant: "destructive" });
+      return;
+    }
+    if (currentPassword === newPassword) {
+      toast({ title: "Mật khẩu mới phải khác mật khẩu cũ", variant: "destructive" });
       return;
     }
     setChangingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) {
-      toast({ title: "Lỗi đổi mật khẩu", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Đã đổi mật khẩu thành công!" });
-      setNewPassword("");
-      setConfirmPassword("");
+    try {
+      // Verify current password by re-signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user!.email!,
+        password: currentPassword,
+      });
+      if (signInError) {
+        toast({ title: "Mật khẩu hiện tại không đúng", description: "Vui lòng kiểm tra lại.", variant: "destructive" });
+        setChangingPassword(false);
+        return;
+      }
+      // Update to new password
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast({ title: "Lỗi đổi mật khẩu", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Đã đổi mật khẩu thành công!" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err: any) {
+      toast({ title: "Lỗi", description: err.message, variant: "destructive" });
     }
     setChangingPassword(false);
   };
@@ -251,6 +276,26 @@ const Settings = () => {
               </h2>
               <div className="space-y-3">
                 <div>
+                  <Label htmlFor="current-pass" className="text-sm text-muted-foreground">Mật khẩu hiện tại</Label>
+                  <div className="relative mt-1">
+                    <Input
+                      id="current-pass"
+                      type={showPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Nhập mật khẩu hiện tại"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
                   <Label htmlFor="new-pass" className="text-sm text-muted-foreground">Mật khẩu mới</Label>
                   <div className="relative mt-1">
                     <Input
@@ -284,7 +329,7 @@ const Settings = () => {
                 </div>
                 <Button
                   onClick={handleChangePassword}
-                  disabled={changingPassword || !newPassword}
+                  disabled={changingPassword || !currentPassword || !newPassword}
                   variant="outline"
                   className="mt-1"
                 >
