@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Plus, Image } from "lucide-react";
+import { Edit, Plus, Image, Search } from "lucide-react";
 import MarkdownEditor from "./MarkdownEditor";
 
 interface MilestoneRow {
@@ -43,6 +43,8 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editing, setEditing] = useState<MilestoneDetailRow | null>(null);
+  const [filterMilestone, setFilterMilestone] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     milestone_id: "",
     title: "",
@@ -54,6 +56,14 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     landmark_names: "",
     image_urls: "",
   });
+
+  const filteredDetails = useMemo(() => {
+    return details.filter((d) => {
+      if (filterMilestone && d.milestone_id !== filterMilestone) return false;
+      if (searchQuery && !d.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    });
+  }, [details, filterMilestone, searchQuery]);
 
   const openEdit = (d: MilestoneDetailRow) => {
     setEditing(d);
@@ -74,7 +84,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const openNew = () => {
     setEditing(null);
     setForm({
-      milestone_id: milestones[0]?.id || "",
+      milestone_id: filterMilestone || milestones[0]?.id || "",
       title: "",
       summary: "",
       events: "",
@@ -122,34 +132,73 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-serif text-xl">Nội dung chi tiết ({details.length})</h3>
-        <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
-          <Plus className="w-4 h-4 mr-2" /> Thêm nội dung
-        </Button>
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-serif text-xl">Nội dung chi tiết ({details.length})</h3>
+          <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
+            <Plus className="w-4 h-4 mr-2" /> Thêm
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm tiêu đề..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+          <select
+            value={filterMilestone}
+            onChange={(e) => setFilterMilestone(e.target.value)}
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[150px]"
+          >
+            <option value="">Tất cả cột mốc</option>
+            {milestones.map((m) => (
+              <option key={m.id} value={m.id}>{m.title}</option>
+            ))}
+          </select>
+        </div>
+
+        {filteredDetails.length !== details.length && (
+          <p className="text-xs text-muted-foreground">
+            Hiển thị {filteredDetails.length}/{details.length} bài viết
+          </p>
+        )}
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Cột mốc</TableHead>
-              <TableHead>Tiêu đề</TableHead>
-              <TableHead className="w-20">Nhân vật</TableHead>
-              <TableHead className="w-20">Di tích</TableHead>
-              <TableHead className="w-20">Hình</TableHead>
-              <TableHead className="w-16"></TableHead>
+              <TableHead className="min-w-[120px] w-[120px]">Cột mốc</TableHead>
+              <TableHead className="min-w-[200px]">Tiêu đề</TableHead>
+              <TableHead className="w-16 text-center">NV</TableHead>
+              <TableHead className="w-16 text-center">DT</TableHead>
+              <TableHead className="w-16 text-center">Ảnh</TableHead>
+              <TableHead className="w-14"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {details.map((d) => (
+            {filteredDetails.map((d) => (
               <TableRow key={d.id}>
-                <TableCell className="text-sm">{getMilestoneTitle(d.milestone_id)}</TableCell>
-                <TableCell className="max-w-xs truncate">{d.title}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{d.hero_names?.length || 0}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{d.landmark_names?.length || 0}</TableCell>
                 <TableCell>
-                  {d.image_urls && d.image_urls.length > 0 && <Image className="w-4 h-4 text-accent" />}
+                  <span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(d.milestone_id)}</span>
+                </TableCell>
+                <TableCell>
+                  <span className="line-clamp-2 text-sm leading-snug">{d.title}</span>
+                </TableCell>
+                <TableCell className="text-center text-xs text-muted-foreground">{d.hero_names?.length || 0}</TableCell>
+                <TableCell className="text-center text-xs text-muted-foreground">{d.landmark_names?.length || 0}</TableCell>
+                <TableCell className="text-center">
+                  {d.image_urls && d.image_urls.length > 0 ? (
+                    <span className="text-xs text-accent font-medium">{d.image_urls.length}</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Button variant="ghost" size="icon" onClick={() => openEdit(d)} className="h-8 w-8">
@@ -158,10 +207,10 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                 </TableCell>
               </TableRow>
             ))}
-            {details.length === 0 && (
+            {filteredDetails.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  Chưa có nội dung chi tiết nào
+                  {details.length === 0 ? "Chưa có nội dung chi tiết nào" : "Không tìm thấy bài viết phù hợp"}
                 </TableCell>
               </TableRow>
             )}
