@@ -71,6 +71,17 @@ const UserHeader = () => {
               Timeline
             </Button>
 
+            {user && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/feedback")}
+                className="text-sm hidden sm:inline-flex"
+              >
+                Góp ý
+              </Button>
+            )}
+
             {user ? (
               <>
                 {/* Hearts */}

@@ -33,8 +33,12 @@ import {
   ArrowLeft,
   Trash2,
   Edit,
+  Crown,
+  MessageSquare,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import PremiumRequestsTab from "@/components/admin/PremiumRequestsTab";
+import FeedbackTab from "@/components/admin/FeedbackTab";
 
 interface MilestoneRow {
   id: string;
@@ -68,7 +72,9 @@ const Admin = () => {
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
-  const [stats, setStats] = useState({ users: 0, milestones: 0, questions: 0, attempts: 0 });
+  const [premiumRequests, setPremiumRequests] = useState<any[]>([]);
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [stats, setStats] = useState({ users: 0, milestones: 0, questions: 0, attempts: 0, pendingUpgrades: 0, newFeedback: 0 });
 
   // Dialog state
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
@@ -108,21 +114,27 @@ const Admin = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [m, q, p] = await Promise.all([
+    const [m, q, p, pr, fb] = await Promise.all([
       supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, total_points, created_at").order("created_at", { ascending: false }),
+      supabase.from("premium_requests").select("*").order("created_at", { ascending: false }),
+      supabase.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
 
     if (m.data) setMilestones(m.data);
     if (q.data) setQuestions(q.data.map((qq) => ({ ...qq, options: qq.options as unknown as string[] })));
     if (p.data) setProfiles(p.data);
+    if (pr.data) setPremiumRequests(pr.data);
+    if (fb.data) setFeedbackList(fb.data);
 
     setStats({
       users: p.data?.length ?? 0,
       milestones: m.data?.length ?? 0,
       questions: q.data?.length ?? 0,
       attempts: 0,
+      pendingUpgrades: pr.data?.filter((r: any) => r.status === "pending").length ?? 0,
+      newFeedback: fb.data?.filter((f: any) => f.status === "new").length ?? 0,
     });
   };
 
@@ -217,12 +229,14 @@ const Admin = () => {
 
       <main className="container mx-auto px-6 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {[
-            { icon: Users, label: "Người dùng", value: stats.users, color: "text-blue-500" },
+            { icon: Users, label: "Người dùng", value: stats.users, color: "text-accent" },
             { icon: BookOpen, label: "Cột mốc", value: stats.milestones, color: "text-accent" },
-            { icon: HelpCircle, label: "Câu hỏi", value: stats.questions, color: "text-green-500" },
-            { icon: BarChart3, label: "Lượt quiz", value: stats.attempts, color: "text-purple-500" },
+            { icon: HelpCircle, label: "Câu hỏi", value: stats.questions, color: "text-accent" },
+            { icon: BarChart3, label: "Lượt quiz", value: stats.attempts, color: "text-accent" },
+            { icon: Crown, label: "Chờ duyệt", value: stats.pendingUpgrades, color: "text-accent" },
+            { icon: MessageSquare, label: "Góp ý mới", value: stats.newFeedback, color: "text-accent" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-lg p-6">
               <s.icon className={`w-6 h-6 ${s.color} mb-2`} />
@@ -232,8 +246,14 @@ const Admin = () => {
           ))}
         </div>
 
-        <Tabs defaultValue="questions">
-          <TabsList className="mb-6">
+        <Tabs defaultValue="premium">
+          <TabsList className="mb-6 flex-wrap">
+            <TabsTrigger value="premium">
+              <Crown className="w-4 h-4 mr-2" /> Nâng cấp {stats.pendingUpgrades > 0 && `(${stats.pendingUpgrades})`}
+            </TabsTrigger>
+            <TabsTrigger value="feedback">
+              <MessageSquare className="w-4 h-4 mr-2" /> Góp ý {stats.newFeedback > 0 && `(${stats.newFeedback})`}
+            </TabsTrigger>
             <TabsTrigger value="questions">
               <HelpCircle className="w-4 h-4 mr-2" /> Câu hỏi
             </TabsTrigger>
@@ -244,6 +264,16 @@ const Admin = () => {
               <Users className="w-4 h-4 mr-2" /> Người dùng
             </TabsTrigger>
           </TabsList>
+
+          {/* Premium Requests Tab */}
+          <TabsContent value="premium">
+            <PremiumRequestsTab requests={premiumRequests} onRefresh={fetchAll} />
+          </TabsContent>
+
+          {/* Feedback Tab */}
+          <TabsContent value="feedback">
+            <FeedbackTab feedback={feedbackList} onRefresh={fetchAll} />
+          </TabsContent>
 
           {/* Questions Tab */}
           <TabsContent value="questions">

@@ -202,10 +202,10 @@ const Index = () => {
               </p>
               <Button
                 size="lg"
-                onClick={() => navigate(user ? "/profile" : "/auth")}
+                onClick={() => navigate(user ? "/upgrade" : "/auth")}
                 className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6 group w-full sm:w-auto"
               >
-                {user ? "Xem đặc quyền" : "Nâng cấp ngay"}
+                {user ? "Nâng cấp ngay" : "Đăng ký & Nâng cấp"}
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Button>
             </AnimatedSection>
