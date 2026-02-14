@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  BookOpen, HelpCircle, Users, BarChart3, ArrowLeft, Crown, MessageSquare,
+  BookOpen, HelpCircle, Users, BarChart3, ArrowLeft, Crown, MessageSquare, Shield,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import PremiumRequestsTab from "@/components/admin/PremiumRequestsTab";
@@ -40,6 +40,7 @@ const Admin = () => {
   const [redemptionsList, setRedemptionsList] = useState<any[]>([]);
   const [milestoneDetails, setMilestoneDetails] = useState<any[]>([]);
   const [paymentSettings, setPaymentSettings] = useState<any[]>([]);
+  const [adminUserIds, setAdminUserIds] = useState<string[]>([]);
   const [stats, setStats] = useState({ users: 0, milestones: 0, questions: 0, attempts: 0, pendingUpgrades: 0, newFeedback: 0 });
 
   useEffect(() => {
@@ -56,7 +57,7 @@ const Admin = () => {
   useEffect(() => { if (isAdmin) fetchAll(); }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [m, q, p, pr, fb, bn, rw, rd, md, ps] = await Promise.all([
+    const [m, q, p, pr, fb, bn, rw, rd, md, ps, roles] = await Promise.all([
       supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer, image_url").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, total_points, created_at").order("created_at", { ascending: false }),
@@ -67,6 +68,7 @@ const Admin = () => {
       supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
       supabase.from("milestone_details").select("*").order("created_at"),
       supabase.from("payment_settings").select("*").order("created_at"),
+      supabase.from("user_roles").select("user_id, role").eq("role", "admin"),
     ]);
     if (m.data) setMilestones(m.data);
     if (q.data) setQuestions(q.data.map((qq) => ({ ...qq, options: qq.options as unknown as string[], image_url: qq.image_url })));
@@ -78,6 +80,7 @@ const Admin = () => {
     if (rd.data) setRedemptionsList(rd.data);
     if (md.data) setMilestoneDetails(md.data);
     if (ps.data) setPaymentSettings(ps.data);
+    setAdminUserIds(roles.data?.map((r: any) => r.user_id) ?? []);
     setStats({
       users: p.data?.length ?? 0, milestones: m.data?.length ?? 0, questions: q.data?.length ?? 0,
       attempts: 0, pendingUpgrades: pr.data?.filter((r: any) => r.status === "pending").length ?? 0,
@@ -102,7 +105,7 @@ const Admin = () => {
       case "milestones": return <MilestonesSection milestones={milestones} />;
       case "banners": return <BannersTab banners={banners} onRefresh={fetchAll} />;
       case "rewards": return <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />;
-      case "users": return <UsersSection profiles={profiles} />;
+      case "users": return <UsersSection profiles={profiles} adminUserIds={adminUserIds} onRefresh={fetchAll} />;
       case "payment": return <PaymentSettingsTab settings={paymentSettings} onRefresh={fetchAll} />;
       default: return null;
     }
@@ -165,30 +168,88 @@ const MilestonesSection = ({ milestones }: { milestones: MilestoneRow[] }) => (
 
 interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
 
-const UsersSection = ({ profiles }: { profiles: ProfileRow[] }) => (
-  <div>
-    <h3 className="font-serif text-xl mb-4">Người dùng ({profiles.length})</h3>
-    <div className="border border-border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader><TableRow>
-          <TableHead>Tên</TableHead><TableHead>Premium</TableHead><TableHead>Điểm</TableHead><TableHead>Ngày tham gia</TableHead>
-        </TableRow></TableHeader>
-        <TableBody>
-          {profiles.map((p) => (
-            <TableRow key={p.id}>
-              <TableCell>{p.display_name || "—"}</TableCell>
-              <TableCell>
-                {p.is_premium ? <span className="text-accent font-medium">Premium ⭐</span> : <span className="text-muted-foreground">Free</span>}
-              </TableCell>
-              <TableCell>{p.total_points}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("vi-VN")}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+const UsersSection = ({ profiles, adminUserIds, onRefresh }: { profiles: ProfileRow[]; adminUserIds: string[]; onRefresh: () => void }) => {
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleDelete = async (userId: string) => {
+    setDeleting(userId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ target_user_id: userId }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Lỗi xóa tài khoản");
+      toast({ title: "Đã xóa tài khoản thành công" });
+      setConfirmId(null);
+      onRefresh();
+    } catch (err: any) {
+      toast({ title: "Lỗi", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="font-serif text-xl mb-4">Người dùng ({profiles.length})</h3>
+      <div className="border border-border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader><TableRow>
+            <TableHead>Tên</TableHead><TableHead>Vai trò</TableHead><TableHead>Premium</TableHead><TableHead>Điểm</TableHead><TableHead>Ngày tham gia</TableHead><TableHead className="text-right">Hành động</TableHead>
+          </TableRow></TableHeader>
+          <TableBody>
+            {profiles.map((p) => {
+              const isAdmin = adminUserIds.includes(p.user_id);
+              return (
+                <TableRow key={p.id}>
+                  <TableCell>{p.display_name || "—"}</TableCell>
+                  <TableCell>
+                    {isAdmin ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent/15 text-accent px-2 py-0.5 rounded-full">
+                        <Shield className="w-3 h-3" /> Admin
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Người dùng</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {p.is_premium ? <span className="text-accent font-medium">Premium ⭐</span> : <span className="text-muted-foreground">Free</span>}
+                  </TableCell>
+                  <TableCell>{p.total_points}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("vi-VN")}</TableCell>
+                  <TableCell className="text-right">
+                    {isAdmin ? (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    ) : confirmId === p.user_id ? (
+                      <div className="flex items-center gap-1 justify-end">
+                        <Button size="sm" variant="destructive" onClick={() => handleDelete(p.user_id)} disabled={deleting === p.user_id} className="text-xs h-7 px-2">
+                          {deleting === p.user_id ? "Đang xóa..." : "Xác nhận"}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setConfirmId(null)} className="text-xs h-7 px-2">Hủy</Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => setConfirmId(p.user_id)} className="text-xs h-7 px-2 text-destructive hover:text-destructive">
+                        Xóa
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; total_points: number; created_at: string; }
 
