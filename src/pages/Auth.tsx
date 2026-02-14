@@ -24,23 +24,50 @@ const Auth = () => {
     if (user) navigate("/timeline");
   }, [user, navigate]);
 
-  const handleSubmit = async (data: { email: string; password: string; name?: string }) => {
+  const handleSubmit = async (data: { email: string; password: string; name?: string; username?: string }) => {
     setIsLoading(true);
     try {
       if (mode === "register") {
+        // Validate username
+        const username = data.username?.trim().toLowerCase();
+        if (!username || username.length < 3 || username.length > 30) {
+          toast({ title: "Tên đăng nhập không hợp lệ", description: "Cần từ 3–30 ký tự.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+        if (!/^[a-z0-9._]+$/.test(username)) {
+          toast({ title: "Tên đăng nhập không hợp lệ", description: "Chỉ chứa chữ thường, số, dấu chấm và gạch dưới.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: data.name || "" },
+            data: { full_name: data.name || "", username },
           },
         });
         if (error) throw error;
         toast({ title: "Đăng ký thành công!", description: "Vui lòng kiểm tra email để xác nhận tài khoản." });
       } else {
+        // Login: check if input is username (no @) or email
+        let email = data.email.trim();
+
+        if (!email.includes("@")) {
+          // Look up email by username
+          const { data: result, error: lookupError } = await supabase.rpc("get_email_by_username", { p_username: email });
+          if (lookupError || !result) {
+            toast({ title: "Không tìm thấy tài khoản", description: "Tên đăng nhập không tồn tại.", variant: "destructive" });
+            setIsLoading(false);
+            return;
+          }
+          email = result;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
-          email: data.email,
+          email,
           password: data.password,
         });
         if (error) throw error;

@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowRight, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Mail, Lock, User, AtSign } from "lucide-react";
 
 interface AuthFormProps {
   mode: "login" | "register";
-  onSubmit: (data: { email: string; password: string; name?: string }) => void;
+  onSubmit: (data: { email: string; password: string; name?: string; username?: string }) => void;
   isLoading?: boolean;
 }
 
@@ -16,6 +16,7 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
     email: "",
     password: "",
     name: "",
+    username: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -46,16 +47,40 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
         </div>
       )}
 
-      {/* Email field */}
+      {/* Username field - for registration */}
+      {!isLogin && (
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-sm font-medium text-foreground flex items-center gap-2">
+            <AtSign className="w-4 h-4 text-muted-foreground" />
+            Tên đăng nhập
+          </Label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="nguoiyeusu123"
+            value={formData.username}
+            onChange={(e) => setFormData({ ...formData, username: e.target.value.replace(/\s/g, "").toLowerCase() })}
+            required
+            minLength={3}
+            maxLength={30}
+            pattern="^[a-z0-9._]+$"
+            title="Chỉ chứa chữ thường, số, dấu chấm và gạch dưới"
+            className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
+          />
+          <p className="text-xs text-muted-foreground">Chữ thường, số, dấu chấm, gạch dưới. 3–30 ký tự.</p>
+        </div>
+      )}
+
+      {/* Email / Username+Email field */}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
           <Mail className="w-4 h-4 text-muted-foreground" />
-          Email
+          {isLogin ? "Email hoặc tên đăng nhập" : "Email"}
         </Label>
         <Input
           id="email"
-          type="email"
-          placeholder="example@gmail.com"
+          type={isLogin ? "text" : "email"}
+          placeholder={isLogin ? "email hoặc tên đăng nhập" : "example@gmail.com"}
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required

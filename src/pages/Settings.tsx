@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import {
-  User, Camera, Save, Lock, Eye, EyeOff, Link2, ArrowLeft, CheckCircle2,
+  User, Camera, Save, Lock, Eye, EyeOff, Link2, ArrowLeft, CheckCircle2, AtSign,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -20,9 +20,11 @@ const Settings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingUsername, setSavingUsername] = useState(false);
 
   // Password
   const [currentPassword, setCurrentPassword] = useState("");
@@ -46,12 +48,13 @@ const Settings = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url")
+        .select("display_name, avatar_url, username")
         .eq("user_id", user.id)
         .single();
       if (data) {
         setDisplayName(data.display_name || "");
         setAvatarUrl(data.avatar_url);
+        setUsername(data.username || "");
       }
     };
     fetchProfile();
@@ -111,6 +114,32 @@ const Settings = () => {
       await refreshProfile();
     }
     setSaving(false);
+  };
+
+  const handleSaveUsername = async () => {
+    if (!user) return;
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed || trimmed.length < 3 || trimmed.length > 30) {
+      toast({ title: "Tên đăng nhập không hợp lệ", description: "Cần từ 3–30 ký tự", variant: "destructive" });
+      return;
+    }
+    if (!/^[a-z0-9._]+$/.test(trimmed)) {
+      toast({ title: "Tên đăng nhập không hợp lệ", description: "Chỉ chứa chữ thường, số, dấu chấm và gạch dưới", variant: "destructive" });
+      return;
+    }
+    setSavingUsername(true);
+    const { error } = await supabase.from("profiles").update({ username: trimmed }).eq("user_id", user.id);
+    if (error) {
+      if (error.message.includes("unique") || error.message.includes("duplicate")) {
+        toast({ title: "Tên đăng nhập đã tồn tại", description: "Vui lòng chọn tên khác", variant: "destructive" });
+      } else {
+        toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+      }
+    } else {
+      toast({ title: "Đã lưu tên đăng nhập!" });
+      setUsername(trimmed);
+    }
+    setSavingUsername(false);
   };
 
   const handleChangePassword = async () => {
@@ -261,6 +290,31 @@ const Settings = () => {
                 <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
               </Button>
             </div>
+          </motion.section>
+
+          {/* Username */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="p-6 rounded-xl border border-border bg-card"
+          >
+            <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+              <AtSign className="w-4 h-4 text-accent" /> Tên đăng nhập
+            </h2>
+            <div className="flex gap-3">
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/\s/g, "").toLowerCase())}
+                placeholder="nguoiyeusu123"
+                maxLength={30}
+                className="flex-1"
+              />
+              <Button onClick={handleSaveUsername} disabled={savingUsername} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Save className="w-4 h-4 mr-1" /> {savingUsername ? "..." : "Lưu"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Chữ thường, số, dấu chấm, gạch dưới. 3–30 ký tự. Dùng để đăng nhập.</p>
           </motion.section>
 
           {/* Password */}
