@@ -589,7 +589,49 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          display_name: string | null
+          is_premium: boolean | null
+          total_points: number | null
+        }
+        Relationships: []
+      }
+      quiz_questions_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          milestone_id: string | null
+          options: Json | null
+          question: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          milestone_id?: string | null
+          options?: Json | null
+          question?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          milestone_id?: string | null
+          options?: Json | null
+          question?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_hearts: {

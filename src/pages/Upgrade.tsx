@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 
 const Upgrade = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, isPremium: authIsPremium, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isPremium, setIsPremium] = useState(false);
   const [pendingRequest, setPendingRequest] = useState<any>(null);

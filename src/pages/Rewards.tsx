@@ -34,7 +34,7 @@ interface LeaderboardEntry {
 
 const Rewards = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
@@ -53,7 +53,7 @@ const Rewards = () => {
   const fetchAll = async () => {
     const [{ data: rewardsData }, { data: redemptionsData }, { data: profileData }, { data: lbData }] = await Promise.all([
       supabase.from("rewards").select("*").eq("is_active", true).order("points_cost"),
-      supabase.from("reward_redemptions").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }),
+      supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("total_points").eq("user_id", user!.id).single(),
       supabase.from("profiles").select("display_name, total_points, is_premium").order("total_points", { ascending: false }).limit(20),
     ]);
