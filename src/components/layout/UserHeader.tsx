@@ -7,22 +7,19 @@ import { Heart, Star, LogOut, Shield, Gift, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const UserHeader = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin, isPremium, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [hearts, setHearts] = useState<number | null>(null);
   const [points, setPoints] = useState<number>(0);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    if (!user) { setDataLoaded(false); return; }
+    if (authLoading || !user) { setDataLoaded(false); return; }
 
     const fetchUserData = async () => {
-      const [heartsRes, profileRes, rolesRes] = await Promise.all([
+      const [heartsRes, profileRes] = await Promise.all([
         supabase.rpc("get_hearts"),
-        supabase.from("profiles").select("total_points, is_premium").eq("user_id", user.id).single(),
-        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase.from("profiles").select("total_points").eq("user_id", user.id).single(),
       ]);
 
       if (heartsRes.data && heartsRes.data.length > 0) {
@@ -30,14 +27,12 @@ const UserHeader = () => {
       }
       if (profileRes.data) {
         setPoints(profileRes.data.total_points);
-        setIsPremium(profileRes.data.is_premium);
       }
-      if (rolesRes.data?.some((r) => r.role === "admin")) setIsAdmin(true);
       setDataLoaded(true);
     };
 
     fetchUserData();
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleSignOut = async () => {
     await signOut();
