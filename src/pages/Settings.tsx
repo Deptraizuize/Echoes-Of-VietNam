@@ -369,6 +369,12 @@ const Settings = () => {
                 </Button>
               )}
             </div>
+            {!hasGoogle && (
+              <p className="text-xs text-muted-foreground mt-3 flex items-start gap-1.5">
+                <span className="text-accent mt-0.5">⚠</span>
+                Lưu ý: Tài khoản Google phải có cùng email <strong className="text-foreground">{user?.email}</strong> để liên kết thành công. Nếu email Google khác, hệ thống sẽ tạo tài khoản mới thay vì liên kết.
+              </p>
+            )}
           </motion.section>
 
           {/* Email info */}
