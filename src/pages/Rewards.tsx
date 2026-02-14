@@ -55,12 +55,12 @@ const Rewards = () => {
       supabase.from("rewards").select("*").eq("is_active", true).order("points_cost"),
       supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("total_points").eq("user_id", user!.id).single(),
-      supabase.from("profiles").select("display_name, total_points, is_premium").order("total_points", { ascending: false }).limit(20),
+      supabase.rpc("get_leaderboard"),
     ]);
     if (rewardsData) setRewards(rewardsData);
-    if (redemptionsData) setRedemptions(redemptionsData);
+    if (redemptionsData) setRedemptions(redemptionsData as any);
     if (profileData) setMyPoints(profileData.total_points);
-    if (lbData) setLeaderboard(lbData);
+    if (lbData) setLeaderboard(lbData as any);
   };
 
   const redeemReward = async (reward: Reward) => {
@@ -77,9 +77,7 @@ const Rewards = () => {
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
-      // Deduct points
-      await supabase.from("profiles").update({ total_points: myPoints - reward.points_cost }).eq("user_id", user!.id);
-      toast({ title: "Đã đổi thưởng!", description: "Yêu cầu sẽ được admin xử lý." });
+      toast({ title: "Đã gửi yêu cầu đổi thưởng!", description: "Admin sẽ xử lý và trừ điểm khi duyệt." });
       fetchAll();
     }
     setRedeeming(null);
@@ -96,9 +94,10 @@ const Rewards = () => {
   const statusText: Record<string, string> = { pending: "Chờ duyệt", approved: "Đã duyệt", rejected: "Từ chối", delivered: "Đã giao" };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 dong-son-pattern opacity-[0.03] pointer-events-none" />
       <UserHeader />
-      <main className="container mx-auto px-4 md:px-12 py-8 md:py-16 max-w-5xl">
+      <main className="container mx-auto px-4 md:px-12 py-8 md:py-16 max-w-5xl relative z-10">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 text-muted-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
         </Button>

@@ -589,14 +589,6 @@ export type Database = {
       }
     }
     Views: {
-      leaderboard: {
-        Row: {
-          display_name: string | null
-          is_premium: boolean | null
-          total_points: number | null
-        }
-        Relationships: []
-      }
       quiz_questions_safe: {
         Row: {
           created_at: string | null
@@ -639,6 +631,14 @@ export type Database = {
         Returns: {
           hearts_remaining: number
           is_premium: boolean
+        }[]
+      }
+      get_leaderboard: {
+        Args: never
+        Returns: {
+          display_name: string
+          is_premium: boolean
+          total_points: number
         }[]
       }
       has_role: {

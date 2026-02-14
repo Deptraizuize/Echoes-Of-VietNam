@@ -24,8 +24,9 @@ const Upgrade = () => {
       navigate("/auth");
       return;
     }
+    if (!loading && authIsPremium) setIsPremium(true);
     if (user) fetchStatus();
-  }, [user, loading]);
+  }, [user, loading, authIsPremium]);
 
   const fetchStatus = async () => {
     const [{ data: profile }, { data: requests }] = await Promise.all([
@@ -60,7 +61,7 @@ const Upgrade = () => {
 
   const statusIcon = {
     pending: <Clock className="w-5 h-5 text-accent" />,
-    approved: <CheckCircle className="w-5 h-5 text-green-500" />,
+    approved: <CheckCircle className="w-5 h-5 text-accent" />,
     rejected: <XCircle className="w-5 h-5 text-destructive" />,
   };
 
@@ -79,9 +80,10 @@ const Upgrade = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 dong-son-pattern opacity-[0.03] pointer-events-none" />
       <UserHeader />
-      <main className="container mx-auto px-4 md:px-12 py-8 md:py-16 max-w-4xl">
+      <main className="container mx-auto px-4 md:px-12 py-8 md:py-16 max-w-4xl relative z-10">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 text-muted-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
         </Button>

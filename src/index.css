@@ -216,6 +216,27 @@
     background-size: 80px 80px;
   }
 
+  /* Vietnamese Dong Son drum spiral pattern */
+  .dong-son-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 a25 25 0 0 1 0 50 a25 25 0 0 1 0-50' fill='none' stroke='%23c4841d' stroke-width='0.5' opacity='0.15'/%3E%3Cpath d='M30 15 a15 15 0 0 1 0 30 a15 15 0 0 1 0-30' fill='none' stroke='%23c4841d' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M30 25 a5 5 0 0 1 0 10 a5 5 0 0 1 0-10' fill='none' stroke='%23c4841d' stroke-width='0.5' opacity='0.08'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
+  }
+
+  /* Vietnamese wave pattern (song nuoc) */
+  .wave-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='20' viewBox='0 0 120 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q15 0 30 10 Q45 20 60 10 Q75 0 90 10 Q105 20 120 10' fill='none' stroke='%23c4841d' stroke-width='0.8' opacity='0.12'/%3E%3C/svg%3E");
+    background-size: 120px 20px;
+  }
+
+  /* Lotus petal border accent */
+  .lotus-divider {
+    @apply relative;
+  }
+  .lotus-divider::before {
+    content: '✦';
+    @apply absolute left-1/2 -translate-x-1/2 -top-3 text-accent/40 text-sm;
+  }
+
   /* Float animation - refined */
   .float-gentle {
     animation: floatGentle 10s ease-in-out infinite;

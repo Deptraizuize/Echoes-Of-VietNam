@@ -100,6 +100,7 @@ const Profile = () => {
       {/* Hero */}
       <section className="relative py-16 md:py-20 px-6 md:px-12 bg-foreground text-primary-foreground overflow-hidden">
         <div className="absolute inset-0 heritage-pattern opacity-5" />
+        <div className="absolute inset-0 dong-son-pattern opacity-20" />
         <div className="container mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
