@@ -104,27 +104,27 @@ const Upgrade = () => {
           </div>
 
           {/* Perks Grid */}
-          <div className="grid grid-cols-2 gap-3 md:gap-4 mb-10 md:mb-14">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-4 mb-10 md:mb-14">
             {[
-              { icon: <Heart className="w-5 h-5 text-destructive" />, title: "10 Tim/ngày", desc: "Gấp đôi số lượt làm quiz mỗi ngày" },
-              { icon: <Zap className="w-5 h-5 text-accent" />, title: "Nhân đôi điểm", desc: "x2 điểm thưởng khi đạt từ 6/10 trở lên" },
-              { icon: <Bot className="w-5 h-5 text-accent" />, title: "Trợ lý AI Lịch sử", desc: "Hỏi đáp chuyên sâu, tra cứu di tích, nhân vật và tài liệu" },
-              { icon: <MapPin className="w-5 h-5 text-accent" />, title: "Tra cứu bản đồ", desc: "Khám phá di tích, địa điểm lịch sử trên bản đồ VN" },
-              { icon: <Star className="w-5 h-5 text-accent" />, title: "Huy hiệu vàng", desc: "Khung avatar và huy hiệu đặc biệt" },
-              { icon: <Crown className="w-5 h-5 text-accent" />, title: "Truy cập sớm", desc: "Xem trước nội dung và tính năng mới" },
+              { icon: <Heart className="w-4 h-4 text-destructive" />, title: "10 Tim/ngày", desc: "Gấp đôi số lượt làm quiz" },
+              { icon: <Zap className="w-4 h-4 text-accent" />, title: "Nhân đôi điểm", desc: "x2 điểm khi đạt ≥6/10" },
+              { icon: <Bot className="w-4 h-4 text-accent" />, title: "Trợ lý AI", desc: "Hỏi đáp chuyên sâu lịch sử" },
+              { icon: <MapPin className="w-4 h-4 text-accent" />, title: "Tra cứu bản đồ", desc: "Khám phá di tích, địa điểm" },
+              { icon: <Star className="w-4 h-4 text-accent" />, title: "Huy hiệu vàng", desc: "Khung avatar Premium" },
+              { icon: <Crown className="w-4 h-4 text-accent" />, title: "Truy cập sớm", desc: "Xem trước tính năng mới" },
             ].map((perk, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-                className="p-4 md:p-5 bg-card border border-border rounded-xl hover:border-accent/30 transition-colors"
+                className="p-3 md:p-5 bg-card border border-border rounded-xl hover:border-accent/30 transition-colors"
               >
-                <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center mb-3">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg bg-muted flex items-center justify-center mb-2 md:mb-3">
                   {perk.icon}
                 </div>
-                <h4 className="font-semibold text-foreground text-sm mb-1">{perk.title}</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">{perk.desc}</p>
+                <h4 className="font-semibold text-foreground text-[11px] md:text-sm mb-0.5 md:mb-1">{perk.title}</h4>
+                <p className="text-[10px] md:text-xs text-muted-foreground leading-snug">{perk.desc}</p>
               </motion.div>
             ))}
           </div>

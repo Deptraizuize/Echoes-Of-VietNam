@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, Mail, MapPin, Heart, Star, Zap, Crown } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Heart, Star, Zap, Crown, Bot } from "lucide-react";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
 import Timeline3DCarousel from "@/components/timeline/Timeline3DCarousel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +23,7 @@ const Index = () => {
       <FeaturesSection />
 
       {/* Timeline Section */}
-      <section id="timeline" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30 overflow-hidden">
+      <section id="timeline" className="py-12 md:py-24 px-4 md:px-12 bg-muted/30 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
             <AnimatedSection className="md:col-span-5" direction="left">
@@ -60,7 +60,7 @@ const Index = () => {
       </section>
 
       {/* Team & About Combined Section */}
-      <section id="team" className="py-16 md:py-28 px-4 md:px-12 bg-background overflow-hidden">
+      <section id="team" className="py-12 md:py-28 px-4 md:px-12 bg-background overflow-hidden">
         <div className="container mx-auto">
           {/* Section header */}
           <AnimatedSection className="max-w-2xl mb-12 md:mb-20">
@@ -76,7 +76,7 @@ const Index = () => {
           </AnimatedSection>
 
           {/* Team grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5 mb-16 md:mb-24">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-5 mb-12 md:mb-24">
             {teamMembers.map((member, index) => {
               const initials = member.name.split(" ").map((n) => n[0]).join("").toUpperCase();
               return (
@@ -186,7 +186,7 @@ const Index = () => {
       </section>
 
       {/* Premium Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
+      <section className="py-12 md:py-24 px-4 md:px-12 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-12 items-center">
             <AnimatedSection className="md:col-span-5" direction="left">
@@ -210,20 +210,22 @@ const Index = () => {
               </Button>
             </AnimatedSection>
             <AnimatedSection className="md:col-span-6 md:col-start-7 w-full" direction="right" delay={0.2}>
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 gap-2.5 md:gap-4">
                 {[
-                  { icon: <Heart className="w-4 h-4 md:w-5 md:h-5 text-destructive" />, title: "10 Tim mỗi ngày", desc: "Gấp đôi số tim, thêm cơ hội làm quiz" },
-                  { icon: <Zap className="w-4 h-4 md:w-5 md:h-5 text-accent" />, title: "Nhân đôi điểm", desc: "x2 điểm khi đạt 6/10 trở lên" },
-                  { icon: <Star className="w-4 h-4 md:w-5 md:h-5 text-accent" />, title: "Huy hiệu đặc biệt", desc: "Huy hiệu vàng và khung avatar Premium" },
-                  { icon: <Crown className="w-4 h-4 md:w-5 md:h-5 text-accent" />, title: "Truy cập sớm", desc: "Xem trước nội dung và tính năng mới" },
+                  { icon: <Heart className="w-4 h-4 text-destructive" />, title: "10 Tim/ngày", desc: "Gấp đôi cơ hội làm quiz" },
+                  { icon: <Zap className="w-4 h-4 text-accent" />, title: "Nhân đôi điểm", desc: "x2 điểm khi đạt ≥6/10" },
+                  { icon: <Bot className="w-4 h-4 text-accent" />, title: "Trợ lý AI", desc: "Hỏi đáp chuyên sâu lịch sử" },
+                  { icon: <Star className="w-4 h-4 text-accent" />, title: "Huy hiệu vàng", desc: "Khung avatar Premium" },
+                  { icon: <Crown className="w-4 h-4 text-accent" />, title: "Truy cập sớm", desc: "Xem trước tính năng mới" },
+                  { icon: <MapPin className="w-4 h-4 text-accent" />, title: "Tra cứu bản đồ", desc: "Khám phá di tích lịch sử" },
                 ].map((perk, i) => (
-                  <AnimatedSection key={i} delay={0.1 + i * 0.1} direction="up">
-                    <div className="p-3.5 md:p-5 bg-card border border-border rounded-lg hover:border-accent/30 transition-colors h-full">
-                      <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-muted flex items-center justify-center mb-2.5 md:mb-3">
+                  <AnimatedSection key={i} delay={0.1 + i * 0.08} direction="up">
+                    <div className="p-3 md:p-5 bg-card border border-border rounded-lg hover:border-accent/30 transition-colors h-full">
+                      <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg bg-muted flex items-center justify-center mb-2 md:mb-3">
                         {perk.icon}
                       </div>
-                      <h4 className="font-semibold text-foreground text-xs md:text-sm mb-1">{perk.title}</h4>
-                      <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">{perk.desc}</p>
+                      <h4 className="font-semibold text-foreground text-[11px] md:text-sm mb-0.5 md:mb-1">{perk.title}</h4>
+                      <p className="text-[10px] md:text-xs text-muted-foreground leading-snug">{perk.desc}</p>
                     </div>
                   </AnimatedSection>
                 ))}
@@ -234,7 +236,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12 bg-foreground text-primary-foreground overflow-hidden">
+      <section className="py-12 md:py-24 px-4 md:px-12 bg-foreground text-primary-foreground overflow-hidden">
         <div className="container mx-auto text-center max-w-2xl">
           <AnimatedSection>
             <h2 className="text-2xl md:text-4xl font-bold text-primary-foreground mb-4 md:mb-6">
