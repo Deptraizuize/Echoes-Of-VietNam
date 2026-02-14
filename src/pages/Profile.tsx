@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Award, Star, Heart, Trophy, Clock, CheckCircle2, XCircle,
-  ArrowRight, User, Crown, Sparkles,
+  ArrowRight, User, Crown, Sparkles, Settings,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -16,6 +16,7 @@ interface ProfileData {
   total_points: number;
   is_premium: boolean;
   created_at: string;
+  avatar_url: string | null;
 }
 
 interface BadgeData {
@@ -66,7 +67,7 @@ const Profile = () => {
       }
 
       const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, total_points, is_premium, created_at").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("display_name, total_points, is_premium, created_at, avatar_url").eq("user_id", user.id).single(),
         supabase.from("badges").select("*").order("earned_at", { ascending: false }),
         supabase.from("quiz_attempts").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("user_progress").select("*"),
@@ -109,8 +110,12 @@ const Profile = () => {
             className="flex flex-col md:flex-row items-start md:items-center gap-6"
           >
             <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-accent/20 flex items-center justify-center">
-                <User className="w-10 h-10 text-accent" />
+              <div className="w-20 h-20 rounded-2xl bg-accent/20 flex items-center justify-center overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-accent" />
+                )}
               </div>
               {profile?.is_premium && (
                 <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
@@ -140,6 +145,14 @@ const Profile = () => {
               <p className="text-primary-foreground/40 text-sm">
                 Thành viên từ {profile ? formatDate(profile.created_at) : ""}
               </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate("/settings")}
+                className="mt-2 text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10 text-xs gap-1"
+              >
+                <Settings className="w-3.5 h-3.5" /> Cài đặt tài khoản
+              </Button>
             </div>
           </motion.div>
         </div>

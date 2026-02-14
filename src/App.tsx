@@ -14,6 +14,7 @@ import Admin from "./pages/Admin";
 import Upgrade from "./pages/Upgrade";
 import Feedback from "./pages/Feedback";
 import Rewards from "./pages/Rewards";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/rewards" element={<Rewards />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
