@@ -116,10 +116,18 @@ const Profile = () => {
                 <h1 className="text-primary-foreground text-2xl md:text-4xl">
                   {profile?.display_name || "Người dùng"}
                 </h1>
-                {profile?.is_premium && (
+                {profile?.is_premium ? (
                   <Badge className="bg-accent text-accent-foreground text-xs">
                     <Sparkles className="w-3 h-3 mr-1" /> Premium
                   </Badge>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => navigate("/upgrade")}
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground text-xs gap-1"
+                  >
+                    <Crown className="w-3 h-3" /> Nâng cấp
+                  </Button>
                 )}
               </div>
               <p className="text-primary-foreground/40 text-sm">
