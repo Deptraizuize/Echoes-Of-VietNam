@@ -13,31 +13,27 @@ const UserHeader = () => {
   const [points, setPoints] = useState<number>(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setDataLoaded(false); return; }
 
     const fetchUserData = async () => {
-      const { data: heartsData } = await supabase.rpc("get_hearts");
-      if (heartsData && heartsData.length > 0) {
-        setHearts(heartsData[0].hearts_remaining);
-      }
+      const [heartsRes, profileRes, rolesRes] = await Promise.all([
+        supabase.rpc("get_hearts"),
+        supabase.from("profiles").select("total_points, is_premium").eq("user_id", user.id).single(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+      ]);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("total_points, is_premium")
-        .eq("user_id", user.id)
-        .single();
-      if (profile) {
-        setPoints(profile.total_points);
-        setIsPremium(profile.is_premium);
+      if (heartsRes.data && heartsRes.data.length > 0) {
+        setHearts(heartsRes.data[0].hearts_remaining);
       }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      if (roles?.some((r) => r.role === "admin")) setIsAdmin(true);
+      if (profileRes.data) {
+        setPoints(profileRes.data.total_points);
+        setIsPremium(profileRes.data.is_premium);
+      }
+      if (rolesRes.data?.some((r) => r.role === "admin")) setIsAdmin(true);
+      setDataLoaded(true);
     };
 
     fetchUserData();
@@ -67,13 +63,13 @@ const UserHeader = () => {
               Timeline
             </Button>
 
-            {user && !isAdmin && (
+            {user && dataLoaded && !isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/feedback")} className="text-xs sm:text-sm px-2 sm:px-3 hidden sm:inline-flex">
                 Góp ý
               </Button>
             )}
 
-            {user ? (
+            {user && dataLoaded ? (
               <>
                 {!isAdmin && (
                   <>
