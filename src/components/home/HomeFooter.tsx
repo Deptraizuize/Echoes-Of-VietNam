@@ -9,7 +9,7 @@ const HomeFooter = () => (
           <span className="font-semibold">Echoes of Vietnam</span>
         </div>
         <p className="text-sm text-muted-foreground">
-          © 2024 — Giữ gìn và lan tỏa lịch sử
+          © 2026 EchoesOfVN.com — Giữ gìn và lan tỏa lịch sử
         </p>
         <div className="flex gap-6">
           {[
