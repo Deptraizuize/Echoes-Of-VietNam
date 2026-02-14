@@ -65,9 +65,9 @@ const Quiz = () => {
   }, [user, authLoading, isPremium, milestoneId, navigate]);
 
   const fetchQuestions = async () => {
-    const { data } = await supabase.from("quiz_questions").select("id, question, options, image_url").eq("milestone_id", milestoneId);
+    const { data } = await supabase.rpc("get_quiz_questions", { p_milestone_id: milestoneId! });
     if (data && data.length > 0) {
-      const shuffled = data.map((q) => ({ ...q, options: q.options as unknown as string[] })).sort(() => Math.random() - 0.5).slice(0, 10);
+      const shuffled = (data as any[]).map((q) => ({ ...q, options: q.options as unknown as string[] })).sort(() => Math.random() - 0.5).slice(0, 10);
       setQuestions(shuffled);
     }
   };

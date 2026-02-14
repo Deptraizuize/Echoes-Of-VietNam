@@ -589,41 +589,7 @@ export type Database = {
       }
     }
     Views: {
-      quiz_questions_safe: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          image_url: string | null
-          milestone_id: string | null
-          options: Json | null
-          question: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          image_url?: string | null
-          milestone_id?: string | null
-          options?: Json | null
-          question?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          image_url?: string | null
-          milestone_id?: string | null
-          options?: Json | null
-          question?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_questions_milestone_id_fkey"
-            columns: ["milestone_id"]
-            isOneToOne: false
-            referencedRelation: "milestones"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       get_hearts: {
@@ -639,6 +605,16 @@ export type Database = {
           display_name: string
           is_premium: boolean
           total_points: number
+        }[]
+      }
+      get_quiz_questions: {
+        Args: { p_milestone_id: string }
+        Returns: {
+          id: string
+          image_url: string
+          milestone_id: string
+          options: Json
+          question: string
         }[]
       }
       has_role: {
