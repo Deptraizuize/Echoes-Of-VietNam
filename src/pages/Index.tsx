@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, ArrowUpRight, Mail, MapPin, Heart, Star, Zap, Crown, LogOut, User } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Heart, Star, Zap, Crown, LogOut, User } from "lucide-react";
 import logo from "@/assets/logo.png";
 import vietnamMap from "@/assets/vietnam-map.jpg";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
-import { timelineData } from "@/data/timelineData";
+import Timeline3DCarousel from "@/components/timeline/Timeline3DCarousel";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
@@ -157,7 +157,7 @@ const Index = () => {
       </section>
 
       {/* Timeline Section */}
-      <section id="timeline" className="py-24 px-6 md:px-12 bg-background">
+      <section id="timeline" className="py-24 px-6 md:px-12 bg-background overflow-hidden">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-12 gap-8 mb-16">
             <div className="md:col-span-5 fade-in-up">
@@ -176,49 +176,12 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Timeline Items - Card Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {timelineData.map((period, index) => (
-              <div
-                key={period.id}
-                onClick={() => navigate("/timeline")}
-                className="group cursor-pointer fade-in-up editorial-card rounded-xl overflow-hidden"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={period.image}
-                    alt={period.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <span className="text-4xl font-bold text-accent/80 group-hover:text-accent transition-colors">
-                      {period.number}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-4 right-4">
-                    <div className="w-9 h-9 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-accent/40 transition-colors">
-                      <ArrowUpRight className="w-4 h-4 text-primary-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-sm font-bold text-foreground group-hover:text-accent transition-colors mb-2 line-clamp-1">
-                    {period.title}
-                  </h3>
-                  <p className="text-xs text-accent font-medium mb-2">
-                    {period.timeRange}
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {period.focus}
-                  </p>
-                </div>
-              </div>
-            ))}
+          {/* 3D Carousel */}
+          <div className="fade-in-up delay-300">
+            <Timeline3DCarousel />
           </div>
 
-          <div className="mt-12 pt-6 border-t border-border fade-in-up">
+          <div className="mt-12 pt-6 border-t border-border fade-in-up delay-400 text-center">
             <Button
               variant="outline"
               size="lg"
