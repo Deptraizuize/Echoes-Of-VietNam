@@ -1,3 +1,13 @@
+/**
+ * ===== EDGE FUNCTION: history-chat =====
+ * AI Chatbot trợ lý lịch sử Việt Nam (chỉ dành cho Premium).
+ *
+ * Sử dụng Lovable AI (Google Gemini) để trả lời câu hỏi
+ * liên quan đến các cột mốc lịch sử cụ thể.
+ *
+ * Body: { message: string, milestoneId?: string, milestoneTitle?: string }
+ * Response: streaming text
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {

@@ -1,3 +1,19 @@
+/**
+ * ===== EDGE FUNCTION: delete-user =====
+ * Xóa tài khoản người dùng khỏi hệ thống.
+ *
+ * Quyền truy cập:
+ * - Admin: xóa bất kỳ user nào (TRỪ admin khác)
+ * - User: tự xóa tài khoản của mình
+ *
+ * Luồng xử lý:
+ * 1. Xác thực caller từ Authorization header
+ * 2. Kiểm tra quyền (self-delete hoặc admin)
+ * 3. Xóa user từ auth.users (dùng service_role key)
+ * 4. Dọn dẹp dữ liệu liên quan trong các bảng
+ *
+ * Body: { target_user_id: string }
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {

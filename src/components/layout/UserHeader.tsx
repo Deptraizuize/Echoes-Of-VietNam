@@ -1,3 +1,9 @@
+/**
+ * ===== USER HEADER =====
+ * Header chung cho các trang nội bộ (Timeline, Quiz, Profile, Settings...).
+ * Hiển thị: Logo, nav links, tim/điểm (nếu đã login), nút Profile & Logout.
+ * Admin chỉ thấy nút "Admin" thay vì tim/điểm/rewards.
+ */
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
