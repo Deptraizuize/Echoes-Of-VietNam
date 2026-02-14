@@ -35,8 +35,9 @@ interface QuizResult {
 const Quiz = () => {
   const { milestoneId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading, isPremium } = useAuth();
 
+  // Premium users skip ads entirely
   const [state, setState] = useState<QuizState>("ad");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -50,13 +51,18 @@ const Quiz = () => {
   const [reviewQuestions, setReviewQuestions] = useState<QuizQuestion[]>([]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
+    // Skip ads for premium users
+    if (isPremium && state === "ad") {
+      setState("pre-start");
+    }
     const fetchTitle = async () => {
       const { data } = await supabase.from("milestones").select("title").eq("id", milestoneId).single();
       if (data) setMilestoneTitle(data.title);
     };
     fetchTitle();
-  }, [user, milestoneId, navigate]);
+  }, [user, authLoading, isPremium, milestoneId, navigate]);
 
   const fetchQuestions = async () => {
     const { data } = await supabase.from("quiz_questions").select("id, question, options, image_url").eq("milestone_id", milestoneId);
@@ -120,7 +126,11 @@ const Quiz = () => {
     setLoading(false);
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="h-8 w-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   const currentQuestion = questions[currentIndex];
   const progress = questions.length > 0 ? ((currentIndex) / questions.length) * 100 : 0;
@@ -274,7 +284,7 @@ const Quiz = () => {
                             {showReview ? "Ẩn xem lại" : "Xem lại câu sai"}
                           </Button>
                         )}
-                        <Button onClick={() => { setState("ad"); setCurrentIndex(0); setAnswers([]); setResult(null); setShowReview(false); setReviewQuestions([]); }} variant="outline">
+                        <Button onClick={() => { setState(isPremium ? "pre-start" : "ad"); setCurrentIndex(0); setAnswers([]); setResult(null); setShowReview(false); setReviewQuestions([]); }} variant="outline">
                           Làm lại Quiz
                         </Button>
                         <Button onClick={() => navigate("/timeline")} className="bg-accent text-accent-foreground hover:bg-accent/90">

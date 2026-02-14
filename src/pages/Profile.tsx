@@ -46,7 +46,7 @@ interface ProgressData {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin: authIsAdmin } = useAuth();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [badges, setBadges] = useState<BadgeData[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
@@ -59,9 +59,8 @@ const Profile = () => {
     if (!user) { navigate("/auth"); return; }
 
     const fetchAll = async () => {
-      // Check admin role first for early redirect
-      const rolesRes = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      if (rolesRes.data?.some((r) => r.role === "admin")) {
+      // Admin redirect using centralized auth state
+      if (authIsAdmin) {
         navigate("/admin", { replace: true });
         return;
       }
@@ -81,7 +80,7 @@ const Profile = () => {
       setLoading(false);
     };
     fetchAll();
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, authIsAdmin, navigate]);
 
   if (loading || authLoading) {
     return (
