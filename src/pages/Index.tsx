@@ -93,16 +93,16 @@ const Index = () => {
                       </AvatarFallback>
                     </Avatar>
                     {/* Role badge overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-foreground/90 to-transparent">
-                      <span className="text-[10px] md:text-xs font-medium text-accent">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-foreground/90 to-transparent">
+                      <span className="text-[9px] md:text-xs font-medium text-accent line-clamp-1">
                         {member.role}
                       </span>
                     </div>
                   </div>
                   {/* Info */}
-                  <div className="p-3 md:p-4">
-                    <h4 className="text-foreground font-semibold text-sm md:text-base mb-1">{member.name}</h4>
-                    <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                  <div className="p-2.5 md:p-4">
+                    <h4 className="text-foreground font-semibold text-xs md:text-base mb-0.5 md:mb-1 line-clamp-1">{member.name}</h4>
+                    <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                       {member.description}
                     </p>
                   </div>
