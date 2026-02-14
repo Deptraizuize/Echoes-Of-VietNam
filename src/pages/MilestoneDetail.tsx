@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles, ExternalLink } from "lucide-react";
 import UserHeader from "@/components/layout/UserHeader";
 import AIChatButton from "@/components/ai/AIChatButton";
 import milestonePlaceholder from "@/assets/milestone-placeholder.jpg";
@@ -182,27 +182,50 @@ const MilestoneDetail = () => {
                 className="grid md:grid-cols-2 gap-8"
               >
                 {detail.hero_names && detail.hero_names.length > 0 && (
-                  <section className="bg-card border border-border rounded-xl p-6">
+                  <section className="bg-card border border-border rounded-xl p-5 md:p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <User className="w-5 h-5 text-accent" />
                       <h3 className="text-lg font-bold text-foreground">Nhân vật lịch sử</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {detail.hero_names.map((name) => (
-                        <Badge key={name} variant="outline" className="text-sm py-1.5 px-3">{name}</Badge>
+                        <a
+                          key={name}
+                          href={`https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group"
+                        >
+                          <Badge variant="outline" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
+                            {name}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </Badge>
+                        </a>
                       ))}
                     </div>
                   </section>
                 )}
                 {detail.landmark_names && detail.landmark_names.length > 0 && (
-                  <section className="bg-card border border-border rounded-xl p-6">
+                  <section className="bg-card border border-border rounded-xl p-5 md:p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <MapPin className="w-5 h-5 text-accent" />
                       <h3 className="text-lg font-bold text-foreground">Di tích liên quan</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {detail.landmark_names.map((name) => (
-                        <Badge key={name} variant="secondary" className="text-sm py-1.5 px-3">{name}</Badge>
+                        <a
+                          key={name}
+                          href={`https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group"
+                        >
+                          <Badge variant="secondary" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
+                            <MapPin className="w-3 h-3" />
+                            {name}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </Badge>
+                        </a>
                       ))}
                     </div>
                   </section>
