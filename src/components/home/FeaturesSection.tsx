@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, Map, Trophy } from "lucide-react";
 import featureHistory from "@/assets/feature-history.jpg";
 import featureExplore from "@/assets/feature-explore.jpg";
 import featureQuiz from "@/assets/feature-quiz.jpg";
+import AnimatedSection from "./AnimatedSection";
 
 const features = [
   {
@@ -38,9 +39,9 @@ const FeaturesSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 md:py-28 px-4 md:px-12 bg-background">
+    <section id="features" className="py-16 md:py-28 px-4 md:px-12 bg-background overflow-hidden">
       <div className="container mx-auto">
-        <div className="max-w-xl mb-12 md:mb-20">
+        <AnimatedSection className="max-w-xl mb-12 md:mb-20">
           <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
             Tính năng nổi bật
           </p>
@@ -52,48 +53,62 @@ const FeaturesSection = () => {
           <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
             Ba trải nghiệm cốt lõi giúp bạn khám phá và yêu thêm lịch sử dân tộc.
           </p>
-        </div>
+        </AnimatedSection>
 
-        <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
-          {features.map((f, i) => (
-            <div
-              key={i}
-              className="group cursor-pointer"
-              onClick={() => navigate(f.link)}
-            >
-              {/* Image */}
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-4 md:mb-5">
-                <img
-                  src={f.image}
-                  alt={f.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <div className="w-9 h-9 rounded-lg bg-accent/90 backdrop-blur-sm flex items-center justify-center text-accent-foreground">
-                    {f.icon}
+        {/* Unconventional staggered layout */}
+        <div className="space-y-12 md:space-y-20">
+          {features.map((f, i) => {
+            const isEven = i % 2 === 0;
+            return (
+              <AnimatedSection
+                key={i}
+                direction={isEven ? "left" : "right"}
+                delay={0.1}
+              >
+                <div
+                  className={`group cursor-pointer flex flex-col ${
+                    isEven ? "md:flex-row" : "md:flex-row-reverse"
+                  } gap-6 md:gap-10 items-center`}
+                  onClick={() => navigate(f.link)}
+                >
+                  {/* Image - larger, cinematic */}
+                  <div className="relative w-full md:w-[55%] aspect-[16/10] rounded-2xl overflow-hidden flex-shrink-0">
+                    <img
+                      src={f.image}
+                      alt={f.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <div className="w-10 h-10 rounded-xl bg-accent/90 backdrop-blur-sm flex items-center justify-center text-accent-foreground">
+                        {f.icon}
+                      </div>
+                    </div>
+                    <div className="absolute bottom-4 right-4">
+                      <span className="text-7xl md:text-8xl font-extrabold text-primary-foreground/10 leading-none select-none">
+                        {f.number}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Text content */}
+                  <div className="w-full md:w-[45%] flex flex-col justify-center">
+                    <div className="accent-bar mb-4 md:mb-5" />
+                    <h3 className="text-foreground font-bold text-xl md:text-2xl mb-3 group-hover:text-accent transition-colors">
+                      {f.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-5">
+                      {f.desc}
+                    </p>
+                    <span className="inline-flex items-center gap-2 text-accent text-sm font-semibold group-hover:gap-3 transition-all">
+                      {f.cta}
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
                   </div>
                 </div>
-                <div className="absolute bottom-3 left-3">
-                  <span className="text-6xl md:text-7xl font-extrabold text-primary-foreground/10 leading-none">
-                    {f.number}
-                  </span>
-                </div>
-              </div>
-
-              {/* Text */}
-              <h3 className="text-foreground font-bold text-base md:text-lg mb-2 group-hover:text-accent transition-colors">
-                {f.title}
-              </h3>
-              <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-3">
-                {f.desc}
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-accent text-xs md:text-sm font-semibold group-hover:gap-2.5 transition-all">
-                {f.cta}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </span>
-            </div>
-          ))}
+              </AnimatedSection>
+            );
+          })}
         </div>
       </div>
     </section>

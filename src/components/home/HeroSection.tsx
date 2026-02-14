@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import logo from "@/assets/logo.png";
 import vietnamMap from "@/assets/vietnam-map.jpg";
 import { useAuth } from "@/contexts/AuthContext";
+import ScrollIndicator from "./ScrollIndicator";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -123,6 +124,8 @@ const HeroSection = () => {
           </div>
         </motion.div>
       </div>
+
+      <ScrollIndicator targetId="features" />
     </section>
   );
 };
