@@ -169,14 +169,16 @@ const Auth = () => {
   const isLogin = mode === "login";
 
   return (
-    <div className="min-h-screen bg-background relative flex items-center justify-center">
+    <div className="min-h-screen bg-background relative flex items-center justify-center overflow-hidden">
       {/* Background Vietnam map */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0">
         <img
           src={vietnamMap}
           alt=""
-          className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] w-auto object-cover opacity-[0.06]"
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-[120%] w-auto object-cover opacity-[0.04]"
         />
+        <div className="absolute inset-0 dong-son-pattern opacity-[0.03]" />
+        <div className="absolute inset-0 heritage-pattern opacity-[0.02]" />
       </div>
 
       {/* Back button */}
@@ -238,8 +240,8 @@ const Auth = () => {
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-muted-foreground/50 text-center mt-6">
-          © 2024 Echoes of Vietnam — Team Tryyourbest
+        <p className="text-xs text-muted-foreground/40 text-center mt-6">
+          © 2026 Echoes of Vietnam — Team Tryyourbest
         </p>
       </motion.div>
     </div>

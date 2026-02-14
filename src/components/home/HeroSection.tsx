@@ -12,7 +12,7 @@ const HeroSection = () => {
   const { user } = useAuth();
 
   return (
-    <section className="relative min-h-[90vh] md:min-h-screen flex items-center overflow-hidden bg-foreground">
+    <section className="relative min-h-[92vh] md:min-h-screen flex items-center overflow-hidden bg-foreground">
       {/* Vietnam map background */}
       <div className="absolute inset-0">
         <img src={vietnamMap} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-20 md:opacity-40" />
@@ -113,14 +113,19 @@ const HeroSection = () => {
               { value: "41", label: "Cột mốc quan trọng" },
               { value: "4000+", label: "Năm văn hiến" },
             ].map((stat, index) => (
-              <div key={index}>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.4 + index * 0.15 }}
+              >
                 <div className="text-2xl md:text-4xl font-bold text-accent mb-1">
                   {stat.value}
                 </div>
                 <div className="text-[10px] md:text-sm text-primary-foreground/40">
                   {stat.label}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
