@@ -10,6 +10,7 @@ import HomeHeader from "@/components/home/HomeHeader";
 import HeroSection from "@/components/home/HeroSection";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import HomeFooter from "@/components/home/HomeFooter";
+import AnimatedSection from "@/components/home/AnimatedSection";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -25,26 +26,26 @@ const Index = () => {
       <section id="timeline" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
-            <div className="md:col-span-5 fade-in-up">
+            <AnimatedSection className="md:col-span-5" direction="left">
               <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
                 Dòng thời gian
               </p>
               <h2 className="text-foreground text-2xl md:text-4xl font-bold">
                 Khám phá <span className="text-accent">5 thời kỳ</span>
               </h2>
-            </div>
-            <div className="md:col-span-5 md:col-start-8 flex items-end fade-in-up delay-200">
+            </AnimatedSection>
+            <AnimatedSection className="md:col-span-5 md:col-start-8 flex items-end" direction="right" delay={0.2}>
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                 Từ buổi bình minh dựng nước đến thời đại đổi mới — mỗi thời kỳ mang một sắc màu riêng biệt.
               </p>
-            </div>
+            </AnimatedSection>
           </div>
 
-          <div className="fade-in-up delay-300">
+          <AnimatedSection direction="scale" delay={0.3}>
             <Timeline3DCarousel />
-          </div>
+          </AnimatedSection>
 
-          <div className="mt-8 md:mt-12 pt-5 md:pt-6 border-t border-border fade-in-up delay-400 text-center">
+          <AnimatedSection delay={0.4} className="mt-8 md:mt-12 pt-5 md:pt-6 border-t border-border text-center">
             <Button
               variant="outline"
               size="lg"
@@ -54,15 +55,15 @@ const Index = () => {
               Xem toàn bộ timeline
               <ArrowRight className="w-4 h-4 ml-3 transition-transform group-hover:translate-x-1" />
             </Button>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* Team & About Combined Section */}
-      <section id="team" className="py-16 md:py-28 px-4 md:px-12 bg-background">
+      <section id="team" className="py-16 md:py-28 px-4 md:px-12 bg-background overflow-hidden">
         <div className="container mx-auto">
           {/* Section header */}
-          <div className="max-w-2xl mb-12 md:mb-20 fade-in-up">
+          <AnimatedSection className="max-w-2xl mb-12 md:mb-20">
             <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
               Đội ngũ & Dự án
             </p>
@@ -72,41 +73,40 @@ const Index = () => {
             <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
               Những người trẻ đam mê lịch sử và công nghệ, mang đến trải nghiệm học lịch sử hiện đại cho thế hệ mới.
             </p>
-          </div>
+          </AnimatedSection>
 
-          {/* Team grid - compact editorial cards */}
+          {/* Team grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5 mb-16 md:mb-24">
             {teamMembers.map((member, index) => {
               const initials = member.name.split(" ").map((n) => n[0]).join("").toUpperCase();
               return (
-                <div
+                <AnimatedSection
                   key={member.id}
-                  className="group fade-in-up editorial-card rounded-xl overflow-hidden"
-                  style={{ animationDelay: `${index * 80}ms` }}
+                  delay={index * 0.08}
+                  direction="up"
                 >
-                  {/* Avatar area */}
-                  <div className="aspect-[4/3] bg-foreground relative overflow-hidden">
-                    <Avatar className="w-full h-full rounded-none">
-                      <AvatarImage src={member.avatar} alt={member.name} className="object-cover" />
-                      <AvatarFallback className="rounded-none bg-foreground text-accent text-3xl md:text-4xl font-bold">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Role badge overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-foreground/90 to-transparent">
-                      <span className="text-[9px] md:text-xs font-medium text-accent line-clamp-1">
-                        {member.role}
-                      </span>
+                  <div className="group editorial-card rounded-xl overflow-hidden h-full">
+                    <div className="aspect-[4/3] bg-foreground relative overflow-hidden">
+                      <Avatar className="w-full h-full rounded-none">
+                        <AvatarImage src={member.avatar} alt={member.name} className="object-cover" />
+                        <AvatarFallback className="rounded-none bg-foreground text-accent text-3xl md:text-4xl font-bold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-foreground/90 to-transparent">
+                        <span className="text-[9px] md:text-xs font-medium text-accent line-clamp-1">
+                          {member.role}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 md:p-4">
+                      <h4 className="text-foreground font-semibold text-xs md:text-base mb-0.5 md:mb-1 line-clamp-1">{member.name}</h4>
+                      <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {member.description}
+                      </p>
                     </div>
                   </div>
-                  {/* Info */}
-                  <div className="p-2.5 md:p-4">
-                    <h4 className="text-foreground font-semibold text-xs md:text-base mb-0.5 md:mb-1 line-clamp-1">{member.name}</h4>
-                    <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                      {member.description}
-                    </p>
-                  </div>
-                </div>
+                </AnimatedSection>
               );
             })}
           </div>
@@ -114,8 +114,8 @@ const Index = () => {
           {/* About - editorial layout */}
           <div id="about" className="pt-12 md:pt-16 border-t border-border">
             <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-16">
-              {/* Left: Project mission with accent bar */}
-              <div className="md:col-span-6 fade-in-up">
+              {/* Left: Project mission */}
+              <AnimatedSection className="md:col-span-6" direction="left">
                 <div className="accent-bar mb-6" />
                 <h3 className="text-foreground text-xl md:text-3xl font-bold mb-5 md:mb-6">
                   Sứ mệnh của dự án
@@ -131,7 +131,6 @@ const Index = () => {
                   ))}
                 </div>
 
-                {/* Stats inline */}
                 <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                   {[
                     { value: "6", label: "Thành viên" },
@@ -144,10 +143,10 @@ const Index = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </AnimatedSection>
 
               {/* Right: Contact card */}
-              <div className="md:col-span-5 md:col-start-8 fade-in-up delay-200">
+              <AnimatedSection className="md:col-span-5 md:col-start-8" direction="right" delay={0.2}>
                 <div className="bg-foreground text-primary-foreground rounded-xl p-6 md:p-8">
                   <p className="text-xs text-primary-foreground/40 uppercase tracking-wider mb-6">Liên hệ</p>
                   <div className="space-y-6">
@@ -180,17 +179,17 @@ const Index = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </AnimatedSection>
             </div>
           </div>
         </div>
       </section>
 
       {/* Premium Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12 bg-gradient-to-b from-background to-muted/30">
+      <section className="py-16 md:py-24 px-4 md:px-12 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-12 items-center">
-            <div className="md:col-span-5 fade-in-up">
+            <AnimatedSection className="md:col-span-5" direction="left">
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
                 <Crown className="w-3 h-3 mr-1" />
                 Premium
@@ -209,8 +208,8 @@ const Index = () => {
                 {user ? "Xem đặc quyền" : "Nâng cấp ngay"}
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Button>
-            </div>
-            <div className="md:col-span-6 md:col-start-7 fade-in-up delay-200 w-full">
+            </AnimatedSection>
+            <AnimatedSection className="md:col-span-6 md:col-start-7 w-full" direction="right" delay={0.2}>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {[
                   { icon: <Heart className="w-4 h-4 md:w-5 md:h-5 text-destructive" />, title: "10 Tim mỗi ngày", desc: "Gấp đôi số tim, thêm cơ hội làm quiz" },
@@ -218,52 +217,60 @@ const Index = () => {
                   { icon: <Star className="w-4 h-4 md:w-5 md:h-5 text-accent" />, title: "Huy hiệu đặc biệt", desc: "Huy hiệu vàng và khung avatar Premium" },
                   { icon: <Crown className="w-4 h-4 md:w-5 md:h-5 text-accent" />, title: "Truy cập sớm", desc: "Xem trước nội dung và tính năng mới" },
                 ].map((perk, i) => (
-                  <div key={i} className="p-3.5 md:p-5 bg-card border border-border rounded-lg hover:border-accent/30 transition-colors">
-                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-muted flex items-center justify-center mb-2.5 md:mb-3">
-                      {perk.icon}
+                  <AnimatedSection key={i} delay={0.1 + i * 0.1} direction="up">
+                    <div className="p-3.5 md:p-5 bg-card border border-border rounded-lg hover:border-accent/30 transition-colors h-full">
+                      <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-muted flex items-center justify-center mb-2.5 md:mb-3">
+                        {perk.icon}
+                      </div>
+                      <h4 className="font-semibold text-foreground text-xs md:text-sm mb-1">{perk.title}</h4>
+                      <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">{perk.desc}</p>
                     </div>
-                    <h4 className="font-semibold text-foreground text-xs md:text-sm mb-1">{perk.title}</h4>
-                    <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">{perk.desc}</p>
-                  </div>
+                  </AnimatedSection>
                 ))}
               </div>
-            </div>
+            </AnimatedSection>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12 bg-foreground text-primary-foreground">
+      <section className="py-16 md:py-24 px-4 md:px-12 bg-foreground text-primary-foreground overflow-hidden">
         <div className="container mx-auto text-center max-w-2xl">
-          <h2 className="text-2xl md:text-4xl font-bold text-primary-foreground mb-4 md:mb-6 fade-in-up">
-            {user ? "Tiếp tục hành trình" : "Bắt đầu hành trình"}
-          </h2>
-          <p className="text-primary-foreground/50 text-sm md:text-base mb-8 md:mb-10 fade-in-up delay-200">
-            {user
-              ? "Khám phá thêm nhiều cột mốc lịch sử và thử sức với các bài quiz."
-              : "Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử."}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center fade-in-up delay-300">
-            {user ? (
-              <>
-                <Button size="lg" onClick={() => navigate("/timeline")} className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6">
-                  Khám phá Timeline
-                </Button>
-                <Button size="lg" onClick={() => navigate("/profile")} className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-5 md:py-6">
-                  Xem hồ sơ
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button size="lg" onClick={() => navigate("/auth")} className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6">
-                  Đăng ký miễn phí
-                </Button>
-                <Button size="lg" onClick={() => navigate("/timeline")} className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-5 md:py-6">
-                  Xem Timeline
-                </Button>
-              </>
-            )}
-          </div>
+          <AnimatedSection>
+            <h2 className="text-2xl md:text-4xl font-bold text-primary-foreground mb-4 md:mb-6">
+              {user ? "Tiếp tục hành trình" : "Bắt đầu hành trình"}
+            </h2>
+          </AnimatedSection>
+          <AnimatedSection delay={0.15}>
+            <p className="text-primary-foreground/50 text-sm md:text-base mb-8 md:mb-10">
+              {user
+                ? "Khám phá thêm nhiều cột mốc lịch sử và thử sức với các bài quiz."
+                : "Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử."}
+            </p>
+          </AnimatedSection>
+          <AnimatedSection delay={0.3}>
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+              {user ? (
+                <>
+                  <Button size="lg" onClick={() => navigate("/timeline")} className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6">
+                    Khám phá Timeline
+                  </Button>
+                  <Button size="lg" onClick={() => navigate("/profile")} className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-5 md:py-6">
+                    Xem hồ sơ
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button size="lg" onClick={() => navigate("/auth")} className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6">
+                    Đăng ký miễn phí
+                  </Button>
+                  <Button size="lg" onClick={() => navigate("/timeline")} className="bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 text-sm py-5 md:py-6">
+                    Xem Timeline
+                  </Button>
+                </>
+              )}
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
