@@ -39,6 +39,9 @@ import {
 import logo from "@/assets/logo.png";
 import PremiumRequestsTab from "@/components/admin/PremiumRequestsTab";
 import FeedbackTab from "@/components/admin/FeedbackTab";
+import BannersTab from "@/components/admin/BannersTab";
+import RewardsTab from "@/components/admin/RewardsTab";
+import { Image, Gift } from "lucide-react";
 
 interface MilestoneRow {
   id: string;
@@ -74,6 +77,9 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [premiumRequests, setPremiumRequests] = useState<any[]>([]);
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
+  const [rewardsList, setRewardsList] = useState<any[]>([]);
+  const [redemptionsList, setRedemptionsList] = useState<any[]>([]);
   const [stats, setStats] = useState({ users: 0, milestones: 0, questions: 0, attempts: 0, pendingUpgrades: 0, newFeedback: 0 });
 
   // Dialog state
@@ -114,12 +120,15 @@ const Admin = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [m, q, p, pr, fb] = await Promise.all([
+    const [m, q, p, pr, fb, bn, rw, rd] = await Promise.all([
       supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, total_points, created_at").order("created_at", { ascending: false }),
       supabase.from("premium_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("feedback").select("*").order("created_at", { ascending: false }),
+      supabase.from("ad_banners").select("*").order("display_order"),
+      supabase.from("rewards").select("*").order("points_cost"),
+      supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
     ]);
 
     if (m.data) setMilestones(m.data);
@@ -127,6 +136,9 @@ const Admin = () => {
     if (p.data) setProfiles(p.data);
     if (pr.data) setPremiumRequests(pr.data);
     if (fb.data) setFeedbackList(fb.data);
+    if (bn.data) setBanners(bn.data);
+    if (rw.data) setRewardsList(rw.data);
+    if (rd.data) setRedemptionsList(rd.data);
 
     setStats({
       users: p.data?.length ?? 0,
@@ -260,6 +272,12 @@ const Admin = () => {
             <TabsTrigger value="milestones">
               <BookOpen className="w-4 h-4 mr-2" /> Cột mốc
             </TabsTrigger>
+            <TabsTrigger value="banners">
+              <Image className="w-4 h-4 mr-2" /> Banner QC
+            </TabsTrigger>
+            <TabsTrigger value="rewards">
+              <Gift className="w-4 h-4 mr-2" /> Đổi thưởng
+            </TabsTrigger>
             <TabsTrigger value="users">
               <Users className="w-4 h-4 mr-2" /> Người dùng
             </TabsTrigger>
@@ -378,6 +396,16 @@ const Admin = () => {
                 </TableBody>
               </Table>
             </div>
+          </TabsContent>
+
+          {/* Banners Tab */}
+          <TabsContent value="banners">
+            <BannersTab banners={banners} onRefresh={fetchAll} />
+          </TabsContent>
+
+          {/* Rewards Tab */}
+          <TabsContent value="rewards">
+            <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />
           </TabsContent>
         </Tabs>
       </main>

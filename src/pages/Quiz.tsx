@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Heart, ArrowLeft, CheckCircle, XCircle, Trophy, Star, Zap } from "lucide-react";
 import UserHeader from "@/components/layout/UserHeader";
+import QuizAdBanner from "@/components/quiz/QuizAdBanner";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface QuizQuestion {
@@ -15,7 +16,7 @@ interface QuizQuestion {
   image_url: string | null;
 }
 
-type QuizState = "pre-start" | "in-progress" | "finished";
+type QuizState = "ad" | "pre-start" | "in-progress" | "finished";
 
 interface QuizResult {
   score: number;
@@ -33,7 +34,7 @@ const Quiz = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [state, setState] = useState<QuizState>("pre-start");
+  const [state, setState] = useState<QuizState>("ad");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -111,6 +112,11 @@ const Quiz = () => {
         <div className="container mx-auto max-w-2xl">
           {/* Pre-start */}
           <AnimatePresence mode="wait">
+            {/* Ad Banner */}
+            {state === "ad" && (
+              <QuizAdBanner onComplete={() => setState("pre-start")} />
+            )}
+
             {state === "pre-start" && (
               <motion.div
                 key="pre-start"
@@ -299,7 +305,7 @@ const Quiz = () => {
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button onClick={() => { setState("pre-start"); setCurrentIndex(0); setAnswers([]); setResult(null); }} variant="outline">
+                      <Button onClick={() => { setState("ad"); setCurrentIndex(0); setAnswers([]); setResult(null); }} variant="outline">
                         Làm lại Quiz
                       </Button>
                       <Button onClick={() => navigate("/timeline")} className="bg-accent text-accent-foreground hover:bg-accent/90">
