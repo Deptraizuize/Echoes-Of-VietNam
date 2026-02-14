@@ -21,6 +21,7 @@ const HeroSection = () => {
       </div>
 
       <div className="absolute inset-0 heritage-pattern opacity-[0.03]" />
+      <div className="absolute inset-0 dong-son-pattern opacity-[0.06]" />
 
       <div className="container mx-auto px-5 md:px-12 relative z-10 pt-20 pb-8 md:pt-24 md:pb-12">
         <div className="max-w-2xl">

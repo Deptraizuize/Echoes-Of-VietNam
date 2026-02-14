@@ -12,19 +12,23 @@ const Timeline = () => {
       {/* Hero */}
       <section className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden bg-foreground">
         <div className="absolute inset-0 heritage-pattern opacity-5" />
+        <div className="absolute inset-0 dong-son-pattern opacity-30" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
 
         <div className="container mx-auto relative z-10">
           <div className="grid md:grid-cols-12 gap-8 items-end">
             <div className="md:col-span-7">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-primary-foreground/40 uppercase tracking-wider text-sm mb-4"
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex items-center gap-3 mb-6"
               >
-                Khám phá
-              </motion.p>
+                <div className="w-8 h-[2px] bg-accent" />
+                <p className="text-accent uppercase tracking-wider text-xs font-medium">
+                  Khám phá
+                </p>
+              </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -92,12 +96,13 @@ const Timeline = () => {
       </main>
 
       {/* Footer */}
-      <footer className="py-8 px-6 md:px-12 border-t border-border">
-        <div className="container mx-auto flex items-center justify-between">
+      <footer className="py-8 px-6 md:px-12 border-t border-border relative">
+        <div className="absolute inset-0 wave-pattern opacity-30" />
+        <div className="container mx-auto flex items-center justify-between relative z-10">
           <span className="text-lg font-semibold">
             Echoes of <span className="italic text-accent">Vietnam</span>
           </span>
-          <p className="text-sm text-muted-foreground">© 2024</p>
+          <p className="text-sm text-muted-foreground">© 2025 ✦ Tryyourbest</p>
         </div>
       </footer>
       

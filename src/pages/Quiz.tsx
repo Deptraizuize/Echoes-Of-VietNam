@@ -136,10 +136,11 @@ const Quiz = () => {
   const progress = questions.length > 0 ? ((currentIndex) / questions.length) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 dong-son-pattern opacity-[0.03] pointer-events-none" />
       <UserHeader />
 
-      <main className="py-8 px-6 md:px-12">
+      <main className="py-8 px-6 md:px-12 relative z-10">
         <div className="container mx-auto max-w-2xl">
           <AnimatePresence mode="wait">
             {/* Ad Banner */}
@@ -160,9 +161,10 @@ const Quiz = () => {
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-accent/10 flex items-center justify-center"
+                  className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center relative"
                 >
                   <Trophy className="w-12 h-12 text-accent" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-[10px] text-accent">✦</div>
                 </motion.div>
                 <h2 className="text-3xl font-bold text-foreground mb-3">{milestoneTitle}</h2>
                 <p className="text-muted-foreground mb-2">10 câu hỏi ngẫu nhiên • Đạt 8/10 để hoàn thành</p>
