@@ -2,7 +2,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, Plus, Image } from "lucide-react";
+import MarkdownEditor from "./MarkdownEditor";
 
 interface MilestoneRow {
   id: string;
@@ -197,25 +197,37 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             </div>
 
-            <div>
-              <Label>Tóm tắt</Label>
-              <Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={2} />
-            </div>
+            <MarkdownEditor
+              label="Tóm tắt"
+              value={form.summary}
+              onChange={(v) => setForm({ ...form, summary: v })}
+              rows={2}
+              placeholder="Tóm tắt ngắn gọn..."
+            />
 
-            <div>
-              <Label>Diễn biến</Label>
-              <Textarea value={form.events} onChange={(e) => setForm({ ...form, events: e.target.value })} rows={4} />
-            </div>
+            <MarkdownEditor
+              label="Diễn biến"
+              value={form.events}
+              onChange={(v) => setForm({ ...form, events: v })}
+              rows={6}
+              placeholder="## Giai đoạn 1&#10;Nội dung...&#10;&#10;## Giai đoạn 2&#10;Nội dung..."
+            />
 
-            <div>
-              <Label>Kết quả</Label>
-              <Textarea value={form.results} onChange={(e) => setForm({ ...form, results: e.target.value })} rows={3} />
-            </div>
+            <MarkdownEditor
+              label="Kết quả"
+              value={form.results}
+              onChange={(v) => setForm({ ...form, results: v })}
+              rows={4}
+              placeholder="- Kết quả 1&#10;- Kết quả 2"
+            />
 
-            <div>
-              <Label>Ý nghĩa lịch sử</Label>
-              <Textarea value={form.significance} onChange={(e) => setForm({ ...form, significance: e.target.value })} rows={3} />
-            </div>
+            <MarkdownEditor
+              label="Ý nghĩa lịch sử"
+              value={form.significance}
+              onChange={(v) => setForm({ ...form, significance: v })}
+              rows={4}
+              placeholder="**Ý nghĩa quan trọng**: ..."
+            />
 
             <div>
               <Label>Nhân vật lịch sử (cách nhau bằng dấu phẩy)</Label>
@@ -229,7 +241,13 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
 
             <div>
               <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
-              <Textarea value={form.image_urls} onChange={(e) => setForm({ ...form, image_urls: e.target.value })} rows={2} placeholder="https://example.com/image1.jpg" />
+              <textarea
+                value={form.image_urls}
+                onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
+                rows={2}
+                placeholder="https://example.com/image1.jpg"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
             </div>
           </div>
 

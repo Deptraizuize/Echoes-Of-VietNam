@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   BookOpen, HelpCircle, Users, BarChart3, ArrowLeft, Crown, MessageSquare,
 } from "lucide-react";
-import { Image, Gift } from "lucide-react";
+import { Image, Gift, CreditCard } from "lucide-react";
 import logo from "@/assets/logo.png";
 import PremiumRequestsTab from "@/components/admin/PremiumRequestsTab";
 import FeedbackTab from "@/components/admin/FeedbackTab";
@@ -19,6 +19,7 @@ import BannersTab from "@/components/admin/BannersTab";
 import RewardsTab from "@/components/admin/RewardsTab";
 import QuestionsTab from "@/components/admin/QuestionsTab";
 import MilestoneDetailsTab from "@/components/admin/MilestoneDetailsTab";
+import PaymentSettingsTab from "@/components/admin/PaymentSettingsTab";
 
 interface MilestoneRow {
   id: string;
@@ -59,6 +60,7 @@ const Admin = () => {
   const [rewardsList, setRewardsList] = useState<any[]>([]);
   const [redemptionsList, setRedemptionsList] = useState<any[]>([]);
   const [milestoneDetails, setMilestoneDetails] = useState<any[]>([]);
+  const [paymentSettings, setPaymentSettings] = useState<any[]>([]);
   const [stats, setStats] = useState({ users: 0, milestones: 0, questions: 0, attempts: 0, pendingUpgrades: 0, newFeedback: 0 });
 
   useEffect(() => {
@@ -78,7 +80,7 @@ const Admin = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [m, q, p, pr, fb, bn, rw, rd, md] = await Promise.all([
+    const [m, q, p, pr, fb, bn, rw, rd, md, ps] = await Promise.all([
       supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer, image_url").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, total_points, created_at").order("created_at", { ascending: false }),
@@ -88,6 +90,7 @@ const Admin = () => {
       supabase.from("rewards").select("*").order("points_cost"),
       supabase.from("reward_redemptions").select("*").order("created_at", { ascending: false }),
       supabase.from("milestone_details").select("*").order("created_at"),
+      supabase.from("payment_settings").select("*").order("created_at"),
     ]);
 
     if (m.data) setMilestones(m.data);
@@ -99,6 +102,7 @@ const Admin = () => {
     if (rw.data) setRewardsList(rw.data);
     if (rd.data) setRedemptionsList(rd.data);
     if (md.data) setMilestoneDetails(md.data);
+    if (ps.data) setPaymentSettings(ps.data);
 
     setStats({
       users: p.data?.length ?? 0,
@@ -160,6 +164,7 @@ const Admin = () => {
             <TabsTrigger value="banners"><Image className="w-4 h-4 mr-2" /> Banner QC</TabsTrigger>
             <TabsTrigger value="rewards"><Gift className="w-4 h-4 mr-2" /> Đổi thưởng</TabsTrigger>
             <TabsTrigger value="users"><Users className="w-4 h-4 mr-2" /> Người dùng</TabsTrigger>
+            <TabsTrigger value="payment"><CreditCard className="w-4 h-4 mr-2" /> Thanh toán</TabsTrigger>
           </TabsList>
 
           <TabsContent value="premium">
@@ -238,6 +243,10 @@ const Admin = () => {
 
           <TabsContent value="rewards">
             <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />
+          </TabsContent>
+
+          <TabsContent value="payment">
+            <PaymentSettingsTab settings={paymentSettings} onRefresh={fetchAll} />
           </TabsContent>
         </Tabs>
       </main>
