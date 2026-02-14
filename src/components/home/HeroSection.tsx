@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import logo from "@/assets/logo.png";
-import heroCulture from "@/assets/hero-culture.jpg";
 import vietnamMap from "@/assets/vietnam-map.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,27 +11,18 @@ const HeroSection = () => {
   const { user } = useAuth();
 
   return (
-    <section className="relative min-h-screen flex items-end overflow-hidden bg-foreground">
-      {/* Full background image */}
+    <section className="relative min-h-[90vh] md:min-h-screen flex items-center overflow-hidden bg-foreground">
+      {/* Vietnam map background */}
       <div className="absolute inset-0">
-        <img
-          src={heroCulture}
-          alt="Di sản văn hóa Việt Nam"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/70 to-foreground/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-transparent to-transparent" />
-      </div>
-
-      {/* Vietnam map watermark */}
-      <div className="absolute right-0 top-0 h-full opacity-10 pointer-events-none">
-        <img src={vietnamMap} alt="" className="h-full w-auto object-cover" />
+        <img src={vietnamMap} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-20 md:opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/95 md:via-foreground/90 to-foreground/60 md:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-transparent to-foreground/60" />
       </div>
 
       <div className="absolute inset-0 heritage-pattern opacity-[0.03]" />
 
-      <div className="container mx-auto px-5 md:px-12 relative z-10 pb-12 md:pb-20 pt-24">
-        <div className="max-w-3xl">
+      <div className="container mx-auto px-5 md:px-12 relative z-10 pt-20 pb-8 md:pt-24 md:pb-12">
+        <div className="max-w-2xl">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
