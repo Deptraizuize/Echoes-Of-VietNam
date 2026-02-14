@@ -2,181 +2,44 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, Mail, MapPin, Heart, Star, Zap, Crown, LogOut, User } from "lucide-react";
-import logo from "@/assets/logo.png";
-import vietnamMap from "@/assets/vietnam-map.jpg";
+import { ArrowRight, Mail, MapPin, Heart, Star, Zap, Crown } from "lucide-react";
 import { teamMembers, projectInfo, contactInfo } from "@/data/teamData";
 import Timeline3DCarousel from "@/components/timeline/Timeline3DCarousel";
 import { useAuth } from "@/contexts/AuthContext";
+import HomeHeader from "@/components/home/HomeHeader";
+import HeroSection from "@/components/home/HeroSection";
+import FeaturesSection from "@/components/home/FeaturesSection";
+import HomeFooter from "@/components/home/HomeFooter";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-foreground/95 backdrop-blur-sm border-b border-primary-foreground/10">
-        <div className="container mx-auto px-6 md:px-12 py-4">
-          <div className="flex items-center justify-between">
-            <a href="#" className="flex items-center gap-3">
-              <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="text-lg font-semibold text-primary-foreground">
-                Echoes of <span className="italic text-accent">Vietnam</span>
-              </span>
-            </a>
-
-            <nav className="hidden md:flex items-center gap-8">
-              {["Timeline", "Team", "About"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-
-            {user ? (
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/profile")}
-                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-sm gap-2"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">{user.user_metadata?.full_name || user.email?.split("@")[0] || "Profile"}</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={async () => { await signOut(); }}
-                  className="text-primary-foreground/50 hover:text-primary-foreground hover:bg-primary-foreground/10 w-8 h-8"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/auth")}
-                className="text-primary-foreground border border-primary-foreground/20 hover:bg-primary-foreground hover:text-foreground text-sm"
-              >
-                Đăng nhập
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] md:min-h-screen flex items-center overflow-hidden bg-foreground">
-        {/* Vietnam map background */}
-        <div className="absolute inset-0">
-          <img src={vietnamMap} alt="" className="absolute right-0 top-0 h-full w-auto object-cover opacity-20 md:opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-foreground/95 md:via-foreground/90 to-foreground/60 md:to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-foreground via-transparent to-foreground/60" />
-        </div>
-        <div className="absolute inset-0 heritage-pattern opacity-5" />
-
-        <div className="container mx-auto px-5 md:px-12 relative z-10 pt-20 pb-8">
-          <div className="max-w-2xl">
-            <p className="text-primary-foreground/50 uppercase tracking-wider text-xs md:text-sm mb-4 md:mb-6 fade-in-up">
-              Hành trình lịch sử
-            </p>
-
-            <div className="flex items-center gap-4 md:gap-5 mb-6 md:mb-8 fade-in-up delay-100">
-              <img src={logo} alt="Logo" className="w-12 h-12 md:w-20 md:h-20 rounded-xl object-contain flex-shrink-0" />
-              <h1 className="text-primary-foreground text-3xl md:text-6xl lg:text-7xl font-extrabold leading-none">
-                Echoes of
-                <br />
-                <span className="italic text-accent">Vietnam</span>
-              </h1>
-            </div>
-
-            <div className="flex items-start gap-3 md:gap-4 mb-8 md:mb-10 fade-in-up delay-300">
-              <div className="w-8 md:w-10 h-[2px] bg-accent mt-3 flex-shrink-0" />
-              <p className="text-primary-foreground/60 text-sm md:text-lg max-w-md leading-relaxed">
-                Khám phá hàng nghìn năm lịch sử hào hùng qua từng trang sử vàng son
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-12 md:mb-16 fade-in-up delay-400">
-              <Button
-                size="lg"
-                onClick={() => navigate("/timeline")}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6 group"
-              >
-                Khám phá ngay
-                <ArrowRight className="w-4 h-4 ml-3 transition-transform group-hover:translate-x-1" />
-              </Button>
-              {!user && (
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/auth")}
-                  className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-5 md:py-6"
-                >
-                  ✦ Đăng ký miễn phí
-                </Button>
-              )}
-              {user && (
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/profile")}
-                  className="border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-sm py-5 md:py-6"
-                >
-                  Xem hồ sơ của tôi
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="pt-6 md:pt-8 border-t border-primary-foreground/10 fade-in-up delay-500">
-            <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-lg">
-              {[
-                { value: "5", label: "Thời kỳ" },
-                { value: "41", label: "Cột mốc" },
-                { value: "4000+", label: "Năm lịch sử" },
-              ].map((stat, index) => (
-                <div key={index}>
-                  <div className="text-2xl md:text-4xl font-bold text-accent mb-1">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs md:text-sm text-primary-foreground/40">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeHeader />
+      <HeroSection />
+      <FeaturesSection />
 
       {/* Timeline Section */}
-      <section id="timeline" className="py-16 md:py-24 px-4 md:px-12 bg-background overflow-hidden">
+      <section id="timeline" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
             <div className="md:col-span-5 fade-in-up">
               <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
-                01 / Timeline
+                Dòng thời gian
               </p>
               <h2 className="text-foreground text-2xl md:text-4xl font-bold">
-                Dòng thời gian
+                Khám phá <span className="text-accent">5 thời kỳ</span>
               </h2>
             </div>
             <div className="md:col-span-5 md:col-start-8 flex items-end fade-in-up delay-200">
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                Từ buổi bình minh dựng nước đến thời đại đổi mới. Khám phá
-                những cột mốc đã định hình nên dân tộc Việt Nam.
+                Từ buổi bình minh dựng nước đến thời đại đổi mới — mỗi thời kỳ mang một sắc màu riêng biệt.
               </p>
             </div>
           </div>
 
-          {/* 3D Carousel */}
           <div className="fade-in-up delay-300">
             <Timeline3DCarousel />
           </div>
@@ -196,12 +59,12 @@ const Index = () => {
       </section>
 
       {/* Team Section */}
-      <section id="team" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30">
+      <section id="team" className="py-16 md:py-24 px-4 md:px-12 bg-background">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
             <div className="md:col-span-4 fade-in-up">
               <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
-                02 / Team
+                Đội ngũ
               </p>
               <h2 className="text-foreground text-2xl md:text-4xl font-bold">
                 Nhóm phát triển
@@ -217,12 +80,7 @@ const Index = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
             {teamMembers.map((member, index) => {
-              const initials = member.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase();
-
+              const initials = member.name.split(" ").map((n) => n[0]).join("").toUpperCase();
               return (
                 <div
                   key={member.id}
@@ -231,19 +89,13 @@ const Index = () => {
                 >
                   <div className="aspect-[3/4] bg-muted mb-3 md:mb-4 overflow-hidden rounded-lg">
                     <Avatar className="w-full h-full rounded-none">
-                      <AvatarImage
-                        src={member.avatar}
-                        alt={member.name}
-                        className="object-cover"
-                      />
+                      <AvatarImage src={member.avatar} alt={member.name} className="object-cover" />
                       <AvatarFallback className="rounded-none bg-foreground text-background text-2xl md:text-3xl font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <h4 className="text-foreground font-semibold text-sm md:text-base mb-0.5">
-                    {member.name}
-                  </h4>
+                  <h4 className="text-foreground font-semibold text-sm md:text-base mb-0.5">{member.name}</h4>
                   <p className="text-xs md:text-sm text-muted-foreground">{member.role}</p>
                 </div>
               );
@@ -253,50 +105,35 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 md:py-24 px-4 md:px-12 bg-background">
+      <section id="about" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30">
         <div className="container mx-auto">
           <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-12">
             <div className="md:col-span-5 fade-in-up">
               <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
-                03 / About
+                Về dự án
               </p>
               <h2 className="text-foreground text-2xl md:text-4xl font-bold mb-6 md:mb-8">
-                Về dự án
+                Sứ mệnh của chúng tôi
               </h2>
-
               <div className="space-y-5 md:space-y-6">
                 <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                   {projectInfo.description}
                 </p>
-
                 <div>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-3">
-                    Công nghệ
-                  </p>
+                  <p className="text-xs md:text-sm text-muted-foreground mb-3">Công nghệ</p>
                   <div className="flex flex-wrap gap-2">
                     {projectInfo.technologies.map((tech) => (
-                      <Badge
-                        key={tech}
-                        variant="outline"
-                        className="rounded-md text-xs"
-                      >
-                        {tech}
-                      </Badge>
+                      <Badge key={tech} variant="outline" className="rounded-md text-xs">{tech}</Badge>
                     ))}
                   </div>
                 </div>
               </div>
             </div>
-
             <div className="md:col-span-5 md:col-start-8 fade-in-up delay-200">
               <div className="border-l-2 border-accent/30 pl-6 md:pl-8">
                 <p className="text-xs md:text-sm text-muted-foreground mb-6 md:mb-8">Liên hệ</p>
-
                 <div className="space-y-6 md:space-y-8">
-                  <a
-                    href={`mailto:${contactInfo.email}`}
-                    className="flex items-start gap-3 md:gap-4 group"
-                  >
+                  <a href={`mailto:${contactInfo.email}`} className="flex items-start gap-3 md:gap-4 group">
                     <Mail className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Email</p>
@@ -305,7 +142,6 @@ const Index = () => {
                       </p>
                     </div>
                   </a>
-
                   {contactInfo.address && (
                     <div className="flex items-start gap-3 md:gap-4">
                       <MapPin className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-0.5" />
@@ -335,18 +171,17 @@ const Index = () => {
                 Người Yêu Sử
               </h2>
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-6 md:mb-8">
-                Nâng cấp trải nghiệm học lịch sử với những đặc quyền dành riêng cho người yêu thích khám phá văn hóa Việt Nam.
+                Nâng cấp trải nghiệm với những đặc quyền dành riêng cho người yêu thích lịch sử Việt Nam.
               </p>
               <Button
                 size="lg"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate(user ? "/profile" : "/auth")}
                 className="bg-accent hover:bg-accent/90 text-accent-foreground text-sm py-5 md:py-6 group w-full sm:w-auto"
               >
-                Nâng cấp ngay
+                {user ? "Xem đặc quyền" : "Nâng cấp ngay"}
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Button>
             </div>
-
             <div className="md:col-span-6 md:col-start-7 fade-in-up delay-200 w-full">
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {[
@@ -376,7 +211,9 @@ const Index = () => {
             {user ? "Tiếp tục hành trình" : "Bắt đầu hành trình"}
           </h2>
           <p className="text-primary-foreground/50 text-sm md:text-base mb-8 md:mb-10 fade-in-up delay-200">
-            {user ? "Khám phá thêm nhiều cột mốc lịch sử và thử sức với các bài quiz." : "Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử."}
+            {user
+              ? "Khám phá thêm nhiều cột mốc lịch sử và thử sức với các bài quiz."
+              : "Đăng ký để truy cập đầy đủ nội dung chi tiết về các cột mốc lịch sử."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center fade-in-up delay-300">
             {user ? (
@@ -402,33 +239,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 px-6 md:px-12 bg-background border-t border-border">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="Logo" className="w-7 h-7 rounded-md object-contain" />
-              <span className="font-semibold">Echoes of Vietnam</span>
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              © 2024 — Giữ gìn và lan tỏa lịch sử
-            </p>
-
-            <div className="flex gap-6">
-              {["Timeline", "Team", "About"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <HomeFooter />
     </div>
   );
 };
