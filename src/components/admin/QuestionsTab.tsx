@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Image } from "lucide-react";
+import { Plus, Trash2, Edit, Image, Search, Filter } from "lucide-react";
 
 interface MilestoneRow {
   id: string;
@@ -39,6 +39,9 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editing, setEditing] = useState<QuestionRow | null>(null);
+  const [filterMilestone, setFilterMilestone] = useState("");
+  const [filterHasImage, setFilterHasImage] = useState<"all" | "yes" | "no">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     milestone_id: "",
     question: "",
@@ -50,10 +53,20 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
     image_url: "",
   });
 
+  const filteredQuestions = useMemo(() => {
+    return questions.filter((q) => {
+      if (filterMilestone && q.milestone_id !== filterMilestone) return false;
+      if (filterHasImage === "yes" && !q.image_url) return false;
+      if (filterHasImage === "no" && q.image_url) return false;
+      if (searchQuery && !q.question.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    });
+  }, [questions, filterMilestone, filterHasImage, searchQuery]);
+
   const openNew = () => {
     setEditing(null);
     setForm({
-      milestone_id: milestones[0]?.id ?? "",
+      milestone_id: filterMilestone || (milestones[0]?.id ?? ""),
       question: "",
       option_a: "",
       option_b: "",
@@ -117,33 +130,85 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-serif text-xl">Ngân hàng câu hỏi ({questions.length})</h3>
-        <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
-          <Plus className="w-4 h-4 mr-2" /> Thêm câu hỏi
-        </Button>
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-serif text-xl">Ngân hàng câu hỏi ({questions.length})</h3>
+          <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
+            <Plus className="w-4 h-4 mr-2" /> Thêm
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm câu hỏi..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+          <select
+            value={filterMilestone}
+            onChange={(e) => setFilterMilestone(e.target.value)}
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[150px]"
+          >
+            <option value="">Tất cả cột mốc</option>
+            {milestones.map((m) => (
+              <option key={m.id} value={m.id}>{m.title}</option>
+            ))}
+          </select>
+          <select
+            value={filterHasImage}
+            onChange={(e) => setFilterHasImage(e.target.value as "all" | "yes" | "no")}
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="all">Tất cả</option>
+            <option value="yes">Có ảnh</option>
+            <option value="no">Không ảnh</option>
+          </select>
+        </div>
+
+        {filteredQuestions.length !== questions.length && (
+          <p className="text-xs text-muted-foreground">
+            Hiển thị {filteredQuestions.length}/{questions.length} câu hỏi
+          </p>
+        )}
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Câu hỏi</TableHead>
-              <TableHead className="w-40">Cột mốc</TableHead>
-              <TableHead className="w-16">Hình</TableHead>
-              <TableHead className="w-20">Đáp án</TableHead>
-              <TableHead className="w-24"></TableHead>
+              <TableHead className="min-w-[250px]">Câu hỏi</TableHead>
+              <TableHead className="min-w-[120px] w-[120px]">Cột mốc</TableHead>
+              <TableHead className="w-16 text-center">Ảnh</TableHead>
+              <TableHead className="min-w-[100px] w-[100px]">Đáp án đúng</TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {questions.slice(0, 50).map((q) => (
+            {filteredQuestions.slice(0, 50).map((q) => (
               <TableRow key={q.id}>
-                <TableCell className="max-w-xs truncate">{q.question}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{getMilestoneTitle(q.milestone_id)}</TableCell>
                 <TableCell>
-                  {q.image_url && <Image className="w-4 h-4 text-accent" />}
+                  <span className="line-clamp-2 text-sm leading-snug">{q.question}</span>
                 </TableCell>
-                <TableCell>{q.options[q.correct_answer]?.slice(0, 15)}</TableCell>
+                <TableCell>
+                  <span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(q.milestone_id)}</span>
+                </TableCell>
+                <TableCell className="text-center">
+                  {q.image_url ? (
+                    <img src={q.image_url} alt="" className="w-8 h-8 rounded object-cover mx-auto" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <span className="line-clamp-1 text-xs font-medium text-accent">
+                    {String.fromCharCode(65 + q.correct_answer)}. {q.options[q.correct_answer]?.slice(0, 20)}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(q)} className="h-8 w-8">
@@ -156,6 +221,13 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
                 </TableCell>
               </TableRow>
             ))}
+            {filteredQuestions.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  {questions.length === 0 ? "Chưa có câu hỏi nào" : "Không tìm thấy câu hỏi phù hợp"}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
