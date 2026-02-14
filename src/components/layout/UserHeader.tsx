@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Heart, Star, LogOut, Shield } from "lucide-react";
+import { Heart, Star, LogOut, Shield, Gift } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const UserHeader = () => {
@@ -17,13 +17,11 @@ const UserHeader = () => {
     if (!user) return;
 
     const fetchUserData = async () => {
-      // Get hearts
       const { data: heartsData } = await supabase.rpc("get_hearts");
       if (heartsData && heartsData.length > 0) {
         setHearts(heartsData[0].hearts_remaining);
       }
 
-      // Get points
       const { data: profile } = await supabase
         .from("profiles")
         .select("total_points")
@@ -31,7 +29,6 @@ const UserHeader = () => {
         .single();
       if (profile) setPoints(profile.total_points);
 
-      // Check admin
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
@@ -62,74 +59,51 @@ const UserHeader = () => {
           </div>
 
           <nav className="flex items-center gap-2 sm:gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/timeline")}
-              className="text-sm"
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate("/timeline")} className="text-sm">
               Timeline
             </Button>
 
-            {user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/feedback")}
-                className="text-sm hidden sm:inline-flex"
-              >
+            {user && !isAdmin && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/feedback")} className="text-sm hidden sm:inline-flex">
                 Góp ý
               </Button>
             )}
 
             {user ? (
               <>
-                {/* Hearts */}
-                {hearts !== null && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 rounded-full">
-                    <Heart className="w-4 h-4 text-destructive fill-destructive" />
-                    <span className="text-sm font-medium text-destructive">{hearts}</span>
-                  </div>
+                {!isAdmin && (
+                  <>
+                    {hearts !== null && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 rounded-full">
+                        <Heart className="w-4 h-4 text-destructive fill-destructive" />
+                        <span className="text-sm font-medium text-destructive">{hearts}</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => navigate("/profile")}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full hover:bg-accent/20 transition-colors"
+                    >
+                      <Star className="w-4 h-4 text-accent fill-accent" />
+                      <span className="text-sm font-medium text-accent">{points}</span>
+                    </button>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/rewards")} className="text-sm hidden sm:inline-flex">
+                      <Gift className="w-4 h-4 mr-1" /> Đổi thưởng
+                    </Button>
+                  </>
                 )}
 
-                {/* Points - clickable to profile */}
-                <button
-                  onClick={() => navigate("/profile")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full hover:bg-accent/20 transition-colors"
-                >
-                  <Star className="w-4 h-4 text-accent fill-accent" />
-                  <span className="text-sm font-medium text-accent">{points}</span>
-                </button>
-
-                {/* Admin */}
                 {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate("/admin")}
-                    className="text-sm"
-                  >
-                    <Shield className="w-4 h-4 mr-1" />
-                    Admin
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-sm">
+                    <Shield className="w-4 h-4 mr-1" /> Admin
                   </Button>
                 )}
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSignOut}
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
                   <LogOut className="w-4 h-4" />
                 </Button>
               </>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/auth")}
-                className="text-sm"
-              >
+              <Button variant="outline" size="sm" onClick={() => navigate("/auth")} className="text-sm">
                 Đăng nhập
               </Button>
             )}
