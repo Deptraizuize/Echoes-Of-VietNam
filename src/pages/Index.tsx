@@ -58,99 +58,127 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section id="team" className="py-16 md:py-24 px-4 md:px-12 bg-background">
+      {/* Team & About Combined Section */}
+      <section id="team" className="py-16 md:py-28 px-4 md:px-12 bg-background">
         <div className="container mx-auto">
-          <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-8 mb-10 md:mb-16">
-            <div className="md:col-span-4 fade-in-up">
-              <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
-                Đội ngũ
-              </p>
-              <h2 className="text-foreground text-2xl md:text-4xl font-bold">
-                Nhóm phát triển
-              </h2>
-            </div>
-            <div className="md:col-span-6 md:col-start-7 flex items-end fade-in-up delay-200">
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                <span className="text-foreground font-medium">Tryyourbest</span>{" "}
-                — Những người trẻ đam mê lịch sử và công nghệ.
-              </p>
-            </div>
+          {/* Section header */}
+          <div className="max-w-2xl mb-12 md:mb-20 fade-in-up">
+            <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
+              Đội ngũ & Dự án
+            </p>
+            <h2 className="text-foreground text-2xl md:text-4xl font-bold mb-4">
+              Được tạo bởi <span className="text-accent">Tryyourbest</span>
+            </h2>
+            <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+              Những người trẻ đam mê lịch sử và công nghệ, mang đến trải nghiệm học lịch sử hiện đại cho thế hệ mới.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+          {/* Team grid - compact editorial cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5 mb-16 md:mb-24">
             {teamMembers.map((member, index) => {
               const initials = member.name.split(" ").map((n) => n[0]).join("").toUpperCase();
               return (
                 <div
                   key={member.id}
-                  className="group fade-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="group fade-in-up editorial-card rounded-xl overflow-hidden"
+                  style={{ animationDelay: `${index * 80}ms` }}
                 >
-                  <div className="aspect-[3/4] bg-muted mb-3 md:mb-4 overflow-hidden rounded-lg">
+                  {/* Avatar area */}
+                  <div className="aspect-[4/3] bg-foreground relative overflow-hidden">
                     <Avatar className="w-full h-full rounded-none">
                       <AvatarImage src={member.avatar} alt={member.name} className="object-cover" />
-                      <AvatarFallback className="rounded-none bg-foreground text-background text-2xl md:text-3xl font-bold">
+                      <AvatarFallback className="rounded-none bg-foreground text-accent text-3xl md:text-4xl font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
+                    {/* Role badge overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-foreground/90 to-transparent">
+                      <span className="text-[10px] md:text-xs font-medium text-accent">
+                        {member.role}
+                      </span>
+                    </div>
                   </div>
-                  <h4 className="text-foreground font-semibold text-sm md:text-base mb-0.5">{member.name}</h4>
-                  <p className="text-xs md:text-sm text-muted-foreground">{member.role}</p>
+                  {/* Info */}
+                  <div className="p-3 md:p-4">
+                    <h4 className="text-foreground font-semibold text-sm md:text-base mb-1">{member.name}</h4>
+                    <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                      {member.description}
+                    </p>
+                  </div>
                 </div>
               );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* About Section */}
-      <section id="about" className="py-16 md:py-24 px-4 md:px-12 bg-muted/30">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-12">
-            <div className="md:col-span-5 fade-in-up">
-              <p className="text-muted-foreground uppercase tracking-wider text-xs md:text-sm mb-2 md:mb-3">
-                Về dự án
-              </p>
-              <h2 className="text-foreground text-2xl md:text-4xl font-bold mb-6 md:mb-8">
-                Sứ mệnh của chúng tôi
-              </h2>
-              <div className="space-y-5 md:space-y-6">
-                <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+          {/* About - editorial layout */}
+          <div id="about" className="pt-12 md:pt-16 border-t border-border">
+            <div className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-16">
+              {/* Left: Project mission with accent bar */}
+              <div className="md:col-span-6 fade-in-up">
+                <div className="accent-bar mb-6" />
+                <h3 className="text-foreground text-xl md:text-3xl font-bold mb-5 md:mb-6">
+                  Sứ mệnh của dự án
+                </h3>
+                <p className="text-muted-foreground text-sm md:text-base leading-[1.8] mb-6">
                   {projectInfo.description}
                 </p>
-                <div>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-3">Công nghệ</p>
-                  <div className="flex flex-wrap gap-2">
-                    {projectInfo.technologies.map((tech) => (
-                      <Badge key={tech} variant="outline" className="rounded-md text-xs">{tech}</Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {projectInfo.technologies.map((tech) => (
+                    <Badge key={tech} variant="outline" className="rounded-full text-xs px-3 py-1 border-accent/30 text-accent">
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+
+                {/* Stats inline */}
+                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
+                  {[
+                    { value: "6", label: "Thành viên" },
+                    { value: "5", label: "Thời kỳ" },
+                    { value: "41", label: "Cột mốc" },
+                  ].map((s, i) => (
+                    <div key={i}>
+                      <div className="text-xl md:text-2xl font-bold text-accent">{s.value}</div>
+                      <div className="text-[10px] md:text-xs text-muted-foreground">{s.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="md:col-span-5 md:col-start-8 fade-in-up delay-200">
-              <div className="border-l-2 border-accent/30 pl-6 md:pl-8">
-                <p className="text-xs md:text-sm text-muted-foreground mb-6 md:mb-8">Liên hệ</p>
-                <div className="space-y-6 md:space-y-8">
-                  <a href={`mailto:${contactInfo.email}`} className="flex items-start gap-3 md:gap-4 group">
-                    <Mail className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Email</p>
-                      <p className="text-sm md:text-base text-foreground group-hover:text-accent transition-colors break-all">
-                        {contactInfo.email}
-                      </p>
-                    </div>
-                  </a>
-                  {contactInfo.address && (
-                    <div className="flex items-start gap-3 md:gap-4">
-                      <MapPin className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Địa điểm</p>
-                        <p className="text-sm md:text-base text-foreground">{contactInfo.address}</p>
+
+              {/* Right: Contact card */}
+              <div className="md:col-span-5 md:col-start-8 fade-in-up delay-200">
+                <div className="bg-foreground text-primary-foreground rounded-xl p-6 md:p-8">
+                  <p className="text-xs text-primary-foreground/40 uppercase tracking-wider mb-6">Liên hệ</p>
+                  <div className="space-y-6">
+                    <a href={`mailto:${contactInfo.email}`} className="flex items-start gap-4 group">
+                      <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-accent" />
                       </div>
-                    </div>
-                  )}
+                      <div>
+                        <p className="text-xs text-primary-foreground/40 mb-1">Email</p>
+                        <p className="text-sm md:text-base text-primary-foreground group-hover:text-accent transition-colors break-all">
+                          {contactInfo.email}
+                        </p>
+                      </div>
+                    </a>
+                    {contactInfo.address && (
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-primary-foreground/40 mb-1">Địa điểm</p>
+                          <p className="text-sm md:text-base text-primary-foreground">{contactInfo.address}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-8 pt-6 border-t border-primary-foreground/10">
+                    <p className="text-xs text-primary-foreground/30 italic">
+                      "Giữ gìn lịch sử — Lan tỏa văn hóa — Truyền cảm hứng cho thế hệ trẻ"
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
