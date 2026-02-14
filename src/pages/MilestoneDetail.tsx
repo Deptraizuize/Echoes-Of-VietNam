@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles } from "lucide-react";
 import UserHeader from "@/components/layout/UserHeader";
+import AIChatButton from "@/components/ai/AIChatButton";
 import milestonePlaceholder from "@/assets/milestone-placeholder.jpg";
 import { motion } from "framer-motion";
 
@@ -252,6 +253,7 @@ const MilestoneDetail = () => {
           )}
         </div>
       </main>
+      <AIChatButton />
     </div>
   );
 };
