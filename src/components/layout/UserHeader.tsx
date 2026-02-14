@@ -62,13 +62,13 @@ const UserHeader = () => {
             </span>
           </div>
 
-          <nav className="flex items-center gap-2 sm:gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/timeline")} className="text-sm">
+          <nav className="flex items-center gap-1.5 sm:gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/timeline")} className="text-xs sm:text-sm px-2 sm:px-3">
               Timeline
             </Button>
 
             {user && !isAdmin && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/feedback")} className="text-sm hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/feedback")} className="text-xs sm:text-sm px-2 sm:px-3 hidden sm:inline-flex">
                 Góp ý
               </Button>
             )}
@@ -78,23 +78,23 @@ const UserHeader = () => {
                 {!isAdmin && (
                   <>
                     {hearts !== null && (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 rounded-full">
-                        <Heart className="w-4 h-4 text-destructive fill-destructive" />
-                        <span className="text-sm font-medium text-destructive">{hearts}</span>
+                      <div className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-destructive/10 rounded-full">
+                        <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" />
+                        <span className="text-xs sm:text-sm font-medium text-destructive">{hearts}</span>
                       </div>
                     )}
                     <button
                       onClick={() => navigate("/profile")}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full hover:bg-accent/20 transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-accent/10 rounded-full hover:bg-accent/20 transition-colors"
                     >
-                      <Star className="w-4 h-4 text-accent fill-accent" />
-                      <span className="text-sm font-medium text-accent">{points}</span>
+                      <Star className="w-3.5 h-3.5 text-accent fill-accent" />
+                      <span className="text-xs sm:text-sm font-medium text-accent">{points}</span>
                     </button>
-                    <Button variant="ghost" size="sm" onClick={() => navigate("/rewards")} className="text-sm hidden sm:inline-flex">
-                      <Gift className="w-4 h-4 mr-1" /> Đổi thưởng
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/rewards")} className="text-xs sm:text-sm px-2 sm:px-3 hidden sm:inline-flex">
+                      <Gift className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Đổi thưởng</span>
                     </Button>
                     {!isPremium && (
-                      <Button variant="ghost" size="sm" onClick={() => navigate("/upgrade")} className="text-sm hidden sm:inline-flex text-accent">
+                      <Button variant="ghost" size="sm" onClick={() => navigate("/upgrade")} className="text-xs sm:text-sm px-2 sm:px-3 hidden md:inline-flex text-accent">
                         <Crown className="w-4 h-4 mr-1" /> Nâng cấp
                       </Button>
                     )}
