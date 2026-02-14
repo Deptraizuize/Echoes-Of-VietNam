@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowRight, Mail, Lock, User, AtSign } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Mail, Lock, AtSign } from "lucide-react";
 
 interface AuthFormProps {
   mode: "login" | "register";
-  onSubmit: (data: { email: string; password: string; name?: string; username?: string }) => void;
+  onSubmit: (data: { email: string; password: string; username?: string }) => void;
   isLoading?: boolean;
 }
 
@@ -15,7 +15,6 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    name: "",
     username: "",
   });
 
@@ -27,32 +26,13 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
   const isLogin = mode === "login";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Name field - only for registration */}
-      {!isLogin && (
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-medium text-foreground flex items-center gap-2">
-            <User className="w-4 h-4 text-muted-foreground" />
-            Họ và tên
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Nguyễn Văn A"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
-          />
-        </div>
-      )}
-
-      {/* Username field - for registration */}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Username field - only for registration */}
       {!isLogin && (
         <div className="space-y-2">
           <Label htmlFor="username" className="text-sm font-medium text-foreground flex items-center gap-2">
             <AtSign className="w-4 h-4 text-muted-foreground" />
-            Tên đăng nhập
+            Tên đăng nhập <span className="text-destructive">*</span>
           </Label>
           <Input
             id="username"
@@ -67,22 +47,22 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
             title="Chỉ chứa chữ thường, số, dấu chấm và gạch dưới"
             className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
           />
-          <p className="text-xs text-muted-foreground">Chữ thường, số, dấu chấm, gạch dưới. 3–30 ký tự.</p>
+          <p className="text-xs text-muted-foreground">Chữ thường, số, dấu chấm, gạch dưới. 3–30 ký tự. Dùng để đăng nhập.</p>
         </div>
       )}
 
-      {/* Email / Username+Email field */}
+      {/* Email / login identifier */}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
           <Mail className="w-4 h-4 text-muted-foreground" />
-          {isLogin ? "Email hoặc tên đăng nhập" : "Email"}
+          {isLogin ? "Email hoặc tên đăng nhập" : <>Email <span className="text-destructive">*</span></>}
         </Label>
         <Input
           id="email"
           type={isLogin ? "text" : "email"}
           placeholder={isLogin ? "email hoặc tên đăng nhập" : "example@gmail.com"}
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value.trim() })}
           required
           className="h-12 border-border bg-background hover:border-accent/50 focus:border-accent transition-colors"
         />
@@ -92,7 +72,7 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
       <div className="space-y-2">
         <Label htmlFor="password" className="text-sm font-medium text-foreground flex items-center gap-2">
           <Lock className="w-4 h-4 text-muted-foreground" />
-          Mật khẩu
+          Mật khẩu <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -113,6 +93,7 @@ export const AuthForm = ({ mode, onSubmit, isLoading }: AuthFormProps) => {
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
+        {!isLogin && <p className="text-xs text-muted-foreground">Tối thiểu 6 ký tự</p>}
       </div>
 
       {/* Forgot password - only for login */}
