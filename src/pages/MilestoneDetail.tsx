@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles, ExternalLink } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import UserHeader from "@/components/layout/UserHeader";
 import AIChatButton from "@/components/ai/AIChatButton";
 import milestonePlaceholder from "@/assets/milestone-placeholder.jpg";
@@ -126,7 +127,9 @@ const MilestoneDetail = () => {
                     <h2 className="text-2xl font-bold text-foreground">Diễn biến</h2>
                   </div>
                   <div className="pl-[52px] border-l-2 border-accent/20">
-                    <p className="text-muted-foreground leading-relaxed text-lg whitespace-pre-line">{detail.events}</p>
+                    <div className="text-muted-foreground leading-relaxed text-lg prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground">
+                      <ReactMarkdown>{detail.events}</ReactMarkdown>
+                    </div>
                   </div>
                 </motion.section>
               )}
@@ -146,7 +149,9 @@ const MilestoneDetail = () => {
                     <h2 className="text-2xl font-bold text-foreground">Kết quả</h2>
                   </div>
                   <div className="pl-[52px] border-l-2 border-accent/20">
-                    <p className="text-muted-foreground leading-relaxed text-lg whitespace-pre-line">{detail.results}</p>
+                    <div className="text-muted-foreground leading-relaxed text-lg prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground">
+                      <ReactMarkdown>{detail.results}</ReactMarkdown>
+                    </div>
                   </div>
                 </motion.section>
               )}
@@ -167,7 +172,9 @@ const MilestoneDetail = () => {
                   </div>
                   <div className="pl-[52px]">
                     <div className="bg-accent/5 border border-accent/20 p-6 rounded-xl">
-                      <p className="text-foreground leading-relaxed text-lg whitespace-pre-line">{detail.significance}</p>
+                      <div className="text-foreground leading-relaxed text-lg prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground">
+                        <ReactMarkdown>{detail.significance}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                 </motion.section>
