@@ -253,7 +253,7 @@ const MilestoneDetail = () => {
           )}
         </div>
       </main>
-      <AIChatButton />
+      <AIChatButton milestoneId={milestoneId} milestoneTitle={detail?.title || milestoneTitle} />
     </div>
   );
 };

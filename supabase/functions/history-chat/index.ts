@@ -9,9 +9,19 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, milestoneId, milestoneTitle } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const milestoneContext = milestoneTitle
+      ? `\n\nNgười dùng đang xem cột mốc lịch sử: "${milestoneTitle}" (ID: ${milestoneId || "unknown"}).
+Hãy ưu tiên trả lời xoay quanh cột mốc này. Khi được hỏi về:
+- Di tích: Mô tả vị trí địa lý cụ thể, tọa độ gần đúng, ý nghĩa lịch sử, tình trạng hiện tại
+- Nhân vật: Tiểu sử, vai trò trong sự kiện, đóng góp cụ thể
+- Bản đồ/địa điểm: Mô tả vị trí trên bản đồ Việt Nam, các tỉnh thành liên quan
+- Tài liệu tham khảo: Gợi ý các nguồn chính thống (sách giáo khoa, Wikipedia tiếng Việt, báo chính thống)
+- Câu hỏi quiz: Giải thích lý do đáp án đúng/sai, cung cấp thông tin bổ sung`
+      : "";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -32,7 +42,10 @@ Nguyên tắc:
 - Nếu không chắc chắn, nói rõ và gợi ý nguồn tham khảo
 - Giữ câu trả lời ngắn gọn (2-4 đoạn), trừ khi người dùng yêu cầu chi tiết
 - Khuyến khích tư duy phản biện về lịch sử
-- Có thể giải thích câu hỏi quiz nếu được hỏi, nhưng không đưa đáp án trực tiếp trừ khi đã làm xong quiz`
+- Có thể giải thích câu hỏi quiz nếu được hỏi, nhưng không đưa đáp án trực tiếp trừ khi đã làm xong quiz
+- Khi nói về di tích hoặc địa điểm, cung cấp thông tin vị trí cụ thể (tỉnh/thành phố, quận/huyện)
+- Khi gợi ý tài liệu tham khảo, ưu tiên nguồn chính thống như: SGK Lịch sử, Viện Hàn lâm KHXH, Wikipedia tiếng Việt, báo Nhân Dân, Tuổi Trẻ
+- Sử dụng emoji phù hợp để tăng tính trực quan${milestoneContext}`
           },
           ...messages,
         ],
