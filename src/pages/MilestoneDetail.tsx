@@ -58,15 +58,17 @@ const MilestoneDetail = () => {
   const heroImage = detail?.image_urls?.[0] || milestonePlaceholder;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <div className="absolute inset-0 dong-son-pattern opacity-[0.015] pointer-events-none" />
       <UserHeader />
 
       {/* Hero with image */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroImage} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-foreground/70" />
+          <div className="absolute inset-0 bg-foreground/75" />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/50 to-transparent" />
+          <div className="absolute inset-0 dong-son-pattern opacity-[0.06]" />
         </div>
 
         <div className="relative z-10 py-20 md:py-28 px-6 md:px-12">
@@ -246,23 +248,26 @@ const MilestoneDetail = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border border-accent/20 rounded-xl p-8 md:p-10 text-center">
-                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-accent" />
+                <div className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border border-accent/20 rounded-xl p-8 md:p-10 text-center relative overflow-hidden">
+                  <div className="absolute inset-0 dong-son-pattern opacity-[0.04] pointer-events-none" />
+                  <div className="relative z-10">
+                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
+                      <Sparkles className="w-8 h-8 text-accent" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">
+                      Kiểm tra kiến thức của bạn!
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Trả lời 10 câu hỏi để nhận điểm tích lũy và huy hiệu
+                    </p>
+                    <Button
+                      size="lg"
+                      onClick={() => navigate(`/quiz/${milestoneId}`)}
+                      className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm"
+                    >
+                      Bắt đầu Quiz ✦
+                    </Button>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3">
-                    Kiểm tra kiến thức của bạn!
-                  </h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Trả lời 10 câu hỏi để nhận điểm tích lũy và huy hiệu
-                  </p>
-                  <Button
-                    size="lg"
-                    onClick={() => navigate(`/quiz/${milestoneId}`)}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm"
-                  >
-                    Bắt đầu Quiz 🚀
-                  </Button>
                 </div>
               </motion.section>
             </div>

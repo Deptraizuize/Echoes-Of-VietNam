@@ -228,6 +228,22 @@
     background-size: 120px 20px;
   }
 
+  /* Lotus border pattern */
+  .lotus-border {
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='16' viewBox='0 0 80 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 2 C44 2 48 8 48 12 C44 10 40 14 40 14 C40 14 36 10 32 12 C32 8 36 2 40 2Z' fill='%23c4841d' opacity='0.08'/%3E%3Cpath d='M0 2 C4 2 8 8 8 12 C4 10 0 14 0 14' fill='%23c4841d' opacity='0.05'/%3E%3Cpath d='M80 2 C76 2 72 8 72 12 C76 10 80 14 80 14' fill='%23c4841d' opacity='0.05'/%3E%3C/svg%3E");
+    background-size: 80px 16px;
+    background-repeat: repeat-x;
+  }
+
+  /* Bamboo texture for section breaks */
+  .bamboo-divider {
+    @apply relative;
+  }
+  .bamboo-divider::after {
+    content: '❋ ❋ ❋';
+    @apply absolute left-1/2 -translate-x-1/2 -bottom-4 text-accent/20 text-xs tracking-[1em];
+  }
+
   /* Lotus petal border accent */
   .lotus-divider {
     @apply relative;
