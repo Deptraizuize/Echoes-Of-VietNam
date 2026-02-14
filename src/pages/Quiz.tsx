@@ -319,8 +319,10 @@ const Quiz = () => {
         </div>
       </main>
 
-      {/* AI Chat Button - always visible */}
-      <AIChatButton />
+      {/* AI Chat Button - only visible after quiz is finished */}
+      {state === "finished" && (
+        <AIChatButton milestoneId={milestoneId} milestoneTitle={milestoneTitle} />
+      )}
     </div>
   );
 };

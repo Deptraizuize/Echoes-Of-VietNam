@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Heart, Zap, Star, CheckCircle, Clock, XCircle, QrCode, ArrowLeft } from "lucide-react";
+import { Crown, Heart, Zap, Star, CheckCircle, Clock, XCircle, QrCode, ArrowLeft, Bot, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Upgrade = () => {
@@ -108,6 +108,8 @@ const Upgrade = () => {
             {[
               { icon: <Heart className="w-5 h-5 text-destructive" />, title: "10 Tim/ngày", desc: "Gấp đôi số lượt làm quiz mỗi ngày" },
               { icon: <Zap className="w-5 h-5 text-accent" />, title: "Nhân đôi điểm", desc: "x2 điểm thưởng khi đạt từ 6/10 trở lên" },
+              { icon: <Bot className="w-5 h-5 text-accent" />, title: "Trợ lý AI Lịch sử", desc: "Hỏi đáp chuyên sâu, tra cứu di tích, nhân vật và tài liệu" },
+              { icon: <MapPin className="w-5 h-5 text-accent" />, title: "Tra cứu bản đồ", desc: "Khám phá di tích, địa điểm lịch sử trên bản đồ VN" },
               { icon: <Star className="w-5 h-5 text-accent" />, title: "Huy hiệu vàng", desc: "Khung avatar và huy hiệu đặc biệt" },
               { icon: <Crown className="w-5 h-5 text-accent" />, title: "Truy cập sớm", desc: "Xem trước nội dung và tính năng mới" },
             ].map((perk, i) => (

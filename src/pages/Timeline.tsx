@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import TimelinePeriod from "@/components/timeline/TimelinePeriod";
 import { timelineData } from "@/data/timelineData";
 import UserHeader from "@/components/layout/UserHeader";
-import AIChatButton from "@/components/ai/AIChatButton";
+
 
 const Timeline = () => {
   return (
@@ -100,7 +100,7 @@ const Timeline = () => {
           <p className="text-sm text-muted-foreground">© 2024</p>
         </div>
       </footer>
-      <AIChatButton />
+      
     </div>
   );
 };

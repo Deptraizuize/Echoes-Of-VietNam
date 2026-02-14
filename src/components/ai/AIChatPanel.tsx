@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Bot, User } from "lucide-react";
+import { X, Send, Bot, User, MapPin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -8,9 +8,26 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/history-chat`;
 
-const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
+interface AIChatPanelProps {
+  onClose: () => void;
+  milestoneId?: string;
+  milestoneTitle?: string;
+}
+
+const QUICK_ACTIONS = [
+  { label: "📍 Di tích liên quan", prompt: "Hãy cho tôi biết về các di tích lịch sử liên quan đến cột mốc này, bao gồm vị trí và ý nghĩa." },
+  { label: "🦸 Nhân vật lịch sử", prompt: "Hãy kể chi tiết về các nhân vật lịch sử quan trọng trong sự kiện này." },
+  { label: "📰 Bài viết tham khảo", prompt: "Gợi ý cho tôi các nguồn tài liệu, bài viết chính thống để tìm hiểu thêm về sự kiện lịch sử này." },
+  { label: "🗺️ Bản đồ & địa điểm", prompt: "Mô tả các địa điểm quan trọng liên quan đến sự kiện này và vị trí của chúng trên bản đồ Việt Nam." },
+];
+
+const AIChatPanel = ({ onClose, milestoneId, milestoneTitle }: AIChatPanelProps) => {
+  const greeting = milestoneTitle
+    ? `Xin chào! 👋 Mình là trợ lý AI chuyên sâu về **${milestoneTitle}**. Bạn có thể hỏi về diễn biến, nhân vật, di tích hoặc tra cứu thêm tài liệu liên quan!`
+    : "Xin chào! 👋 Mình là trợ lý AI Lịch sử Việt Nam. Bạn muốn tìm hiểu về giai đoạn hay sự kiện nào?";
+
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Xin chào! 👋 Mình là trợ lý AI Lịch sử Việt Nam. Bạn muốn tìm hiểu về giai đoạn hay sự kiện nào?" },
+    { role: "assistant", content: greeting },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -21,17 +38,17 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (overrideText?: string) => {
+    const text = (overrideText || input).trim();
     if (!text || isLoading) return;
 
     const userMsg: Msg = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+    if (!overrideText) setInput("");
     setIsLoading(true);
 
     let assistantSoFar = "";
-    const allMessages = [...messages.filter(m => m !== messages[0]), userMsg];
+    const allMessages = [...messages.filter((_, i) => i !== 0), userMsg];
 
     try {
       const resp = await fetch(CHAT_URL, {
@@ -40,7 +57,11 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: allMessages }),
+        body: JSON.stringify({
+          messages: allMessages,
+          milestoneId,
+          milestoneTitle,
+        }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -74,7 +95,7 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
               assistantSoFar += content;
               setMessages((prev) => {
                 const last = prev[prev.length - 1];
-                if (last?.role === "assistant" && prev.length > 1 && last !== messages[0]) {
+                if (last?.role === "assistant" && prev.length > 1) {
                   return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
                 }
                 return [...prev, { role: "assistant", content: assistantSoFar }];
@@ -94,13 +115,18 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[540px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-accent/5">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-accent" />
-          <span className="font-semibold text-sm text-foreground">Trợ lý Lịch sử VN</span>
+          <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+            <Bot className="w-4 h-4 text-accent" />
+          </div>
+          <div>
+            <span className="font-semibold text-sm text-foreground block leading-tight">Trợ lý Lịch sử VN</span>
+            <span className="text-[10px] text-accent font-medium">✨ Premium</span>
+          </div>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
           <X className="w-4 h-4" />
@@ -130,6 +156,23 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
             )}
           </div>
         ))}
+
+        {/* Quick actions after greeting */}
+        {messages.length === 1 && milestoneTitle && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {QUICK_ACTIONS.map((action, i) => (
+              <button
+                key={i}
+                onClick={() => send(action.prompt)}
+                disabled={isLoading}
+                className="text-xs bg-accent/5 hover:bg-accent/10 border border-accent/20 text-foreground rounded-lg px-2.5 py-1.5 transition-colors"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {isLoading && messages[messages.length - 1]?.role === "user" && (
           <div className="flex gap-2">
             <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
@@ -157,7 +200,7 @@ const AIChatPanel = ({ onClose }: { onClose: () => void }) => {
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
           disabled={isLoading}
         />
-        <Button size="icon" onClick={send} disabled={isLoading || !input.trim()} className="bg-accent text-accent-foreground hover:bg-accent/90 h-8 w-8">
+        <Button size="icon" onClick={() => send()} disabled={isLoading || !input.trim()} className="bg-accent text-accent-foreground hover:bg-accent/90 h-8 w-8">
           <Send className="w-3.5 h-3.5" />
         </Button>
       </div>
