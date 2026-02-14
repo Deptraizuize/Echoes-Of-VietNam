@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -11,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   BookOpen, HelpCircle, Users, BarChart3, ArrowLeft, Crown, MessageSquare,
 } from "lucide-react";
-import { Image, Gift, CreditCard } from "lucide-react";
 import logo from "@/assets/logo.png";
 import PremiumRequestsTab from "@/components/admin/PremiumRequestsTab";
 import FeedbackTab from "@/components/admin/FeedbackTab";
@@ -20,37 +18,18 @@ import RewardsTab from "@/components/admin/RewardsTab";
 import QuestionsTab from "@/components/admin/QuestionsTab";
 import MilestoneDetailsTab from "@/components/admin/MilestoneDetailsTab";
 import PaymentSettingsTab from "@/components/admin/PaymentSettingsTab";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
-interface MilestoneRow {
-  id: string;
-  title: string;
-  period_title: string;
-  phase_title: string;
-}
-
-interface QuestionRow {
-  id: string;
-  milestone_id: string;
-  question: string;
-  options: string[];
-  correct_answer: number;
-  image_url: string | null;
-}
-
-interface ProfileRow {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  is_premium: boolean;
-  total_points: number;
-  created_at: string;
-}
+interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
+interface QuestionRow { id: string; milestone_id: string; question: string; options: string[]; correct_answer: number; image_url: string | null; }
+interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; total_points: number; created_at: string; }
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [activeSection, setActiveSection] = useState("premium");
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
@@ -74,10 +53,7 @@ const Admin = () => {
     checkAdmin();
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    fetchAll();
-  }, [isAdmin]);
+  useEffect(() => { if (isAdmin) fetchAll(); }, [isAdmin]);
 
   const fetchAll = async () => {
     const [m, q, p, pr, fb, bn, rw, rd, md, ps] = await Promise.all([
@@ -92,7 +68,6 @@ const Admin = () => {
       supabase.from("milestone_details").select("*").order("created_at"),
       supabase.from("payment_settings").select("*").order("created_at"),
     ]);
-
     if (m.data) setMilestones(m.data);
     if (q.data) setQuestions(q.data.map((qq) => ({ ...qq, options: qq.options as unknown as string[], image_url: qq.image_url })));
     if (p.data) setProfiles(p.data);
@@ -103,13 +78,9 @@ const Admin = () => {
     if (rd.data) setRedemptionsList(rd.data);
     if (md.data) setMilestoneDetails(md.data);
     if (ps.data) setPaymentSettings(ps.data);
-
     setStats({
-      users: p.data?.length ?? 0,
-      milestones: m.data?.length ?? 0,
-      questions: q.data?.length ?? 0,
-      attempts: 0,
-      pendingUpgrades: pr.data?.filter((r: any) => r.status === "pending").length ?? 0,
+      users: p.data?.length ?? 0, milestones: m.data?.length ?? 0, questions: q.data?.length ?? 0,
+      attempts: 0, pendingUpgrades: pr.data?.filter((r: any) => r.status === "pending").length ?? 0,
       newFeedback: fb.data?.filter((f: any) => f.status === "new").length ?? 0,
     });
   };
@@ -122,136 +93,103 @@ const Admin = () => {
     );
   }
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case "premium": return <PremiumRequestsTab requests={premiumRequests} onRefresh={fetchAll} />;
+      case "feedback": return <FeedbackTab feedback={feedbackList} onRefresh={fetchAll} />;
+      case "questions": return <QuestionsTab milestones={milestones} questions={questions} onRefresh={fetchAll} />;
+      case "milestone-details": return <MilestoneDetailsTab milestones={milestones} details={milestoneDetails} onRefresh={fetchAll} />;
+      case "milestones": return <MilestonesSection milestones={milestones} />;
+      case "banners": return <BannersTab banners={banners} onRefresh={fetchAll} />;
+      case "rewards": return <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />;
+      case "users": return <UsersSection profiles={profiles} />;
+      case "payment": return <PaymentSettingsTab settings={paymentSettings} onRefresh={fetchAll} />;
+      default: return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-foreground text-primary-foreground border-b border-border">
-        <div className="container mx-auto px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-foreground text-primary-foreground border-b border-border h-[52px]">
+        <div className="px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
-            <span className="font-serif text-lg">Admin Dashboard</span>
+            <img src={logo} alt="Logo" className="w-7 h-7 rounded-lg object-contain" />
+            <span className="font-serif text-lg">Admin</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/timeline")} className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Về trang chính
-          </Button>
+          <div className="flex items-center gap-4 text-xs text-primary-foreground/60">
+            <span>{stats.users} người dùng</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline">{stats.milestones} cột mốc</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline">{stats.questions} câu hỏi</span>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/timeline")} className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 ml-2">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Thoát
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          {[
-            { icon: Users, label: "Người dùng", value: stats.users, color: "text-accent" },
-            { icon: BookOpen, label: "Cột mốc", value: stats.milestones, color: "text-accent" },
-            { icon: HelpCircle, label: "Câu hỏi", value: stats.questions, color: "text-accent" },
-            { icon: BarChart3, label: "Lượt quiz", value: stats.attempts, color: "text-accent" },
-            { icon: Crown, label: "Chờ duyệt", value: stats.pendingUpgrades, color: "text-accent" },
-            { icon: MessageSquare, label: "Góp ý mới", value: stats.newFeedback, color: "text-accent" },
-          ].map((s) => (
-            <div key={s.label} className="bg-card border border-border rounded-lg p-6">
-              <s.icon className={`w-6 h-6 ${s.color} mb-2`} />
-              <div className="font-serif text-3xl text-foreground">{s.value}</div>
-              <div className="text-sm text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <Tabs defaultValue="premium">
-          <TabsList className="mb-6 flex-wrap">
-            <TabsTrigger value="premium"><Crown className="w-4 h-4 mr-2" /> Nâng cấp {stats.pendingUpgrades > 0 && `(${stats.pendingUpgrades})`}</TabsTrigger>
-            <TabsTrigger value="feedback"><MessageSquare className="w-4 h-4 mr-2" /> Góp ý {stats.newFeedback > 0 && `(${stats.newFeedback})`}</TabsTrigger>
-            <TabsTrigger value="questions"><HelpCircle className="w-4 h-4 mr-2" /> Câu hỏi</TabsTrigger>
-            <TabsTrigger value="milestone-details"><BookOpen className="w-4 h-4 mr-2" /> Nội dung</TabsTrigger>
-            <TabsTrigger value="milestones"><BookOpen className="w-4 h-4 mr-2" /> Cột mốc</TabsTrigger>
-            <TabsTrigger value="banners"><Image className="w-4 h-4 mr-2" /> Banner QC</TabsTrigger>
-            <TabsTrigger value="rewards"><Gift className="w-4 h-4 mr-2" /> Đổi thưởng</TabsTrigger>
-            <TabsTrigger value="users"><Users className="w-4 h-4 mr-2" /> Người dùng</TabsTrigger>
-            <TabsTrigger value="payment"><CreditCard className="w-4 h-4 mr-2" /> Thanh toán</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="premium">
-            <PremiumRequestsTab requests={premiumRequests} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="feedback">
-            <FeedbackTab feedback={feedbackList} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="questions">
-            <QuestionsTab milestones={milestones} questions={questions} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="milestone-details">
-            <MilestoneDetailsTab milestones={milestones} details={milestoneDetails} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="milestones">
-            <h3 className="font-serif text-xl mb-4">Danh sách cột mốc ({milestones.length})</h3>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Tiêu đề</TableHead>
-                    <TableHead>Thời kỳ</TableHead>
-                    <TableHead>Giai đoạn</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {milestones.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell className="font-mono text-sm">{m.id}</TableCell>
-                      <TableCell>{m.title}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{m.period_title}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{m.phase_title}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <h3 className="font-serif text-xl mb-4">Người dùng ({profiles.length})</h3>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tên</TableHead>
-                    <TableHead>Premium</TableHead>
-                    <TableHead>Điểm</TableHead>
-                    <TableHead>Ngày tham gia</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {profiles.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell>{p.display_name || "—"}</TableCell>
-                      <TableCell>
-                        {p.is_premium ? <span className="text-accent font-medium">Premium ⭐</span> : <span className="text-muted-foreground">Free</span>}
-                      </TableCell>
-                      <TableCell>{p.total_points}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("vi-VN")}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="banners">
-            <BannersTab banners={banners} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="rewards">
-            <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />
-          </TabsContent>
-
-          <TabsContent value="payment">
-            <PaymentSettingsTab settings={paymentSettings} onRefresh={fetchAll} />
-          </TabsContent>
-        </Tabs>
-      </main>
+      <div className="flex">
+        <AdminSidebar active={activeSection} onSelect={setActiveSection} stats={stats} />
+        <main className="flex-1 min-w-0 p-6 lg:p-8">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 };
+
+/* Inline sub-sections that were previously simple tab contents */
+const MilestonesSection = ({ milestones }: { milestones: MilestoneRow[] }) => (
+  <div>
+    <h3 className="font-serif text-xl mb-4">Danh sách cột mốc ({milestones.length})</h3>
+    <div className="border border-border rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader><TableRow>
+          <TableHead>ID</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Thời kỳ</TableHead><TableHead>Giai đoạn</TableHead>
+        </TableRow></TableHeader>
+        <TableBody>
+          {milestones.map((m) => (
+            <TableRow key={m.id}>
+              <TableCell className="font-mono text-sm">{m.id}</TableCell>
+              <TableCell>{m.title}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{m.period_title}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{m.phase_title}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  </div>
+);
+
+interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
+
+const UsersSection = ({ profiles }: { profiles: ProfileRow[] }) => (
+  <div>
+    <h3 className="font-serif text-xl mb-4">Người dùng ({profiles.length})</h3>
+    <div className="border border-border rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader><TableRow>
+          <TableHead>Tên</TableHead><TableHead>Premium</TableHead><TableHead>Điểm</TableHead><TableHead>Ngày tham gia</TableHead>
+        </TableRow></TableHeader>
+        <TableBody>
+          {profiles.map((p) => (
+            <TableRow key={p.id}>
+              <TableCell>{p.display_name || "—"}</TableCell>
+              <TableCell>
+                {p.is_premium ? <span className="text-accent font-medium">Premium ⭐</span> : <span className="text-muted-foreground">Free</span>}
+              </TableCell>
+              <TableCell>{p.total_points}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("vi-VN")}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  </div>
+);
+
+interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; total_points: number; created_at: string; }
 
 export default Admin;
