@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Heart, Star, LogOut, Shield, Gift, Crown } from "lucide-react";
+import { Heart, Star, LogOut, Shield, Gift, Crown, User } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const UserHeader = () => {
@@ -89,6 +89,9 @@ const UserHeader = () => {
                         <Crown className="w-4 h-4 mr-1" /> Nâng cấp
                       </Button>
                     )}
+                    <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-muted-foreground hover:text-foreground">
+                      <User className="w-4 h-4" />
+                    </Button>
                   </>
                 )}
 
