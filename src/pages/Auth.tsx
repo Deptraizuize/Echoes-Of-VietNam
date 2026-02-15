@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import vietnamMap from "@/assets/vietnam-map.jpg";
@@ -158,7 +157,10 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
       if (error) throw error;
     } catch (error: any) {
       toast({ title: "Lỗi đăng nhập Google", description: error.message || "Không thể kết nối với Google. Vui lòng thử lại.", variant: "destructive" });
