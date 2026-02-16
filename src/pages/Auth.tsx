@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { lovable } from "@/integrations/lovable";
 import logo from "@/assets/logo.png";
 import vietnamMap from "@/assets/vietnam-map.jpg";
 import { motion } from "framer-motion";
@@ -157,9 +158,8 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin },
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
       if (error) throw error;
     } catch (error: any) {
