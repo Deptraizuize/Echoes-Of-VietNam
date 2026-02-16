@@ -249,6 +249,8 @@ export type Database = {
           created_at: string
           id: string
           note: string | null
+          plan_type: string
+          proof_image_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -260,6 +262,8 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          plan_type?: string
+          proof_image_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -271,6 +275,8 @@ export type Database = {
           created_at?: string
           id?: string
           note?: string | null
+          plan_type?: string
+          proof_image_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
