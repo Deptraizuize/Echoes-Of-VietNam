@@ -22,7 +22,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 
 interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
 interface QuestionRow { id: string; milestone_id: string; question: string; options: string[]; correct_answer: number; image_url: string | null; }
-interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; total_points: number; created_at: string; }
+interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; premium_expires_at: string | null; total_points: number; created_at: string; }
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ const Admin = () => {
     const [m, q, p, pr, fb, bn, rw, rd, md, ps, roles] = await Promise.all([
       supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer, image_url").order("created_at"),
-      supabase.from("profiles").select("id, user_id, display_name, is_premium, total_points, created_at").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, user_id, display_name, is_premium, premium_expires_at, total_points, created_at").order("created_at", { ascending: false }),
       supabase.from("premium_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("feedback").select("*").order("created_at", { ascending: false }),
       supabase.from("ad_banners").select("*").order("display_order"),
@@ -203,7 +203,7 @@ const UsersSection = ({ profiles, adminUserIds, onRefresh }: { profiles: Profile
       <div className="border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader><TableRow>
-            <TableHead>Tên</TableHead><TableHead>Vai trò</TableHead><TableHead>Premium</TableHead><TableHead>Điểm</TableHead><TableHead>Ngày tham gia</TableHead><TableHead className="text-right">Hành động</TableHead>
+            <TableHead>Tên</TableHead><TableHead>Vai trò</TableHead><TableHead>Premium</TableHead><TableHead>Hết hạn</TableHead><TableHead>Điểm</TableHead><TableHead>Ngày tham gia</TableHead><TableHead className="text-right">Hành động</TableHead>
           </TableRow></TableHeader>
           <TableBody>
             {profiles.map((p) => {
@@ -222,6 +222,19 @@ const UsersSection = ({ profiles, adminUserIds, onRefresh }: { profiles: Profile
                   </TableCell>
                   <TableCell>
                     {p.is_premium ? <span className="text-accent font-medium">Premium ⭐</span> : <span className="text-muted-foreground">Free</span>}
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    {p.premium_expires_at ? (
+                      <div>
+                        <span className="text-foreground">{new Date(p.premium_expires_at).toLocaleDateString("vi-VN")}</span>
+                        {(() => {
+                          const days = Math.ceil((new Date(p.premium_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                          return days > 0
+                            ? <span className="block text-accent text-[11px]">Còn {days} ngày</span>
+                            : <span className="block text-destructive text-[11px]">Đã hết hạn</span>;
+                        })()}
+                      </div>
+                    ) : <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell>{p.total_points}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("vi-VN")}</TableCell>
@@ -251,6 +264,6 @@ const UsersSection = ({ profiles, adminUserIds, onRefresh }: { profiles: Profile
   );
 };
 
-interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; total_points: number; created_at: string; }
+interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; premium_expires_at: string | null; total_points: number; created_at: string; }
 
 export default Admin;
