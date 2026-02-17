@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Clock, Crown, ImageIcon, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Crown, ImageIcon, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const PLAN_MAP: Record<string, { label: string; days: number; price: string }> = {
@@ -40,6 +40,25 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
   const [adminNote, setAdminNote] = useState("");
   const [processing, setProcessing] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  // Fetch display names for all user_ids in requests
+  useEffect(() => {
+    const userIds = [...new Set(requests.map((r) => r.user_id))];
+    if (userIds.length === 0) return;
+    const fetchNames = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((p) => { map[p.user_id] = p.display_name || "Không tên"; });
+        setUserNames(map);
+      }
+    };
+    fetchNames();
+  }, [requests]);
 
   const openReview = (req: PremiumRequest) => {
     setSelectedRequest(req);
@@ -53,6 +72,7 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
 
     const plan = PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly;
 
+    // Update request status
     const { error } = await supabase
       .from("premium_requests")
       .update({
@@ -69,21 +89,47 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
     }
 
     if (action === "approved") {
-      await supabase
+      // Fetch current premium_expires_at to support cumulative time
+      const { data: currentProfile } = await supabase
+        .from("profiles")
+        .select("is_premium, premium_expires_at")
+        .eq("user_id", selectedRequest.user_id)
+        .single();
+
+      // Calculate new expiry: if currently premium and not expired, add from current expiry
+      const now = new Date();
+      let baseDate = now;
+      if (currentProfile?.premium_expires_at) {
+        const currentExpiry = new Date(currentProfile.premium_expires_at);
+        if (currentExpiry > now) {
+          baseDate = currentExpiry; // Cumulative: add from current expiry
+        }
+      }
+
+      const newExpiry = new Date(baseDate.getTime() + plan.days * 24 * 60 * 60 * 1000);
+
+      const { error: updateErr } = await supabase
         .from("profiles")
         .update({
           is_premium: true,
-          premium_expires_at: new Date(Date.now() + plan.days * 24 * 60 * 60 * 1000).toISOString(),
+          premium_expires_at: newExpiry.toISOString(),
         })
         .eq("user_id", selectedRequest.user_id);
+
+      if (updateErr) {
+        toast({ title: "Lỗi cập nhật profile", description: updateErr.message, variant: "destructive" });
+        setProcessing(false);
+        return;
+      }
+
+      toast({
+        title: "Đã duyệt!",
+        description: `Gói ${plan.label} cho ${userNames[selectedRequest.user_id] || "người dùng"}. Premium đến ${newExpiry.toLocaleDateString("vi-VN")}.`,
+      });
+    } else {
+      toast({ title: "Đã từ chối yêu cầu." });
     }
 
-    toast({
-      title: "Thành công!",
-      description: action === "approved"
-        ? `Đã duyệt gói ${plan.label} cho người dùng.`
-        : "Đã từ chối yêu cầu.",
-    });
     setReviewDialog(false);
     setProcessing(false);
     onRefresh();
@@ -116,7 +162,6 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
               const plan = PLAN_MAP[r.plan_type] || PLAN_MAP.monthly;
               return (
                 <div key={r.id} className="border border-accent/20 bg-accent/5 rounded-xl p-4 flex flex-col sm:flex-row gap-4">
-                  {/* Proof Image Thumbnail */}
                   {r.proof_image_url ? (
                     <button onClick={() => setImagePreview(r.proof_image_url)} className="shrink-0">
                       <img src={r.proof_image_url} alt="Ảnh CK" className="w-20 h-20 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity" />
@@ -128,12 +173,12 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm text-foreground">{userNames[r.user_id] || "..."}</span>
                       <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">{plan.label} — {plan.price}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(r.created_at).toLocaleString("vi-VN")}
-                      </span>
                     </div>
-                    <p className="text-xs font-mono text-muted-foreground truncate">User: {r.user_id}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleString("vi-VN")}
+                    </p>
                     {r.note && <p className="text-sm text-foreground mt-1">{r.note}</p>}
                   </div>
                   <Button size="sm" onClick={() => openReview(r)} className="self-start shrink-0">
@@ -155,10 +200,10 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Trạng thái</TableHead>
+                  <TableHead>Người dùng</TableHead>
                   <TableHead>Gói</TableHead>
-                  <TableHead>User ID</TableHead>
                   <TableHead>Ảnh CK</TableHead>
-                  <TableHead>Ghi chú admin</TableHead>
+                  <TableHead>Ghi chú</TableHead>
                   <TableHead className="w-32">Thời gian</TableHead>
                 </TableRow>
               </TableHeader>
@@ -168,8 +213,8 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                   return (
                     <TableRow key={r.id}>
                       <TableCell>{statusBadge(r.status)}</TableCell>
+                      <TableCell className="text-sm">{userNames[r.user_id] || r.user_id.slice(0, 8) + "..."}</TableCell>
                       <TableCell className="text-xs">{plan.label}</TableCell>
-                      <TableCell className="font-mono text-xs">{r.user_id.slice(0, 8)}...</TableCell>
                       <TableCell>
                         {r.proof_image_url ? (
                           <button onClick={() => setImagePreview(r.proof_image_url)}>
@@ -225,14 +270,18 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                 )}
                 <div className="space-y-2 flex-1">
                   <div>
-                    <p className="text-xs text-muted-foreground">User ID</p>
-                    <p className="text-sm font-mono">{selectedRequest.user_id}</p>
+                    <p className="text-xs text-muted-foreground">Người dùng</p>
+                    <p className="text-sm font-medium">{userNames[selectedRequest.user_id] || "Không tên"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Gói đăng ký</p>
                     <Badge className="bg-accent/10 text-accent border-accent/20">
                       {(PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly).label} — {(PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly).price}
                     </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ngày gửi</p>
+                    <p className="text-sm">{new Date(selectedRequest.created_at).toLocaleString("vi-VN")}</p>
                   </div>
                 </div>
               </div>
