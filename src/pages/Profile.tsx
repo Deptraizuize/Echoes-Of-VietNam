@@ -15,6 +15,7 @@ interface ProfileData {
   display_name: string | null;
   total_points: number;
   is_premium: boolean;
+  premium_expires_at: string | null;
   created_at: string;
   avatar_url: string | null;
 }
@@ -67,7 +68,7 @@ const Profile = () => {
       }
 
       const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, total_points, is_premium, created_at, avatar_url").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("display_name, total_points, is_premium, premium_expires_at, created_at, avatar_url").eq("user_id", user.id).single(),
         supabase.from("badges").select("*").order("earned_at", { ascending: false }),
         supabase.from("quiz_attempts").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("user_progress").select("*"),
@@ -145,6 +146,14 @@ const Profile = () => {
               <p className="text-primary-foreground/40 text-sm">
                 Thành viên từ {profile ? formatDate(profile.created_at) : ""}
               </p>
+              {profile?.is_premium && profile?.premium_expires_at && (
+                <div className="mt-2 inline-flex items-center gap-2 bg-accent/20 border border-accent/30 rounded-lg px-3 py-1.5">
+                  <Clock className="w-3.5 h-3.5 text-accent" />
+                  <span className="text-xs text-accent font-medium">
+                    Premium đến {formatDate(profile.premium_expires_at)} — Còn {Math.max(0, Math.ceil((new Date(profile.premium_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} ngày
+                  </span>
+                </div>
+              )}
               <Button
                 size="sm"
                 variant="ghost"
