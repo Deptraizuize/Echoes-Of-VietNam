@@ -57,10 +57,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const fetchUserMeta = async (userId: string) => {
     const [profileRes, rolesRes] = await Promise.all([
-      supabase.from("profiles").select("is_premium").eq("user_id", userId).single(),
+      supabase.from("profiles").select("is_premium, premium_expires_at").eq("user_id", userId).single(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
-    setIsPremium(profileRes.data?.is_premium ?? false);
+
+    // Auto-expiry check: if premium_expires_at has passed, treat as non-premium
+    const profile = profileRes.data;
+    let premium = profile?.is_premium ?? false;
+    if (premium && profile?.premium_expires_at) {
+      const expiresAt = new Date(profile.premium_expires_at);
+      if (expiresAt < new Date()) {
+        premium = false;
+        // Update DB to reflect expired status (fire-and-forget)
+        supabase.from("profiles").update({ is_premium: false }).eq("user_id", userId).then();
+      }
+    }
+
+    setIsPremium(premium);
     setIsAdmin(rolesRes.data?.some((r) => r.role === "admin") ?? false);
   };
 

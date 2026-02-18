@@ -56,33 +56,44 @@ const Profile = () => {
   const [hearts, setHearts] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
+  const fetchAll = async () => {
+    if (!user) return;
+    if (authIsAdmin) { navigate("/admin", { replace: true }); return; }
+
+    const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes] = await Promise.all([
+      supabase.from("profiles").select("display_name, total_points, is_premium, premium_expires_at, created_at, avatar_url").eq("user_id", user.id).single(),
+      supabase.from("badges").select("*").order("earned_at", { ascending: false }),
+      supabase.from("quiz_attempts").select("*").order("created_at", { ascending: false }).limit(20),
+      supabase.from("user_progress").select("*"),
+      supabase.rpc("get_hearts"),
+    ]);
+    if (profileRes.data) setProfile(profileRes.data);
+    if (badgesRes.data) setBadges(badgesRes.data);
+    if (attemptsRes.data) setAttempts(attemptsRes.data);
+    if (progressRes.data) setProgress(progressRes.data);
+    if (heartsRes.data && heartsRes.data.length > 0) setHearts(heartsRes.data[0].hearts_remaining);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
-
-    const fetchAll = async () => {
-      // Admin redirect using centralized auth state
-      if (authIsAdmin) {
-        navigate("/admin", { replace: true });
-        return;
-      }
-
-      const [profileRes, badgesRes, attemptsRes, progressRes, heartsRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, total_points, is_premium, premium_expires_at, created_at, avatar_url").eq("user_id", user.id).single(),
-        supabase.from("badges").select("*").order("earned_at", { ascending: false }),
-        supabase.from("quiz_attempts").select("*").order("created_at", { ascending: false }).limit(20),
-        supabase.from("user_progress").select("*"),
-        supabase.rpc("get_hearts"),
-      ]);
-      if (profileRes.data) setProfile(profileRes.data);
-      if (badgesRes.data) setBadges(badgesRes.data);
-      if (attemptsRes.data) setAttempts(attemptsRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
-      if (heartsRes.data && heartsRes.data.length > 0) setHearts(heartsRes.data[0].hearts_remaining);
-      setLoading(false);
-    };
     fetchAll();
   }, [user, authLoading, authIsAdmin, navigate]);
+
+  // Realtime: sync profile changes (e.g. after admin approves premium)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("profile-sync")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` },
+        () => fetchAll()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   if (loading || authLoading) {
     return (

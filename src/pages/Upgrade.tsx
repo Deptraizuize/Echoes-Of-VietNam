@@ -46,6 +46,27 @@ const Upgrade = () => {
     if (user) fetchStatus();
   }, [user, loading]);
 
+  // Realtime: listen for changes to user's premium_requests & profile
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("upgrade-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "premium_requests", filter: `user_id=eq.${user.id}` },
+        () => fetchStatus()
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` },
+        () => fetchStatus()
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   const fetchStatus = async () => {
     const [{ data: profile }, { data: requests }, { data: settings }] = await Promise.all([
       supabase.from("profiles").select("is_premium, premium_expires_at").eq("user_id", user!.id).single(),
