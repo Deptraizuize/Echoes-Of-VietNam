@@ -42,6 +42,7 @@ import Feedback from "./pages/Feedback";
 import Rewards from "./pages/Rewards";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import UserOnlyRoute from "./components/auth/UserOnlyRoute";
 
 const queryClient = new QueryClient();
 
@@ -62,12 +63,12 @@ const App = () => (
 
             {/* === Trang yêu cầu đăng nhập === */}
             <Route path="/milestone/:milestoneId" element={<MilestoneDetail />} />
-            <Route path="/quiz/:milestoneId" element={<Quiz />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/quiz/:milestoneId" element={<UserOnlyRoute><Quiz /></UserOnlyRoute>} />
+            <Route path="/profile" element={<UserOnlyRoute><Profile /></UserOnlyRoute>} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/upgrade" element={<Upgrade />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/upgrade" element={<UserOnlyRoute><Upgrade /></UserOnlyRoute>} />
+            <Route path="/feedback" element={<UserOnlyRoute><Feedback /></UserOnlyRoute>} />
+            <Route path="/rewards" element={<UserOnlyRoute><Rewards /></UserOnlyRoute>} />
 
             {/* === Trang Admin (kiểm tra quyền phía client + server) === */}
             <Route path="/admin" element={<Admin />} />
