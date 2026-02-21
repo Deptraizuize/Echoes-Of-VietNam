@@ -54,18 +54,32 @@ const Quiz = () => {
   const [showReview, setShowReview] = useState(false);
   const [reviewQuestions, setReviewQuestions] = useState<QuizQuestion[]>([]);
   const [doubleLoading, setDoubleLoading] = useState(false);
+  const [attemptsToday, setAttemptsToday] = useState<number | null>(null);
+  const [attemptsLoading, setAttemptsLoading] = useState(true);
 
+  // Fetch milestone title + today's attempt count
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
     if (isPremium && state === "ad") {
       setState("pre-start");
     }
-    const fetchTitle = async () => {
-      const { data } = await supabase.from("milestones").select("title").eq("id", milestoneId).single();
-      if (data) setMilestoneTitle(data.title);
+
+    const fetchInitialData = async () => {
+      setAttemptsLoading(true);
+      const [titleRes, attemptsRes] = await Promise.all([
+        supabase.from("milestones").select("title").eq("id", milestoneId).single(),
+        supabase.from("quiz_attempts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("milestone_id", milestoneId!)
+          .gte("created_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
+      ]);
+      if (titleRes.data) setMilestoneTitle(titleRes.data.title);
+      setAttemptsToday(attemptsRes.count ?? 0);
+      setAttemptsLoading(false);
     };
-    fetchTitle();
+    fetchInitialData();
   }, [user, authLoading, isPremium, milestoneId, navigate]);
 
   const fetchQuestions = async () => {
@@ -127,6 +141,14 @@ const Quiz = () => {
 
     setState("finished");
     setLoading(false);
+
+    // Update local attempt count
+    const resData = data as any;
+    if (resData?.attempts_today) {
+      setAttemptsToday(resData.attempts_today);
+    } else if (!error && !resData?.error) {
+      setAttemptsToday((prev) => (prev ?? 0) + 1);
+    }
   };
 
   const handleDoublePoints = async () => {
@@ -176,10 +198,39 @@ const Quiz = () => {
                   <span className="flex items-center gap-1"><Heart className="w-4 h-4 text-destructive" /> Dưới 8: -1 tim</span>
                   <span className="flex items-center gap-1"><Zap className="w-4 h-4 text-accent" /> ≥6: nhận điểm</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-8">Tối đa 3 lượt/ngày cho mỗi cột mốc</p>
-                <Button size="lg" onClick={startQuiz} disabled={loading} className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm py-6">
-                  {loading ? "Đang tải..." : "Bắt đầu Quiz 🚀"}
-                </Button>
+
+                {/* Attempt counter */}
+                {!attemptsLoading && attemptsToday !== null && (
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 ${
+                    attemptsToday >= 3
+                      ? "bg-destructive/10 text-destructive border border-destructive/20"
+                      : "bg-muted/50 text-muted-foreground border border-border"
+                  }`}>
+                    <Zap className="w-4 h-4" />
+                    {attemptsToday >= 3
+                      ? "Đã hết 3 lượt hôm nay!"
+                      : `Còn ${3 - attemptsToday} lượt hôm nay`
+                    }
+                  </div>
+                )}
+                {attemptsLoading && (
+                  <div className="mb-6">
+                    <div className="h-4 w-32 mx-auto bg-muted/50 rounded animate-pulse" />
+                  </div>
+                )}
+
+                {attemptsToday !== null && attemptsToday >= 3 ? (
+                  <div>
+                    <p className="text-muted-foreground mb-4">Bạn đã dùng hết 3 lượt cho cột mốc này hôm nay. Hãy quay lại vào ngày mai hoặc thử quiz khác!</p>
+                    <Button onClick={() => navigate(`/milestone/${milestoneId}`)} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                      Quay lại bài viết
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="lg" onClick={startQuiz} disabled={loading || attemptsLoading} className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm py-6">
+                    {loading ? "Đang tải..." : "Bắt đầu Quiz 🚀"}
+                  </Button>
+                )}
                 <div className="mt-4">
                   <Button variant="ghost" onClick={() => navigate(`/milestone/${milestoneId}`)}>
                     <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
