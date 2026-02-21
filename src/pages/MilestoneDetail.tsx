@@ -120,16 +120,20 @@ const MilestoneDetail = () => {
           >
             <div className="absolute inset-0 dong-son-pattern opacity-[0.02] pointer-events-none" />
             <div className="relative">
-              <p className="text-accent uppercase tracking-[0.2em] text-xs md:text-sm mb-3 font-medium">Cột mốc lịch sử</p>
-              <h1 className="text-foreground text-2xl md:text-3xl lg:text-4xl mb-4 leading-[1.2] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-1.5 h-8 rounded-full bg-accent" />
+                <p className="text-accent uppercase tracking-[0.25em] text-xs md:text-sm font-semibold">Cột mốc lịch sử</p>
+              </div>
+              <h1 className="text-foreground text-3xl md:text-4xl lg:text-5xl mb-5 leading-[1.15] font-extrabold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere] bg-gradient-to-r from-foreground via-foreground to-accent/80 bg-clip-text">
                 {detail?.title || milestoneTitle}
               </h1>
+              <div className="w-16 h-1 rounded-full bg-gradient-to-r from-accent to-accent/30 mb-5" />
               {detail?.summary && (
                 <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl">
                   {detail.summary}
                 </p>
               )}
-              <div className="absolute top-0 right-0 w-20 h-20 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/8 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             </div>
           </motion.div>
         </div>
