@@ -38,6 +38,8 @@ interface MilestoneDetailRow {
   hero_urls: string[] | null;
   landmark_urls: string[] | null;
   image_urls: string[] | null;
+  image_captions: string[] | null;
+  source_references: string | null;
 }
 
 interface Props {
@@ -67,6 +69,8 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     results: "",
     significance: "",
     image_urls: "",
+    image_captions: [] as string[],
+    source_references: "",
   });
   const [heroes, setHeroes] = useState<LinkedItem[]>([]);
   const [landmarks, setLandmarks] = useState<LinkedItem[]>([]);
@@ -92,6 +96,14 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     }));
   };
 
+  const getImageUrls = () => form.image_urls ? form.image_urls.split("\n").map(s => s.trim()).filter(Boolean) : [];
+
+  const syncCaptions = (urls: string[]) => {
+    const captions = [...form.image_captions];
+    while (captions.length < urls.length) captions.push("");
+    return captions.slice(0, urls.length);
+  };
+
   const openEdit = (d: MilestoneDetailRow) => {
     setEditing(d);
     setForm({
@@ -102,6 +114,8 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       results: d.results || "",
       significance: d.significance || "",
       image_urls: d.image_urls?.join("\n") || "",
+      image_captions: d.image_captions || [],
+      source_references: d.source_references || "",
     });
     setHeroes(parseLinkedItems(d.hero_names, d.hero_urls));
     setLandmarks(parseLinkedItems(d.landmark_names, d.landmark_urls));
@@ -120,6 +134,8 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       results: "",
       significance: "",
       image_urls: "",
+      image_captions: [],
+      source_references: "",
     });
     setHeroes([]);
     setLandmarks([]);
@@ -133,6 +149,9 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       return;
     }
 
+    const imageUrlsList = getImageUrls();
+    const captions = syncCaptions(imageUrlsList);
+
     const payload: any = {
       milestone_id: form.milestone_id,
       title: form.title,
@@ -144,7 +163,9 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       hero_urls: heroes.length > 0 ? heroes.map(h => h.url) : null,
       landmark_names: landmarks.length > 0 ? landmarks.map(l => l.name) : null,
       landmark_urls: landmarks.length > 0 ? landmarks.map(l => l.url) : null,
-      image_urls: form.image_urls ? form.image_urls.split("\n").map(s => s.trim()).filter(Boolean) : null,
+      image_urls: imageUrlsList.length > 0 ? imageUrlsList : null,
+      image_captions: captions.some(c => c.trim()) ? captions : null,
+      source_references: form.source_references || null,
     };
 
     if (editing) {
@@ -246,8 +267,11 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const tabs = [
     { id: "content" as const, label: "Nội dung", count: null },
     { id: "links" as const, label: "Liên kết", count: heroes.length + landmarks.length },
-    { id: "media" as const, label: "Hình ảnh", count: form.image_urls ? form.image_urls.split("\n").filter(s => s.trim()).length : 0 },
+    { id: "media" as const, label: "Hình ảnh", count: getImageUrls().length },
   ];
+
+  const imageUrls = getImageUrls();
+  const captions = syncCaptions(imageUrls);
 
   return (
     <>
@@ -385,6 +409,18 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                 <MarkdownEditor label="Diễn biến" value={form.events} onChange={(v) => setForm({ ...form, events: v })} rows={12} placeholder="## Giai đoạn 1&#10;Nội dung..." splitView websitePreview />
                 <MarkdownEditor label="Kết quả" value={form.results} onChange={(v) => setForm({ ...form, results: v })} rows={8} placeholder="- Kết quả 1&#10;- Kết quả 2" splitView websitePreview />
                 <MarkdownEditor label="Ý nghĩa lịch sử" value={form.significance} onChange={(v) => setForm({ ...form, significance: v })} rows={8} placeholder="**Ý nghĩa quan trọng**: ..." splitView websitePreview />
+
+                <div className="border-t border-border pt-5">
+                  <MarkdownEditor
+                    label="Nguồn tham khảo"
+                    value={form.source_references}
+                    onChange={(v) => setForm({ ...form, source_references: v })}
+                    rows={6}
+                    placeholder={"1. Đại Việt Sử Ký Toàn Thư\n2. [Wikipedia](https://vi.wikipedia.org/wiki/...)\n3. Viện Sử học Việt Nam"}
+                    splitView
+                    websitePreview
+                  />
+                </div>
               </div>
             )}
 
@@ -403,46 +439,66 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                   <p className="text-xs text-muted-foreground mt-1 mb-2">Ảnh đầu tiên sẽ làm ảnh bìa (hero). Các ảnh còn lại hiển thị trong gallery bài viết.</p>
                   <textarea
                     value={form.image_urls}
-                    onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
+                    onChange={(e) => {
+                      const newUrls = e.target.value;
+                      const newUrlList = newUrls.split("\n").map(s => s.trim()).filter(Boolean);
+                      const newCaptions = syncCaptions(newUrlList);
+                      setForm({ ...form, image_urls: newUrls, image_captions: newCaptions });
+                    }}
                     rows={5}
                     placeholder={"https://example.com/hero-image.jpg\nhttps://example.com/image2.jpg\nhttps://example.com/image3.jpg"}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
                   />
                 </div>
-                {form.image_urls && form.image_urls.trim() && (
+                {imageUrls.length > 0 && (
                   <div className="space-y-3">
-                    <Label className="text-xs text-muted-foreground">Xem trước ({form.image_urls.split("\n").filter(s => s.trim()).length} ảnh)</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
-                        <div key={i} className="relative group rounded-lg overflow-hidden border border-border bg-muted/30">
-                          <div className="aspect-[4/3]">
+                    <Label className="text-xs text-muted-foreground">Xem trước & chú thích ({imageUrls.length} ảnh)</Label>
+                    <div className="space-y-4">
+                      {imageUrls.map((url, i) => (
+                        <div key={i} className="flex gap-3 bg-muted/30 rounded-lg p-3 border border-border">
+                          <div className="relative shrink-0 w-28 h-20 rounded-lg overflow-hidden border border-border">
                             <img
-                              src={url.trim()}
+                              src={url}
                               alt={`Ảnh ${i + 1}`}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23999' font-size='12'%3ELỗi ảnh%3C/text%3E%3C/svg%3E";
                               }}
                             />
+                            <div className="absolute top-1 left-1">
+                              <span className={cn(
+                                "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                                i === 0
+                                  ? "bg-accent text-accent-foreground"
+                                  : "bg-foreground/60 text-primary-foreground"
+                              )}>
+                                {i === 0 ? "Ảnh bìa" : `#${i + 1}`}
+                              </span>
+                            </div>
                           </div>
-                          <div className="absolute top-1.5 left-1.5">
-                            <span className={cn(
-                              "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                              i === 0
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-foreground/60 text-primary-foreground"
-                            )}>
-                              {i === 0 ? "Ảnh bìa" : `#${i + 1}`}
-                            </span>
+                          <div className="flex-1 flex flex-col gap-1.5">
+                            <Input
+                              value={captions[i] || ""}
+                              onChange={(e) => {
+                                const newCaptions = [...captions];
+                                newCaptions[i] = e.target.value;
+                                setForm({ ...form, image_captions: newCaptions });
+                              }}
+                              placeholder={i === 0 ? "Chú thích ảnh bìa (tùy chọn)" : `Chú thích ảnh #${i + 1}`}
+                              className="h-8 text-sm"
+                            />
+                            <p className="text-[10px] text-muted-foreground truncate">{url}</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => {
                               const lines = form.image_urls.split("\n");
                               lines.splice(i, 1);
-                              setForm({ ...form, image_urls: lines.join("\n") });
+                              const newCaps = [...captions];
+                              newCaps.splice(i, 1);
+                              setForm({ ...form, image_urls: lines.join("\n"), image_captions: newCaps });
                             }}
-                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                            className="shrink-0 w-7 h-7 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors text-xs self-start"
                           >
                             ✕
                           </button>

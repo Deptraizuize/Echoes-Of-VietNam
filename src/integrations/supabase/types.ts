@@ -131,12 +131,14 @@ export type Database = {
           hero_names: string[] | null
           hero_urls: string[] | null
           id: string
+          image_captions: string[] | null
           image_urls: string[] | null
           landmark_names: string[] | null
           landmark_urls: string[] | null
           milestone_id: string
           results: string | null
           significance: string | null
+          source_references: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -147,12 +149,14 @@ export type Database = {
           hero_names?: string[] | null
           hero_urls?: string[] | null
           id?: string
+          image_captions?: string[] | null
           image_urls?: string[] | null
           landmark_names?: string[] | null
           landmark_urls?: string[] | null
           milestone_id: string
           results?: string | null
           significance?: string | null
+          source_references?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -163,12 +167,14 @@ export type Database = {
           hero_names?: string[] | null
           hero_urls?: string[] | null
           id?: string
+          image_captions?: string[] | null
           image_urls?: string[] | null
           landmark_names?: string[] | null
           landmark_urls?: string[] | null
           milestone_id?: string
           results?: string | null
           significance?: string | null
+          source_references?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
