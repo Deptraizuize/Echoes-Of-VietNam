@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-  Crown, MessageSquare, HelpCircle, BookOpen, Image, Gift, Users, CreditCard, BarChart3,
+  Crown, MessageSquare, HelpCircle, BookOpen, Image, Gift, Users, CreditCard, BarChart3, DollarSign,
   ChevronDown, Menu, X, Trophy,
 } from "lucide-react";
 import { useState } from "react";
@@ -48,6 +48,7 @@ const groups: NavGroup[] = [
       { id: "banners", label: "Banner QC", icon: Image },
       { id: "rewards", label: "Đổi thưởng", icon: Gift },
       { id: "payment", label: "Thanh toán", icon: CreditCard },
+      { id: "revenue", label: "Doanh thu", icon: DollarSign },
     ],
   },
 ];

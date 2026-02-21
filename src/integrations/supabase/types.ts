@@ -430,6 +430,45 @@ export type Database = {
           },
         ]
       }
+      revenue_records: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          record_date: string
+          recorded_by: string | null
+          reference_id: string | null
+          source_label: string
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          record_date?: string
+          recorded_by?: string | null
+          reference_id?: string | null
+          source_label: string
+          source_type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          record_date?: string
+          recorded_by?: string | null
+          reference_id?: string | null
+          source_label?: string
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reward_redemptions: {
         Row: {
           admin_note: string | null
