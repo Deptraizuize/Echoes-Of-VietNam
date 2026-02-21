@@ -19,11 +19,11 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  DollarSign, Plus, Trash2, Edit, TrendingUp, Crown, Megaphone, Handshake, Package, Inbox, Calendar, ArrowUpRight, ArrowDownRight, BarChart3,
+  DollarSign, Plus, Trash2, Edit, TrendingUp, Crown, Megaphone, Handshake, Package, Inbox, ArrowUpRight, ArrowDownRight, User, CalendarDays,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 
 interface RevenueRecord {
   id: string;
@@ -37,24 +37,33 @@ interface RevenueRecord {
   created_at: string;
 }
 
-const SOURCE_TYPES: Record<string, { label: string; icon: React.ReactNode; color: string; chartColor: string }> = {
-  premium: { label: "Premium", icon: <Crown className="w-3.5 h-3.5" />, color: "bg-accent/10 text-accent border-accent/20", chartColor: "hsl(var(--accent))" },
-  ads: { label: "Quảng cáo", icon: <Megaphone className="w-3.5 h-3.5" />, color: "bg-blue-500/10 text-blue-600 border-blue-500/20", chartColor: "hsl(210, 80%, 55%)" },
-  collab: { label: "Đối tác", icon: <Handshake className="w-3.5 h-3.5" />, color: "bg-green-500/10 text-green-600 border-green-500/20", chartColor: "hsl(142, 60%, 45%)" },
-  other: { label: "Khác", icon: <Package className="w-3.5 h-3.5" />, color: "bg-muted text-muted-foreground border-border", chartColor: "hsl(var(--muted-foreground))" },
+interface PremiumRequest {
+  id: string;
+  status: string;
+  plan_type: string;
+  created_at: string;
+  user_id: string;
+}
+
+interface ProfileInfo {
+  user_id: string;
+  display_name: string | null;
+  is_premium: boolean;
+  premium_expires_at: string | null;
+}
+
+const SOURCE_TYPES: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+  premium: { label: "Premium", icon: <Crown className="w-3.5 h-3.5" />, color: "bg-accent/10 text-accent border-accent/20" },
+  ads: { label: "Quảng cáo", icon: <Megaphone className="w-3.5 h-3.5" />, color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  collab: { label: "Đối tác", icon: <Handshake className="w-3.5 h-3.5" />, color: "bg-green-500/10 text-green-600 border-green-500/20" },
+  other: { label: "Khác", icon: <Package className="w-3.5 h-3.5" />, color: "bg-muted text-muted-foreground border-border" },
 };
 
 const formatVND = (amount: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 
-const formatCompact = (amount: number) => {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
-  return amount.toString();
-};
-
 interface Props {
-  premiumRequests: { id: string; status: string; plan_type: string; created_at: string; user_id: string }[];
+  premiumRequests: PremiumRequest[];
 }
 
 const PLAN_PRICE: Record<string, number> = {
@@ -62,10 +71,16 @@ const PLAN_PRICE: Record<string, number> = {
   yearly: 199000,
 };
 
+const PLAN_LABEL: Record<string, string> = {
+  monthly: "1 Tháng",
+  yearly: "1 Năm",
+};
+
 const RevenueTab = ({ premiumRequests }: Props) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [records, setRecords] = useState<RevenueRecord[]>([]);
+  const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
   const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState(false);
   const [editing, setEditing] = useState<RevenueRecord | null>(null);
@@ -90,6 +105,24 @@ const RevenueTab = ({ premiumRequests }: Props) => {
     setRecords((data as RevenueRecord[]) || []);
     setLoading(false);
   };
+
+  // Fetch profiles for premium request user mapping
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const userIds = [...new Set(premiumRequests.map(r => r.user_id))];
+      if (userIds.length === 0) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, is_premium, premium_expires_at")
+        .in("user_id", userIds);
+      if (data) {
+        const map = new Map<string, ProfileInfo>();
+        data.forEach(p => map.set(p.user_id, p as ProfileInfo));
+        setProfiles(map);
+      }
+    };
+    fetchProfiles();
+  }, [premiumRequests]);
 
   useEffect(() => { fetchRecords(); }, []);
 
@@ -181,45 +214,30 @@ const RevenueTab = ({ premiumRequests }: Props) => {
   const collabRevenue = records.filter(r => r.source_type === "collab" || r.source_type === "other").reduce((s, r) => s + r.amount, 0);
   const filteredTotal = filtered.reduce((s, r) => s + r.amount, 0);
 
-  // Monthly chart data
-  const monthlyChartData = useMemo(() => {
-    const map = new Map<string, Record<string, number>>();
-    records.forEach(r => {
-      const m = r.record_date.slice(0, 7);
-      if (!map.has(m)) map.set(m, { premium: 0, ads: 0, collab: 0, other: 0 });
-      const entry = map.get(m)!;
-      entry[r.source_type] = (entry[r.source_type] || 0) + r.amount;
-    });
-    return [...map.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6)
-      .map(([month, data]) => ({
-        month: new Date(month + "-01").toLocaleDateString("vi-VN", { month: "short" }),
-        premium: data.premium,
-        ads: data.ads,
-        collab: data.collab + data.other,
-        total: data.premium + data.ads + data.collab + (data.other || 0),
-      }));
-  }, [records]);
+  // Premium detail: map revenue records to user info via premiumRequests
+  const premiumDetails = useMemo(() => {
+    const requestMap = new Map(premiumRequests.map(r => [r.id, r]));
+    return records
+      .filter(r => r.source_type === "premium" && r.reference_id)
+      .map(r => {
+        const req = requestMap.get(r.reference_id!);
+        const profile = req ? profiles.get(req.user_id) : null;
+        return {
+          ...r,
+          user_name: profile?.display_name || "Người dùng",
+          plan_type: req?.plan_type || "monthly",
+          user_is_premium: profile?.is_premium || false,
+          premium_expires: profile?.premium_expires_at || null,
+        };
+      })
+      .sort((a, b) => b.record_date.localeCompare(a.record_date));
+  }, [records, premiumRequests, profiles]);
 
-  // Pie data
-  const pieData = useMemo(() => {
-    const items = [
-      { name: "Premium", value: premiumRevenue, fill: SOURCE_TYPES.premium.chartColor },
-      { name: "Quảng cáo", value: adsRevenue, fill: SOURCE_TYPES.ads.chartColor },
-      { name: "Đối tác & Khác", value: collabRevenue, fill: SOURCE_TYPES.collab.chartColor },
-    ].filter(i => i.value > 0);
-    return items;
-  }, [premiumRevenue, adsRevenue, collabRevenue]);
-
-  // Month-over-month growth
-  const growth = useMemo(() => {
-    if (monthlyChartData.length < 2) return null;
-    const curr = monthlyChartData[monthlyChartData.length - 1].total;
-    const prev = monthlyChartData[monthlyChartData.length - 2].total;
-    if (prev === 0) return null;
-    return ((curr - prev) / prev * 100).toFixed(1);
-  }, [monthlyChartData]);
+  // Premium stats by plan
+  const monthlyCount = premiumDetails.filter(d => d.plan_type === "monthly").length;
+  const yearlyCount = premiumDetails.filter(d => d.plan_type === "yearly").length;
+  const monthlyTotal = monthlyCount * PLAN_PRICE.monthly;
+  const yearlyTotal = yearlyCount * PLAN_PRICE.yearly;
 
   // Get unique months for filter
   const months = useMemo(() => {
@@ -227,12 +245,15 @@ const RevenueTab = ({ premiumRequests }: Props) => {
     return [...set].sort().reverse();
   }, [records]);
 
-  const statCards = [
-    { label: "Tổng doanh thu", value: formatVND(totalRevenue), sub: growth ? `${parseFloat(growth) >= 0 ? "+" : ""}${growth}% so với tháng trước` : `${records.length} bản ghi`, icon: <TrendingUp className="w-5 h-5" />, trend: growth ? parseFloat(growth) >= 0 : null, accent: true },
-    { label: "Premium", value: formatVND(premiumRevenue), sub: `${records.filter(r => r.source_type === "premium").length} giao dịch`, icon: <Crown className="w-5 h-5" />, trend: null, accent: false },
-    { label: "Quảng cáo", value: formatVND(adsRevenue), sub: `${records.filter(r => r.source_type === "ads").length} kê khai`, icon: <Megaphone className="w-5 h-5" />, trend: null, accent: false },
-    { label: "Đối tác & Khác", value: formatVND(collabRevenue), sub: `${records.filter(r => r.source_type === "collab" || r.source_type === "other").length} kê khai`, icon: <Handshake className="w-5 h-5" />, trend: null, accent: false },
-  ];
+  // Non-premium records for "Kê khai khác" tab
+  const otherRecords = useMemo(() => {
+    let result = records.filter(r => r.source_type !== "premium");
+    if (filterType !== "all" && filterType !== "premium") result = result.filter(r => r.source_type === filterType);
+    if (filterMonth && filterMonth !== "all_months") result = result.filter(r => r.record_date.startsWith(filterMonth));
+    return result;
+  }, [records, filterType, filterMonth]);
+
+  const otherTotal = otherRecords.reduce((s, r) => s + r.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -246,29 +267,23 @@ const RevenueTab = ({ premiumRequests }: Props) => {
             Quản lý doanh thu
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Theo dõi doanh thu Premium (tự động) và kê khai từ quảng cáo, đối tác.
+            Chi tiết doanh thu từ đăng ký Premium và kê khai thủ công.
           </p>
         </div>
-        <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground h-8 gap-1.5">
-          <Plus className="w-3.5 h-3.5" /> Kê khai
-        </Button>
       </div>
 
-      {/* Stats */}
+      {/* Overview Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {statCards.map((s, i) => (
-          <Card key={i} className={`border-border/60 shadow-none transition-all hover:shadow-sm ${s.accent ? "ring-1 ring-accent/20 bg-accent/[0.02]" : ""}`}>
+        {[
+          { label: "Tổng doanh thu", value: formatVND(totalRevenue), sub: `${records.length} bản ghi`, icon: <TrendingUp className="w-5 h-5" />, accent: true },
+          { label: "Premium", value: formatVND(premiumRevenue), sub: `${premiumDetails.length} lượt đăng ký`, icon: <Crown className="w-5 h-5" />, accent: false },
+          { label: "Quảng cáo", value: formatVND(adsRevenue), sub: `${records.filter(r => r.source_type === "ads").length} kê khai`, icon: <Megaphone className="w-5 h-5" />, accent: false },
+          { label: "Đối tác & Khác", value: formatVND(collabRevenue), sub: `${records.filter(r => r.source_type === "collab" || r.source_type === "other").length} kê khai`, icon: <Handshake className="w-5 h-5" />, accent: false },
+        ].map((s, i) => (
+          <Card key={i} className={`border-border/60 shadow-none ${s.accent ? "ring-1 ring-accent/20 bg-accent/[0.02]" : ""}`}>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.accent ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
-                  {s.icon}
-                </div>
-                {s.trend !== null && (
-                  <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${s.trend ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-                    {s.trend ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {growth}%
-                  </span>
-                )}
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${s.accent ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                {s.icon}
               </div>
               <div className="text-xl font-bold tabular-nums tracking-tight">{s.value}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{s.sub}</div>
@@ -277,163 +292,199 @@ const RevenueTab = ({ premiumRequests }: Props) => {
         ))}
       </div>
 
-      {/* Charts */}
-      {records.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Bar chart */}
-          <Card className="lg:col-span-2 border-border/60 shadow-none">
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-muted-foreground" />
-                Doanh thu theo tháng
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-2 pb-3">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={monthlyChartData} barCategoryGap="20%">
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={45} />
-                  <Tooltip
-                    formatter={(value: number) => formatVND(value)}
-                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                  />
-                  <Bar dataKey="premium" name="Premium" stackId="a" fill={SOURCE_TYPES.premium.chartColor} radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="ads" name="Quảng cáo" stackId="a" fill={SOURCE_TYPES.ads.chartColor} radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="collab" name="Đối tác" stackId="a" fill={SOURCE_TYPES.collab.chartColor} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+      {/* Main Tabs */}
+      <Tabs defaultValue="premium" className="space-y-4">
+        <TabsList className="bg-muted/50">
+          <TabsTrigger value="premium" className="gap-1.5 text-xs">
+            <Crown className="w-3.5 h-3.5" /> Premium ({premiumDetails.length})
+          </TabsTrigger>
+          <TabsTrigger value="other" className="gap-1.5 text-xs">
+            <Package className="w-3.5 h-3.5" /> Kê khai khác ({records.filter(r => r.source_type !== "premium").length})
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Pie chart */}
-          <Card className="border-border/60 shadow-none">
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-sm font-semibold">Cơ cấu doanh thu</CardTitle>
-            </CardHeader>
-            <CardContent className="px-2 pb-3 flex items-center justify-center">
-              {pieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="45%"
-                      innerRadius={45}
-                      outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => formatVND(value)} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                    <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-xs text-muted-foreground py-12">Chưa có dữ liệu</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        {/* === PREMIUM TAB === */}
+        <TabsContent value="premium" className="space-y-4">
+          {/* Plan breakdown */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="border-border/60 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs font-semibold text-muted-foreground">Gói 1 Tháng</span>
+                </div>
+                <div className="text-lg font-bold tabular-nums">{monthlyCount} <span className="text-sm font-normal text-muted-foreground">lượt</span></div>
+                <div className="text-xs text-muted-foreground mt-0.5">{formatVND(monthlyTotal)}</div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/60 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="w-4 h-4 text-accent" />
+                  <span className="text-xs font-semibold text-muted-foreground">Gói 1 Năm</span>
+                </div>
+                <div className="text-lg font-bold tabular-nums">{yearlyCount} <span className="text-sm font-normal text-muted-foreground">lượt</span></div>
+                <div className="text-xs text-muted-foreground mt-0.5">{formatVND(yearlyTotal)}</div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Tất cả nguồn" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả nguồn</SelectItem>
-            <SelectItem value="premium">Premium</SelectItem>
-            <SelectItem value="ads">Quảng cáo</SelectItem>
-            <SelectItem value="collab">Đối tác</SelectItem>
-            <SelectItem value="other">Khác</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="w-40 h-9"><SelectValue placeholder="Tất cả tháng" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all_months">Tất cả tháng</SelectItem>
-            {months.map(m => (
-              <SelectItem key={m} value={m}>
-                {new Date(m + "-01").toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {(filterType !== "all" || (filterMonth && filterMonth !== "all_months")) && (
-          <span className="text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
-            {filtered.length} bản ghi · {formatVND(filteredTotal)}
-          </span>
-        )}
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <div className="text-center py-16">
-          <div className="h-6 w-6 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
-        </div>
-      ) : filtered.length > 0 ? (
-        <Card className="border-border/60 shadow-none overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="w-28">Nguồn</TableHead>
-                <TableHead>Mô tả</TableHead>
-                <TableHead className="text-right">Số tiền</TableHead>
-                <TableHead className="w-28">Ngày</TableHead>
-                <TableHead className="hidden md:table-cell">Ghi chú</TableHead>
-                <TableHead className="w-20"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((r) => {
-                const st = SOURCE_TYPES[r.source_type] || SOURCE_TYPES.other;
-                const isPremium = r.source_type === "premium";
-                return (
-                  <TableRow key={r.id} className="group">
-                    <TableCell>
-                      <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full border font-medium ${st.color}`}>
-                        {st.icon} {st.label}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm font-medium max-w-[200px] truncate">{r.source_label}</TableCell>
-                    <TableCell className="text-right font-bold text-accent tabular-nums">{formatVND(r.amount)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground tabular-nums">
-                      {new Date(r.record_date).toLocaleDateString("vi-VN")}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate hidden md:table-cell">
-                      {r.note || "—"}
-                    </TableCell>
-                    <TableCell>
-                      {!isPremium && (
-                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-7 w-7 text-muted-foreground hover:text-foreground">
-                            <Edit className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
+          {/* Premium detail table */}
+          {premiumDetails.length > 0 ? (
+            <Card className="border-border/60 shadow-none overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead>Người dùng</TableHead>
+                    <TableHead>Gói</TableHead>
+                    <TableHead className="text-right">Số tiền</TableHead>
+                    <TableHead>Ngày đăng ký</TableHead>
+                    <TableHead className="hidden md:table-cell">Trạng thái</TableHead>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
-      ) : (
-        <Card className="border-border/60 shadow-none">
-          <CardContent className="py-16 text-center text-muted-foreground">
-            <Inbox className="w-10 h-10 mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium">Chưa có bản ghi doanh thu nào</p>
-            <p className="text-xs mt-1">Doanh thu từ Premium sẽ được ghi tự động khi duyệt yêu cầu.</p>
-          </CardContent>
-        </Card>
-      )}
+                </TableHeader>
+                <TableBody>
+                  {premiumDetails.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center">
+                            <User className="w-3.5 h-3.5 text-accent" />
+                          </div>
+                          <span className="text-sm font-medium">{d.user_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full border font-medium ${d.plan_type === "yearly" ? "bg-accent/10 text-accent border-accent/20" : "bg-blue-500/10 text-blue-600 border-blue-500/20"}`}>
+                          <Crown className="w-3 h-3" />
+                          {PLAN_LABEL[d.plan_type] || "1 Tháng"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-accent tabular-nums">{formatVND(d.amount)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground tabular-nums">
+                        {new Date(d.record_date).toLocaleDateString("vi-VN")}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {d.user_is_premium ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 font-medium">
+                            Đang hoạt động
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border font-medium">
+                            Hết hạn
+                          </span>
+                        )}
+                        {d.premium_expires && d.user_is_premium && (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            HH: {new Date(d.premium_expires).toLocaleDateString("vi-VN")}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          ) : (
+            <Card className="border-border/60 shadow-none">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Crown className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Chưa có doanh thu Premium nào.</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* === OTHER REVENUE TAB === */}
+        <TabsContent value="other" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <Select value={filterType === "premium" ? "all" : filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Tất cả nguồn" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả nguồn</SelectItem>
+                <SelectItem value="ads">Quảng cáo</SelectItem>
+                <SelectItem value="collab">Đối tác</SelectItem>
+                <SelectItem value="other">Khác</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterMonth} onValueChange={setFilterMonth}>
+              <SelectTrigger className="w-40 h-9"><SelectValue placeholder="Tất cả tháng" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_months">Tất cả tháng</SelectItem>
+                {months.map(m => (
+                  <SelectItem key={m} value={m}>
+                    {new Date(m + "-01").toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {otherRecords.length > 0 && (
+              <span className="text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+                {otherRecords.length} bản ghi · {formatVND(otherTotal)}
+              </span>
+            )}
+            <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground h-8 gap-1.5 ml-auto">
+              <Plus className="w-3.5 h-3.5" /> Kê khai
+            </Button>
+          </div>
+
+          {otherRecords.length > 0 ? (
+            <Card className="border-border/60 shadow-none overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="w-28">Nguồn</TableHead>
+                    <TableHead>Mô tả</TableHead>
+                    <TableHead className="text-right">Số tiền</TableHead>
+                    <TableHead className="w-28">Ngày</TableHead>
+                    <TableHead className="hidden md:table-cell">Ghi chú</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {otherRecords.map((r) => {
+                    const st = SOURCE_TYPES[r.source_type] || SOURCE_TYPES.other;
+                    return (
+                      <TableRow key={r.id} className="group">
+                        <TableCell>
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full border font-medium ${st.color}`}>
+                            {st.icon} {st.label}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm font-medium max-w-[200px] truncate">{r.source_label}</TableCell>
+                        <TableCell className="text-right font-bold text-accent tabular-nums">{formatVND(r.amount)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground tabular-nums">
+                          {new Date(r.record_date).toLocaleDateString("vi-VN")}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate hidden md:table-cell">
+                          {r.note || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                              <Edit className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Card>
+          ) : (
+            <Card className="border-border/60 shadow-none">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Inbox className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Chưa có kê khai doanh thu nào.</p>
+                <p className="text-xs mt-1">Nhấn "Kê khai" để thêm doanh thu từ quảng cáo, đối tác...</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialog} onOpenChange={setDialog}>
