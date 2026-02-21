@@ -17,10 +17,11 @@ import BannersTab from "@/components/admin/BannersTab";
 import RewardsTab from "@/components/admin/RewardsTab";
 import QuestionsTab from "@/components/admin/QuestionsTab";
 import MilestoneDetailsTab from "@/components/admin/MilestoneDetailsTab";
+import MilestonesTab from "@/components/admin/MilestonesTab";
 import PaymentSettingsTab from "@/components/admin/PaymentSettingsTab";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
-interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
+interface MilestoneRow { id: string; title: string; period_id: string; period_title: string; phase_id: string; phase_title: string; sort_order: number; }
 interface QuestionRow { id: string; milestone_id: string; question: string; options: string[]; correct_answer: number; image_url: string | null; }
 interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; premium_expires_at: string | null; total_points: number; created_at: string; }
 
@@ -58,7 +59,7 @@ const Admin = () => {
 
   const fetchAll = async () => {
     const [m, q, p, pr, fb, bn, rw, rd, md, ps, roles] = await Promise.all([
-      supabase.from("milestones").select("id, title, period_title, phase_title").order("sort_order"),
+      supabase.from("milestones").select("id, title, period_id, period_title, phase_id, phase_title, sort_order").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer, image_url").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, premium_expires_at, total_points, created_at").order("created_at", { ascending: false }),
       supabase.from("premium_requests").select("*").order("created_at", { ascending: false }),
@@ -102,7 +103,7 @@ const Admin = () => {
       case "feedback": return <FeedbackTab feedback={feedbackList} onRefresh={fetchAll} />;
       case "questions": return <QuestionsTab milestones={milestones} questions={questions} onRefresh={fetchAll} />;
       case "milestone-details": return <MilestoneDetailsTab milestones={milestones} details={milestoneDetails} onRefresh={fetchAll} />;
-      case "milestones": return <MilestonesSection milestones={milestones} />;
+      case "milestones": return <MilestonesTab milestones={milestones} onRefresh={fetchAll} />;
       case "banners": return <BannersTab banners={banners} onRefresh={fetchAll} />;
       case "rewards": return <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />;
       case "users": return <UsersSection profiles={profiles} adminUserIds={adminUserIds} onRefresh={fetchAll} />;
@@ -142,31 +143,7 @@ const Admin = () => {
   );
 };
 
-/* Inline sub-sections that were previously simple tab contents */
-const MilestonesSection = ({ milestones }: { milestones: MilestoneRow[] }) => (
-  <div>
-    <h3 className="font-serif text-xl mb-4">Danh sách cột mốc ({milestones.length})</h3>
-    <div className="border border-border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader><TableRow>
-          <TableHead>ID</TableHead><TableHead>Tiêu đề</TableHead><TableHead>Thời kỳ</TableHead><TableHead>Giai đoạn</TableHead>
-        </TableRow></TableHeader>
-        <TableBody>
-          {milestones.map((m) => (
-            <TableRow key={m.id}>
-              <TableCell className="font-mono text-sm">{m.id}</TableCell>
-              <TableCell>{m.title}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{m.period_title}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{m.phase_title}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  </div>
-);
-
-interface MilestoneRow { id: string; title: string; period_title: string; phase_title: string; }
+/* Inline sub-sections */
 
 const UsersSection = ({ profiles, adminUserIds, onRefresh }: { profiles: ProfileRow[]; adminUserIds: string[]; onRefresh: () => void }) => {
   const [deleting, setDeleting] = useState<string | null>(null);
