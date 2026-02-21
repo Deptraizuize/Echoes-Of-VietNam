@@ -381,10 +381,10 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                   </div>
                 </div>
 
-                <MarkdownEditor label="Tóm tắt" value={form.summary} onChange={(v) => setForm({ ...form, summary: v })} rows={2} placeholder="Tóm tắt ngắn gọn..." />
-                <MarkdownEditor label="Diễn biến" value={form.events} onChange={(v) => setForm({ ...form, events: v })} rows={10} placeholder="## Giai đoạn 1&#10;Nội dung..." splitView />
-                <MarkdownEditor label="Kết quả" value={form.results} onChange={(v) => setForm({ ...form, results: v })} rows={6} placeholder="- Kết quả 1&#10;- Kết quả 2" splitView />
-                <MarkdownEditor label="Ý nghĩa lịch sử" value={form.significance} onChange={(v) => setForm({ ...form, significance: v })} rows={6} placeholder="**Ý nghĩa quan trọng**: ..." splitView />
+                <MarkdownEditor label="Tóm tắt" value={form.summary} onChange={(v) => setForm({ ...form, summary: v })} rows={2} placeholder="Tóm tắt ngắn gọn..." websitePreview />
+                <MarkdownEditor label="Diễn biến" value={form.events} onChange={(v) => setForm({ ...form, events: v })} rows={12} placeholder="## Giai đoạn 1&#10;Nội dung..." splitView websitePreview />
+                <MarkdownEditor label="Kết quả" value={form.results} onChange={(v) => setForm({ ...form, results: v })} rows={8} placeholder="- Kết quả 1&#10;- Kết quả 2" splitView websitePreview />
+                <MarkdownEditor label="Ý nghĩa lịch sử" value={form.significance} onChange={(v) => setForm({ ...form, significance: v })} rows={8} placeholder="**Ý nghĩa quan trọng**: ..." splitView websitePreview />
               </div>
             )}
 

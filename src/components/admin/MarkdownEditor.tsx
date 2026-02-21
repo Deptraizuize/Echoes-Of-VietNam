@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import { Eye, Edit3, Columns, Image as ImageIcon } from "lucide-react";
+import { Eye, Edit3, Bold, Italic, Heading2, Heading3, List, Link as LinkIcon, Image as ImageIcon, Quote, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,19 +11,32 @@ interface Props {
   placeholder?: string;
   label?: string;
   splitView?: boolean;
+  /** When true, renders preview matching the actual website style */
+  websitePreview?: boolean;
 }
 
-const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitView = false }: Props) => {
+const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitView = false, websitePreview = false }: Props) => {
   const [mode, setMode] = useState<"edit" | "preview" | "split">(splitView ? "split" : "edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current && mode !== "preview") {
       const el = textareaRef.current;
       el.style.height = "auto";
-      el.style.height = Math.max(el.scrollHeight, rows * 24) + "px";
+      el.style.height = Math.max(el.scrollHeight, rows * 28) + "px";
     }
   }, [value, mode, rows]);
+
+  // Sync scroll between editor and preview in split mode
+  const handleEditorScroll = useCallback(() => {
+    if (mode !== "split" || !textareaRef.current || !previewRef.current) return;
+    const editor = textareaRef.current;
+    const ratio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight || 1);
+    const preview = previewRef.current;
+    preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+  }, [mode]);
 
   const insertMarkdown = (before: string, after: string = "") => {
     const el = textareaRef.current;
@@ -39,19 +52,32 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
     }, 0);
   };
 
-  const toolbar = (
-    <div className="flex items-center gap-1 flex-wrap">
-      <button type="button" onClick={() => insertMarkdown("**", "**")} className="px-2 py-1 text-xs font-bold rounded hover:bg-muted transition-colors" title="In đậm">B</button>
-      <button type="button" onClick={() => insertMarkdown("*", "*")} className="px-2 py-1 text-xs italic rounded hover:bg-muted transition-colors" title="In nghiêng">I</button>
-      <button type="button" onClick={() => insertMarkdown("\n## ", "\n")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Tiêu đề">H2</button>
-      <button type="button" onClick={() => insertMarkdown("\n### ", "\n")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Tiêu đề nhỏ">H3</button>
-      <button type="button" onClick={() => insertMarkdown("\n- ")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Danh sách">• List</button>
-      <button type="button" onClick={() => insertMarkdown("[", "](url)")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors text-accent" title="Liên kết">🔗</button>
-      <button type="button" onClick={() => insertMarkdown("![mô tả](", ")")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Hình ảnh"><ImageIcon className="w-3 h-3 inline" /></button>
-      <div className="w-px h-4 bg-border mx-1" />
-      <button type="button" onClick={() => insertMarkdown("\n> ")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Trích dẫn">❝</button>
-    </div>
-  );
+  const toolbarButtons = [
+    { icon: Bold, action: () => insertMarkdown("**", "**"), title: "In đậm (Ctrl+B)", label: "B" },
+    { icon: Italic, action: () => insertMarkdown("*", "*"), title: "In nghiêng (Ctrl+I)", label: "I" },
+    { divider: true },
+    { icon: Heading2, action: () => insertMarkdown("\n## ", "\n"), title: "Tiêu đề H2" },
+    { icon: Heading3, action: () => insertMarkdown("\n### ", "\n"), title: "Tiêu đề H3" },
+    { divider: true },
+    { icon: List, action: () => insertMarkdown("\n- "), title: "Danh sách" },
+    { icon: Quote, action: () => insertMarkdown("\n> "), title: "Trích dẫn" },
+    { divider: true },
+    { icon: LinkIcon, action: () => insertMarkdown("[", "](url)"), title: "Liên kết" },
+    { icon: ImageIcon, action: () => insertMarkdown("![mô tả](", ")"), title: "Hình ảnh" },
+  ];
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === "b") { e.preventDefault(); insertMarkdown("**", "**"); }
+      if (e.key === "i") { e.preventDefault(); insertMarkdown("*", "*"); }
+    }
+    // Tab to indent
+    if (e.key === "Tab") {
+      e.preventDefault();
+      insertMarkdown("  ");
+    }
+  };
 
   const markdownComponents = {
     img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
@@ -59,10 +85,8 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
         src={src}
         alt={alt || ""}
         className="rounded-lg border border-border max-w-full h-auto my-3"
-        style={{ maxHeight: "300px", objectFit: "contain" }}
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
+        style={{ maxHeight: "400px", objectFit: "contain" }}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         {...props}
       />
     ),
@@ -73,20 +97,92 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
     ),
   };
 
-  const previewContent = (
-    <div className={cn(
-      "rounded-md border border-input bg-background px-4 py-3 text-sm prose prose-sm max-w-none dark:prose-invert",
-      "prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground",
-      "prose-a:text-accent prose-a:no-underline hover:prose-a:underline",
-      "prose-img:rounded-lg prose-img:border prose-img:border-border",
-      "overflow-y-auto",
-      mode === "split" ? "h-full min-h-[200px]" : "min-h-[100px]"
-    )}>
-      {value ? (
-        <ReactMarkdown components={markdownComponents}>{value}</ReactMarkdown>
-      ) : (
-        <p className="text-muted-foreground italic">Chưa có nội dung</p>
-      )}
+  // Website-style preview matching MilestoneDetail page
+  const websiteMarkdownComponents = {
+    ...markdownComponents,
+    h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+      <h2 className="text-xl font-bold text-foreground mt-6 mb-3" {...props}>{children}</h2>
+    ),
+    h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+      <h3 className="text-lg font-semibold text-foreground mt-4 mb-2" {...props}>{children}</h3>
+    ),
+    p: ({ children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p className="text-muted-foreground leading-relaxed text-base mb-3" {...props}>{children}</p>
+    ),
+    ul: ({ children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
+      <ul className="list-disc pl-6 space-y-1.5 text-muted-foreground mb-4" {...props}>{children}</ul>
+    ),
+    ol: ({ children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
+      <ol className="list-decimal pl-6 space-y-1.5 text-muted-foreground mb-4" {...props}>{children}</ol>
+    ),
+    li: ({ children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
+      <li className="text-muted-foreground leading-relaxed" {...props}>{children}</li>
+    ),
+    blockquote: ({ children, ...props }: React.HTMLAttributes<HTMLQuoteElement>) => (
+      <blockquote className="border-l-3 border-accent/40 pl-4 py-1 my-4 italic text-muted-foreground/80" {...props}>{children}</blockquote>
+    ),
+    strong: ({ children, ...props }: React.HTMLAttributes<HTMLElement>) => (
+      <strong className="text-foreground font-semibold" {...props}>{children}</strong>
+    ),
+    img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
+      <img
+        src={src}
+        alt={alt || ""}
+        className="rounded-xl border border-border max-w-full h-auto my-4 shadow-sm"
+        style={{ maxHeight: "400px", objectFit: "contain" }}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+        {...props}
+      />
+    ),
+  };
+
+  const renderPreview = (className?: string) => {
+    const components = websitePreview ? websiteMarkdownComponents : markdownComponents;
+    const baseClass = websitePreview
+      ? "bg-background px-5 py-4 text-sm leading-relaxed"
+      : "prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:border prose-img:border-border px-4 py-3 text-sm";
+
+    return (
+      <div
+        ref={previewRef}
+        className={cn(
+          "rounded-md border border-input overflow-y-auto",
+          baseClass,
+          className
+        )}
+      >
+        {websitePreview && (
+          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-border">
+            <Monitor className="w-3.5 h-3.5 text-accent" />
+            <span className="text-[10px] uppercase tracking-widest text-accent font-medium">Xem trước giao diện thực tế</span>
+          </div>
+        )}
+        {value ? (
+          <ReactMarkdown components={components}>{value}</ReactMarkdown>
+        ) : (
+          <p className="text-muted-foreground/50 italic text-center py-8">Bắt đầu soạn thảo để xem trước...</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderToolbar = () => (
+    <div className="flex items-center gap-0.5 px-2 py-1.5 bg-muted/50 border border-border rounded-t-md border-b-0 flex-wrap">
+      {toolbarButtons.map((btn, i) => {
+        if ('divider' in btn) return <div key={i} className="w-px h-5 bg-border mx-1" />;
+        const Icon = btn.icon;
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={btn.action}
+            title={btn.title}
+            className="p-1.5 rounded hover:bg-background hover:shadow-sm transition-all text-muted-foreground hover:text-foreground"
+          >
+            <Icon className="w-3.5 h-3.5" />
+          </button>
+        );
+      })}
     </div>
   );
 
@@ -95,56 +191,102 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
       ref={textareaRef}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onScroll={handleEditorScroll}
+      onKeyDown={handleKeyDown}
       rows={rows}
       placeholder={placeholder}
       className={cn(
-        "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+        "flex w-full border border-input bg-background px-4 py-3 text-sm ring-offset-background",
         "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
-        mode === "split" ? "h-full min-h-[200px]" : ""
+        "disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none leading-relaxed",
+        "rounded-b-md rounded-t-none",
+        mode === "split" ? "h-full" : ""
       )}
+      style={{ tabSize: 2 }}
     />
   );
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {label && (
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">{label}</span>
-          <div className="flex items-center gap-1">
-            <Button type="button" variant={mode === "edit" ? "secondary" : "ghost"} size="sm" onClick={() => setMode("edit")} className="h-7 text-xs gap-1">
-              <Edit3 className="w-3 h-3" /> Soạn
-            </Button>
-            <Button type="button" variant={mode === "split" ? "secondary" : "ghost"} size="sm" onClick={() => setMode("split")} className="h-7 text-xs gap-1">
-              <Columns className="w-3 h-3" /> Song song
-            </Button>
-            <Button type="button" variant={mode === "preview" ? "secondary" : "ghost"} size="sm" onClick={() => setMode("preview")} className="h-7 text-xs gap-1">
-              <Eye className="w-3 h-3" /> Xem
-            </Button>
+          <span className="text-sm font-medium text-foreground">{label}</span>
+          <div className="flex items-center bg-muted/50 rounded-md p-0.5">
+            {[
+              { id: "edit" as const, icon: Edit3, text: "Soạn" },
+              { id: "split" as const, icon: Monitor, text: "Song song" },
+              { id: "preview" as const, icon: Eye, text: "Xem trước" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setMode(tab.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-all",
+                  mode === tab.id
+                    ? "bg-background text-foreground shadow-sm font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <tab.icon className="w-3 h-3" />
+                {tab.text}
+              </button>
+            ))}
           </div>
         </div>
       )}
 
       {mode === "edit" && (
-        <div className="space-y-1">
-          {toolbar}
+        <div>
+          {renderToolbar()}
           {editorContent}
         </div>
       )}
 
-      {mode === "preview" && previewContent}
+      {mode === "preview" && renderPreview("min-h-[120px]")}
 
       {mode === "split" && (
-        <div className="space-y-1">
-          {toolbar}
-          <div className="grid grid-cols-2 gap-3 min-h-[200px]">
-            <div className="flex flex-col">{editorContent}</div>
-            <div className="flex flex-col">
-              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">Xem trước</div>
-              {previewContent}
+        <div className="grid grid-cols-2 gap-0 border border-border rounded-md overflow-hidden" style={{ minHeight: `${Math.max(rows * 28, 280)}px` }}>
+          <div className="flex flex-col border-r border-border">
+            {renderToolbar()}
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onScroll={handleEditorScroll}
+                onKeyDown={handleKeyDown}
+                rows={rows}
+                placeholder={placeholder}
+                className="absolute inset-0 w-full h-full bg-background px-4 py-3 text-sm font-mono resize-none leading-relaxed focus:outline-none"
+                style={{ tabSize: 2 }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col bg-background">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border-b border-border">
+              <Monitor className="w-3 h-3 text-accent" />
+              <span className="text-[10px] uppercase tracking-widest text-accent font-medium">Giao diện thực tế</span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div ref={previewRef} className="px-5 py-4">
+                {value ? (
+                  <ReactMarkdown components={websitePreview ? websiteMarkdownComponents : markdownComponents}>{value}</ReactMarkdown>
+                ) : (
+                  <p className="text-muted-foreground/40 italic text-center py-12 text-sm">Soạn bên trái để xem trước...</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {mode === "edit" && (
+        <p className="text-[10px] text-muted-foreground flex items-center gap-2">
+          <kbd className="px-1 py-0.5 bg-muted rounded text-[9px]">Ctrl+B</kbd> Đậm
+          <kbd className="px-1 py-0.5 bg-muted rounded text-[9px]">Ctrl+I</kbd> Nghiêng
+          <kbd className="px-1 py-0.5 bg-muted rounded text-[9px]">Tab</kbd> Thụt dòng
+        </p>
       )}
     </div>
   );
