@@ -1,15 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Heart, ArrowLeft, CheckCircle, XCircle, Trophy, Star, Zap, Eye } from "lucide-react";
+import { Heart, ArrowLeft, CheckCircle, XCircle, Trophy, Star, Zap, Eye, Sparkles } from "lucide-react";
 import UserHeader from "@/components/layout/UserHeader";
 import QuizAdBanner from "@/components/quiz/QuizAdBanner";
 import QuizReview from "@/components/quiz/QuizReview";
 import AIChatButton from "@/components/ai/AIChatButton";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface QuizQuestion {
   id: string;
@@ -29,7 +30,11 @@ interface QuizResult {
   hearts_remaining: number;
   double_points_used: boolean;
   is_completed: boolean;
+  attempt_id?: string;
+  can_double?: boolean;
+  attempts_today?: number;
   error?: string;
+  daily_limit_reached?: boolean;
 }
 
 const Quiz = () => {
@@ -37,7 +42,6 @@ const Quiz = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isPremium } = useAuth();
 
-  // Premium users skip ads entirely
   const [state, setState] = useState<QuizState>("ad");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -49,11 +53,11 @@ const Quiz = () => {
   const [countDown, setCountDown] = useState(3);
   const [showReview, setShowReview] = useState(false);
   const [reviewQuestions, setReviewQuestions] = useState<QuizQuestion[]>([]);
+  const [doubleLoading, setDoubleLoading] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/auth"); return; }
-    // Skip ads for premium users
     if (isPremium && state === "ad") {
       setState("pre-start");
     }
@@ -114,7 +118,6 @@ const Quiz = () => {
       .select("id, question, options, image_url, correct_answer")
       .in("id", questionIds);
     if (fullQuestions) {
-      // Keep same order as questions
       const ordered = questions.map((q) => {
         const full = fullQuestions.find((fq) => fq.id === q.id);
         return { ...q, correct_answer: full?.correct_answer ?? 0, options: full?.options as unknown as string[] ?? q.options };
@@ -124,6 +127,20 @@ const Quiz = () => {
 
     setState("finished");
     setLoading(false);
+  };
+
+  const handleDoublePoints = async () => {
+    if (!result?.attempt_id) return;
+    setDoubleLoading(true);
+    const { data, error } = await supabase.rpc("apply_double_points", { p_attempt_id: result.attempt_id });
+    const res = data as any;
+    if (error || res?.error) {
+      toast.error(res?.error || error?.message || "Có lỗi xảy ra");
+    } else {
+      toast.success(`+${res.bonus_points} điểm thưởng! Tổng: ${res.total_points_earned} điểm`);
+      setResult((prev) => prev ? { ...prev, points_earned: res.total_points_earned, double_points_used: true, can_double: false } : prev);
+    }
+    setDoubleLoading(false);
   };
 
   if (authLoading || !user) return (
@@ -143,35 +160,23 @@ const Quiz = () => {
       <main className="py-8 px-6 md:px-12 relative z-10">
         <div className="container mx-auto max-w-2xl">
           <AnimatePresence mode="wait">
-            {/* Ad Banner */}
             {state === "ad" && (
               <QuizAdBanner onComplete={() => setState("pre-start")} />
             )}
 
             {state === "pre-start" && (
-              <motion.div
-                key="pre-start"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="text-center py-20"
-              >
-                <motion.div
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center relative"
-                >
+              <motion.div key="pre-start" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="text-center py-20">
+                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center relative">
                   <Trophy className="w-12 h-12 text-accent" />
                   <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-[10px] text-accent">✦</div>
                 </motion.div>
                 <h2 className="text-3xl font-bold text-foreground mb-3">{milestoneTitle}</h2>
                 <p className="text-muted-foreground mb-2">10 câu hỏi ngẫu nhiên • Đạt 8/10 để hoàn thành</p>
-                <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-8">
+                <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-2">
                   <span className="flex items-center gap-1"><Heart className="w-4 h-4 text-destructive" /> Dưới 8: -1 tim</span>
                   <span className="flex items-center gap-1"><Zap className="w-4 h-4 text-accent" /> ≥6: nhận điểm</span>
                 </div>
+                <p className="text-xs text-muted-foreground mb-8">Tối đa 3 lượt/ngày cho mỗi cột mốc</p>
                 <Button size="lg" onClick={startQuiz} disabled={loading} className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm py-6">
                   {loading ? "Đang tải..." : "Bắt đầu Quiz 🚀"}
                 </Button>
@@ -183,7 +188,6 @@ const Quiz = () => {
               </motion.div>
             )}
 
-            {/* Countdown */}
             {state === "in-progress" && countDown > 0 && (
               <motion.div key="countdown" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-32">
                 <motion.div key={countDown} initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ type: "spring", stiffness: 300 }} className="text-8xl font-bold text-accent">
@@ -193,7 +197,6 @@ const Quiz = () => {
               </motion.div>
             )}
 
-            {/* Question */}
             {state === "in-progress" && countDown === 0 && currentQuestion && (
               <motion.div key={`question-${currentIndex}`} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.4 }}>
                 <div className="mb-8">
@@ -234,8 +237,15 @@ const Quiz = () => {
                 {result.error ? (
                   <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-8 text-center">
                     <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Có lỗi xảy ra</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      {result.daily_limit_reached ? "Đã hết lượt hôm nay" : "Có lỗi xảy ra"}
+                    </h3>
                     <p className="text-muted-foreground">{result.error}</p>
+                    <div className="mt-6">
+                      <Button onClick={() => navigate(`/milestone/${milestoneId}`)} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                        Quay lại bài viết
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -261,6 +271,30 @@ const Quiz = () => {
                         </div>
                       )}
 
+                      {/* Double Points Button for Premium */}
+                      {result.can_double && !result.double_points_used && isPremium && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
+                          className="mb-6"
+                        >
+                          <Button
+                            onClick={handleDoublePoints}
+                            disabled={doubleLoading}
+                            className="bg-gradient-to-r from-accent to-accent/80 text-accent-foreground hover:opacity-90 gap-2 px-6 py-5"
+                          >
+                            <Sparkles className="w-5 h-5" />
+                            {doubleLoading ? "Đang xử lý..." : `Nhân đôi điểm (+${result.points_earned} điểm)`}
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">✨ Đặc quyền Premium • Tối đa 2 lượt/ngày</p>
+                        </motion.div>
+                      )}
+
+                      {result.double_points_used && (
+                        <p className="text-accent text-sm mb-4">✨ Điểm đã được nhân đôi!</p>
+                      )}
+
                       <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto mb-8">
                         {[
                           { icon: <Star className="w-5 h-5 text-accent" />, value: result.points_earned, label: "Điểm" },
@@ -275,8 +309,8 @@ const Quiz = () => {
                         ))}
                       </div>
 
-                      {result.double_points_used && (
-                        <p className="text-accent text-sm mb-4">✨ Điểm đã được nhân đôi (Premium)</p>
+                      {result.attempts_today && (
+                        <p className="text-xs text-muted-foreground mb-4">Lượt làm hôm nay: {result.attempts_today}/3</p>
                       )}
 
                       <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
@@ -295,15 +329,9 @@ const Quiz = () => {
                       </div>
                     </div>
 
-                    {/* Review Section */}
                     <AnimatePresence>
                       {showReview && reviewQuestions.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                           <QuizReview
                             questions={reviewQuestions.map((q, i) => ({
                               question: q.question,
@@ -331,7 +359,6 @@ const Quiz = () => {
         </div>
       </main>
 
-      {/* AI Chat Button - only visible after quiz is finished */}
       {state === "finished" && (
         <AIChatButton milestoneId={milestoneId} milestoneTitle={milestoneTitle} />
       )}
