@@ -27,7 +27,7 @@ interface MilestoneDetailData {
 const MilestoneDetail = () => {
   const { milestoneId } = useParams();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const [detail, setDetail] = useState<MilestoneDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [milestoneTitle, setMilestoneTitle] = useState("");
@@ -241,35 +241,37 @@ const MilestoneDetail = () => {
                 )}
               </motion.div>
 
-              {/* Quiz CTA */}
-              <motion.section
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <div className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border border-accent/20 rounded-xl p-8 md:p-10 text-center relative overflow-hidden">
-                  <div className="absolute inset-0 dong-son-pattern opacity-[0.04] pointer-events-none" />
-                  <div className="relative z-10">
-                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
-                      <Sparkles className="w-8 h-8 text-accent" />
+              {/* Quiz CTA - ẩn với admin */}
+              {!isAdmin && (
+                <motion.section
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="bg-gradient-to-br from-accent/10 via-accent/5 to-transparent border border-accent/20 rounded-xl p-8 md:p-10 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 dong-son-pattern opacity-[0.04] pointer-events-none" />
+                    <div className="relative z-10">
+                      <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-accent" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
+                        Kiểm tra kiến thức của bạn!
+                      </h3>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Trả lời 10 câu hỏi để nhận điểm tích lũy và huy hiệu
+                      </p>
+                      <Button
+                        size="lg"
+                        onClick={() => navigate(`/quiz/${milestoneId}`)}
+                        className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm"
+                      >
+                        Bắt đầu Quiz ✦
+                      </Button>
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-3">
-                      Kiểm tra kiến thức của bạn!
-                    </h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Trả lời 10 câu hỏi để nhận điểm tích lũy và huy hiệu
-                    </p>
-                    <Button
-                      size="lg"
-                      onClick={() => navigate(`/quiz/${milestoneId}`)}
-                      className="bg-accent text-accent-foreground hover:bg-accent/90 text-sm"
-                    >
-                      Bắt đầu Quiz ✦
-                    </Button>
                   </div>
-                </div>
-              </motion.section>
+                </motion.section>
+              )}
             </div>
           ) : (
             <motion.div
@@ -288,7 +290,7 @@ const MilestoneDetail = () => {
           )}
         </div>
       </main>
-      <AIChatButton milestoneId={milestoneId} milestoneTitle={detail?.title || milestoneTitle} />
+      {!isAdmin && <AIChatButton milestoneId={milestoneId} milestoneTitle={detail?.title || milestoneTitle} />}
     </div>
   );
 };
