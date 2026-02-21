@@ -85,50 +85,54 @@ const MilestoneDetail = () => {
       <div className="absolute inset-0 dong-son-pattern opacity-[0.015] pointer-events-none" />
       <UserHeader />
 
-      {/* Hero */}
+      {/* Hero Image */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={heroImage} alt="" className="w-full h-full object-cover scale-105" />
-          <div className="absolute inset-0 bg-black/65" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/40" />
-          <div className="absolute inset-0 dong-son-pattern opacity-[0.06]" />
-        </div>
+        <div className="relative h-[45vh] md:h-[55vh]">
+          <img src={heroImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-background" />
+          <div className="absolute inset-0 dong-son-pattern opacity-[0.04]" />
 
-        <div className="relative z-10 py-20 md:py-32 px-6 md:px-12">
-          <div className="container mx-auto">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          {/* Back button on image */}
+          <div className="absolute top-4 left-4 md:top-6 md:left-8 z-10">
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/timeline")}
-                className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10 mb-8"
+                className="bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 border border-white/10"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Quay lại Timeline
+                Quay lại
               </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="max-w-3xl"
-            >
-              <p className="text-accent uppercase tracking-[0.2em] text-sm mb-4 font-medium drop-shadow-md">Cột mốc lịch sử</p>
-              <h1 className="text-white text-3xl md:text-4xl lg:text-5xl mb-6 leading-[1.15] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere] [text-shadow:0_2px_8px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)]">
-                {detail?.title || milestoneTitle}
-              </h1>
-              {detail?.summary && (
-                <p className="text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
-                  {detail.summary}
-                </p>
-              )}
             </motion.div>
           </div>
         </div>
+      </section>
 
-        {/* Gradient transition to content */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
+      {/* Title card - separate from image */}
+      <section className="relative z-10 -mt-20 px-6 md:px-12 mb-8">
+        <div className="container mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="bg-card border border-border rounded-2xl p-6 md:p-10 shadow-elevated relative overflow-hidden"
+          >
+            <div className="absolute inset-0 dong-son-pattern opacity-[0.02] pointer-events-none" />
+            <div className="relative">
+              <p className="text-accent uppercase tracking-[0.2em] text-xs md:text-sm mb-3 font-medium">Cột mốc lịch sử</p>
+              <h1 className="text-foreground text-2xl md:text-3xl lg:text-4xl mb-4 leading-[1.2] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]">
+                {detail?.title || milestoneTitle}
+              </h1>
+              {detail?.summary && (
+                <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl">
+                  {detail.summary}
+                </p>
+              )}
+              <div className="absolute top-0 right-0 w-20 h-20 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Content */}
@@ -259,16 +263,17 @@ const MilestoneDetail = () => {
 
                   return (
                     <div className="relative select-none">
-                      {/* Main slide area */}
-                      <div className="relative overflow-hidden rounded-xl border border-border bg-card">
-                        <div className="relative aspect-[16/10] sm:aspect-[16/9]">
+                      {/* Main slide with caption below */}
+                      <div className="space-y-0 rounded-2xl overflow-hidden border border-border bg-card shadow-heritage">
+                        {/* Image area */}
+                        <div className="relative aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-muted">
                           <AnimatePresence mode="popLayout">
                             <motion.div
                               key={current}
-                              initial={{ opacity: 0, scale: 1.05 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.95 }}
-                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              initial={{ opacity: 0, x: 60 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -60 }}
+                              transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
                               className="absolute inset-0"
                             >
                               <img
@@ -277,65 +282,70 @@ const MilestoneDetail = () => {
                                 className="w-full h-full object-cover"
                                 loading="lazy"
                               />
-                              {/* Gradient overlay bottom */}
-                              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
                             </motion.div>
                           </AnimatePresence>
 
-                          {/* Caption overlay */}
-                          <AnimatePresence mode="wait">
-                            {galleryCaptions[current] && (
-                              <motion.div
-                                key={`cap-${current}`}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3, delay: 0.15 }}
-                                className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-8 z-10"
-                              >
-                                <p className="text-white/90 text-sm md:text-base italic leading-relaxed max-w-2xl">
-                                  {galleryCaptions[current]}
-                                </p>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          {/* Counter */}
-                          <div className="absolute top-3 right-3 z-10 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-2.5 py-1 rounded-full">
+                          {/* Counter pill */}
+                          <div className="absolute top-3 right-3 z-10 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-2.5 py-1 rounded-full font-medium">
                             {current + 1} / {count}
                           </div>
 
                           {/* Nav arrows */}
                           {count > 1 && (
                             <>
-                              <button
-                                onClick={() => go(-1)}
-                                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-colors"
-                              >
+                              <button onClick={() => go(-1)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/25 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-all hover:scale-110">
                                 <ChevronLeft className="w-5 h-5" />
                               </button>
-                              <button
-                                onClick={() => go(1)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-colors"
-                              >
+                              <button onClick={() => go(1)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/25 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-all hover:scale-110">
                                 <ChevronRight className="w-5 h-5" />
                               </button>
                             </>
                           )}
                         </div>
+
+                        {/* Caption area - outside image */}
+                        <div className="border-t border-border bg-card px-5 py-4 min-h-[3.5rem] flex items-center gap-4">
+                          <AnimatePresence mode="wait">
+                            <motion.p
+                              key={`cap-${current}`}
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              transition={{ duration: 0.25 }}
+                              className="text-muted-foreground text-sm md:text-base italic leading-relaxed flex-1"
+                            >
+                              {galleryCaptions[current] || `Hình ${current + 1}`}
+                            </motion.p>
+                          </AnimatePresence>
+
+                          {/* Dot indicators */}
+                          {count > 1 && count <= 8 && (
+                            <div className="flex gap-1.5 shrink-0">
+                              {galleryImages.map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setCurrent(i)}
+                                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                    i === current ? "bg-accent w-5" : "bg-border hover:bg-muted-foreground/40"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Thumbnail strip with blur effect */}
+                      {/* Thumbnail strip */}
                       {count > 1 && (
-                        <div className="flex gap-2 mt-3 justify-center overflow-x-auto py-1 px-4">
+                        <div className="flex gap-2 mt-4 justify-center overflow-x-auto py-1 px-2 scrollbar-none">
                           {galleryImages.map((url, i) => (
                             <button
                               key={i}
                               onClick={() => setCurrent(i)}
-                              className={`relative shrink-0 w-16 h-11 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                              className={`relative shrink-0 w-14 h-10 sm:w-[4.5rem] sm:h-12 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
                                 i === current
-                                  ? "border-accent ring-1 ring-accent/30 scale-105"
-                                  : "border-transparent opacity-50 hover:opacity-80 grayscale hover:grayscale-0"
+                                  ? "border-accent shadow-gold-glow scale-105"
+                                  : "border-transparent opacity-40 hover:opacity-75 grayscale hover:grayscale-0"
                               }`}
                             >
                               <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
