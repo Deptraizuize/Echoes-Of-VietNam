@@ -57,25 +57,34 @@ export type Database = {
         Row: {
           badge_icon: string | null
           badge_name: string
+          badge_type: string
           earned_at: string
           id: string
           milestone_id: string
+          period_id: string | null
+          phase_id: string | null
           user_id: string
         }
         Insert: {
           badge_icon?: string | null
           badge_name: string
+          badge_type?: string
           earned_at?: string
           id?: string
           milestone_id: string
+          period_id?: string | null
+          phase_id?: string | null
           user_id: string
         }
         Update: {
           badge_icon?: string | null
           badge_name?: string
+          badge_type?: string
           earned_at?: string
           id?: string
           milestone_id?: string
+          period_id?: string | null
+          phase_id?: string | null
           user_id?: string
         }
         Relationships: [
