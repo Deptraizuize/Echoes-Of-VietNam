@@ -476,6 +476,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           points_cost: number
+          required_badges: Json | null
           reward_type: string
           stock: number | null
           title: string
@@ -488,6 +489,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           points_cost: number
+          required_badges?: Json | null
           reward_type?: string
           stock?: number | null
           title: string
@@ -500,6 +502,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           points_cost?: number
+          required_badges?: Json | null
           reward_type?: string
           stock?: number | null
           title?: string
@@ -661,6 +664,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_reward: { Args: { p_reward_id: string }; Returns: Json }
       reset_yearly_badges: { Args: never; Returns: number }
       submit_quiz: {
         Args: {
