@@ -652,10 +652,19 @@ export type Database = {
         }
         Returns: boolean
       }
-      submit_quiz: {
-        Args: { p_answers: number[]; p_milestone_id: string }
-        Returns: Json
-      }
+      submit_quiz:
+        | {
+            Args: { p_answers: number[]; p_milestone_id: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_answers: number[]
+              p_milestone_id: string
+              p_question_ids?: string[]
+            }
+            Returns: Json
+          }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
