@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { Eye, Edit3, Columns, Maximize2 } from "lucide-react";
+import { Eye, Edit3, Columns, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,6 @@ interface Props {
   rows?: number;
   placeholder?: string;
   label?: string;
-  /** Enable side-by-side mode for large editors */
   splitView?: boolean;
 }
 
@@ -18,7 +17,6 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
   const [mode, setMode] = useState<"edit" | "preview" | "split">(splitView ? "split" : "edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current && mode !== "preview") {
       const el = textareaRef.current;
@@ -46,22 +44,49 @@ const MarkdownEditor = ({ value, onChange, rows = 4, placeholder, label, splitVi
       <button type="button" onClick={() => insertMarkdown("**", "**")} className="px-2 py-1 text-xs font-bold rounded hover:bg-muted transition-colors" title="In đậm">B</button>
       <button type="button" onClick={() => insertMarkdown("*", "*")} className="px-2 py-1 text-xs italic rounded hover:bg-muted transition-colors" title="In nghiêng">I</button>
       <button type="button" onClick={() => insertMarkdown("\n## ", "\n")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Tiêu đề">H2</button>
+      <button type="button" onClick={() => insertMarkdown("\n### ", "\n")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Tiêu đề nhỏ">H3</button>
       <button type="button" onClick={() => insertMarkdown("\n- ")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Danh sách">• List</button>
       <button type="button" onClick={() => insertMarkdown("[", "](url)")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors text-accent" title="Liên kết">🔗</button>
+      <button type="button" onClick={() => insertMarkdown("![mô tả](", ")")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Hình ảnh"><ImageIcon className="w-3 h-3 inline" /></button>
       <div className="w-px h-4 bg-border mx-1" />
       <button type="button" onClick={() => insertMarkdown("\n> ")} className="px-2 py-1 text-xs rounded hover:bg-muted transition-colors" title="Trích dẫn">❝</button>
     </div>
   );
+
+  const markdownComponents = {
+    img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
+      <img
+        src={src}
+        alt={alt || ""}
+        className="rounded-lg border border-border max-w-full h-auto my-3"
+        style={{ maxHeight: "300px", objectFit: "contain" }}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+        {...props}
+      />
+    ),
+    a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline" {...props}>
+        {children}
+      </a>
+    ),
+  };
 
   const previewContent = (
     <div className={cn(
       "rounded-md border border-input bg-background px-4 py-3 text-sm prose prose-sm max-w-none dark:prose-invert",
       "prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground",
       "prose-a:text-accent prose-a:no-underline hover:prose-a:underline",
+      "prose-img:rounded-lg prose-img:border prose-img:border-border",
       "overflow-y-auto",
       mode === "split" ? "h-full min-h-[200px]" : "min-h-[100px]"
     )}>
-      {value ? <ReactMarkdown>{value}</ReactMarkdown> : <p className="text-muted-foreground italic">Chưa có nội dung</p>}
+      {value ? (
+        <ReactMarkdown components={markdownComponents}>{value}</ReactMarkdown>
+      ) : (
+        <p className="text-muted-foreground italic">Chưa có nội dung</p>
+      )}
     </div>
   );
 

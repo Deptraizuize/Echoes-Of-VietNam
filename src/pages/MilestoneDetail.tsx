@@ -237,6 +237,42 @@ const MilestoneDetail = () => {
                 )}
               </motion.div>
 
+              {/* Image Gallery */}
+              {detail.image_urls && detail.image_urls.length > 1 && (
+                <motion.section
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-accent" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground">Hình ảnh tư liệu</h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {detail.image_urls.slice(1).map((url, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: i * 0.1 }}
+                        className="overflow-hidden rounded-xl border border-border"
+                      >
+                        <img
+                          src={url}
+                          alt={`Tư liệu ${i + 1}`}
+                          className="w-full h-auto object-cover"
+                          loading="lazy"
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.section>
+              )}
+
               {/* Quiz CTA - ẩn với admin */}
               {!isAdmin && (
                 <motion.section

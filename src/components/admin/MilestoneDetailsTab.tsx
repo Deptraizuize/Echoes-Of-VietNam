@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, Plus, Search, Trash2, ExternalLink, Link, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import MarkdownEditor from "./MarkdownEditor";
 
 interface MilestoneRow {
@@ -396,23 +397,58 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
             )}
 
             {activeTab === "media" && (
-              <div>
-                <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
-                <textarea
-                  value={form.image_urls}
-                  onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
-                  rows={4}
-                  placeholder="https://example.com/image1.jpg"
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono mt-2"
-                />
-                {form.image_urls && (
-                  <div className="flex gap-3 mt-3 flex-wrap">
-                    {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
-                      <div key={i} className="relative group">
-                        <img src={url.trim()} alt="" className="w-24 h-24 object-cover rounded-lg border border-border" />
-                        <span className="absolute bottom-1 left-1 bg-foreground/70 text-primary-foreground text-[9px] px-1 rounded">#{i + 1}</span>
-                      </div>
-                    ))}
+              <div className="space-y-4">
+                <div>
+                  <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">Ảnh đầu tiên sẽ làm ảnh bìa (hero). Các ảnh còn lại hiển thị trong gallery bài viết.</p>
+                  <textarea
+                    value={form.image_urls}
+                    onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
+                    rows={5}
+                    placeholder={"https://example.com/hero-image.jpg\nhttps://example.com/image2.jpg\nhttps://example.com/image3.jpg"}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  />
+                </div>
+                {form.image_urls && form.image_urls.trim() && (
+                  <div className="space-y-3">
+                    <Label className="text-xs text-muted-foreground">Xem trước ({form.image_urls.split("\n").filter(s => s.trim()).length} ảnh)</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
+                        <div key={i} className="relative group rounded-lg overflow-hidden border border-border bg-muted/30">
+                          <div className="aspect-[4/3]">
+                            <img
+                              src={url.trim()}
+                              alt={`Ảnh ${i + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23999' font-size='12'%3ELỗi ảnh%3C/text%3E%3C/svg%3E";
+                              }}
+                            />
+                          </div>
+                          <div className="absolute top-1.5 left-1.5">
+                            <span className={cn(
+                              "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                              i === 0
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-foreground/60 text-primary-foreground"
+                            )}>
+                              {i === 0 ? "Ảnh bìa" : `#${i + 1}`}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const lines = form.image_urls.split("\n");
+                              lines.splice(i, 1);
+                              setForm({ ...form, image_urls: lines.join("\n") });
+                            }}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
