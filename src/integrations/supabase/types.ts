@@ -652,6 +652,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reset_yearly_badges: { Args: never; Returns: number }
       submit_quiz: {
         Args: {
           p_answers: number[]
