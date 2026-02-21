@@ -178,30 +178,67 @@ const MilestoneDetail = () => {
       </section>
 
       {/* Title card */}
-      <section className="relative z-10 -mt-20 px-6 md:px-12 mb-8">
+      <section className="relative z-10 -mt-24 px-6 md:px-12 mb-8">
         <div className="container mx-auto max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-card border border-border rounded-2xl p-6 md:p-10 shadow-elevated relative overflow-hidden"
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            className="bg-card border border-border rounded-2xl p-8 md:p-12 shadow-elevated relative overflow-hidden"
           >
-            <div className="absolute inset-0 dong-son-pattern opacity-[0.02] pointer-events-none" />
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 dong-son-pattern opacity-[0.025] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/5 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl pointer-events-none" />
+
             <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1.5 h-8 rounded-full bg-accent" />
-                <p className="text-accent uppercase tracking-[0.25em] text-xs md:text-sm font-semibold">Cột mốc lịch sử</p>
-              </div>
-              <h1 className="text-foreground text-3xl md:text-4xl lg:text-5xl mb-5 leading-[1.15] font-extrabold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]">
-                {detail?.title || milestoneTitle}
-              </h1>
-              <div className="w-16 h-1 rounded-full bg-gradient-to-r from-accent to-accent/30 mb-5" />
+              {/* Overline label */}
+              <motion.div
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex items-center gap-3 mb-6"
+              >
+                <div className="w-1.5 h-10 rounded-full bg-gradient-to-b from-accent to-accent/40" />
+                <p className="text-accent uppercase tracking-[0.3em] text-[11px] md:text-xs font-bold">Cột mốc lịch sử</p>
+                <div className="h-px flex-1 bg-gradient-to-r from-accent/25 to-transparent" />
+              </motion.div>
+
+              {/* Main title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                className="text-foreground text-4xl md:text-5xl lg:text-[3.5rem] mb-6 leading-[1.1] font-black tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]"
+              >
+                <span className="bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text">
+                  {detail?.title || milestoneTitle}
+                </span>
+              </motion.h1>
+
+              {/* Decorative divider */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                className="origin-left flex items-center gap-2 mb-6"
+              >
+                <div className="w-12 h-1 rounded-full bg-accent" />
+                <div className="w-3 h-3 rounded-full border-2 border-accent/50" />
+                <div className="w-20 h-px bg-gradient-to-r from-accent/30 to-transparent" />
+              </motion.div>
+
+              {/* Summary */}
               {detail?.summary && (
-                <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl">
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="text-muted-foreground text-base md:text-lg leading-[1.8] max-w-2xl font-medium"
+                >
                   {detail.summary}
-                </p>
+                </motion.p>
               )}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/8 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             </div>
           </motion.div>
         </div>
