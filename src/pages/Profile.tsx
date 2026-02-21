@@ -6,9 +6,10 @@ import UserHeader from "@/components/layout/UserHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Award, Star, Heart, Trophy, Clock, CheckCircle2, XCircle,
-  ArrowRight, User, Crown, Sparkles, Settings,
+  Star, Heart, Trophy, Clock, CheckCircle2, XCircle,
+  ArrowRight, User, Crown, Sparkles, Settings, Award,
 } from "lucide-react";
+import BadgesSection from "@/components/profile/BadgesSection";
 import { motion } from "framer-motion";
 
 interface ProfileData {
@@ -24,6 +25,9 @@ interface BadgeData {
   id: string;
   badge_name: string;
   badge_icon: string | null;
+  badge_type: string;
+  phase_id: string | null;
+  period_id: string | null;
   earned_at: string;
   milestone_id: string;
 }
@@ -211,29 +215,7 @@ const Profile = () => {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Left: Badges + Progress */}
           <div className="lg:col-span-1 space-y-10">
-            <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-accent" /> Huy hiệu
-              </h2>
-              {badges.length > 0 ? (
-                <div className="space-y-3">
-                  {badges.map((b) => (
-                    <div key={b.id} className="flex items-center gap-3 p-3 bg-accent/5 border border-accent/10 rounded-xl">
-                      <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center text-sm">{b.badge_icon || "🏅"}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{b.badge_name}</p>
-                        <p className="text-xs text-muted-foreground">{formatDate(b.earned_at)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 bg-muted/30 rounded-xl border border-border text-center">
-                  <Award className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Hoàn thành quiz 8/10 để nhận huy hiệu!</p>
-                </div>
-              )}
-            </motion.section>
+            <BadgesSection badges={badges} formatDate={formatDate} />
 
             <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
