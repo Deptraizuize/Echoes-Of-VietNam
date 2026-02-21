@@ -601,6 +601,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_expire_premium: { Args: never; Returns: number }
       check_username_exists: { Args: { p_username: string }; Returns: boolean }
       get_email_by_username: { Args: { p_username: string }; Returns: string }
       get_hearts: {
