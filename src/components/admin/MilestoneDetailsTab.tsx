@@ -9,8 +9,12 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Plus, Image, Search } from "lucide-react";
+import { Edit, Plus, Search, Trash2, ExternalLink } from "lucide-react";
 import MarkdownEditor from "./MarkdownEditor";
 
 interface MilestoneRow {
@@ -45,6 +49,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const [editing, setEditing] = useState<MilestoneDetailRow | null>(null);
   const [filterMilestone, setFilterMilestone] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<MilestoneDetailRow | null>(null);
   const [form, setForm] = useState({
     milestone_id: "",
     title: "",
@@ -65,6 +70,12 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     });
   }, [details, filterMilestone, searchQuery]);
 
+  // Check which milestones don't have details yet
+  const milestonesWithoutDetails = useMemo(() => {
+    const detailedIds = new Set(details.map(d => d.milestone_id));
+    return milestones.filter(m => !detailedIds.has(m.id));
+  }, [milestones, details]);
+
   const openEdit = (d: MilestoneDetailRow) => {
     setEditing(d);
     setForm({
@@ -83,8 +94,9 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
 
   const openNew = () => {
     setEditing(null);
+    const defaultMilestone = filterMilestone || milestonesWithoutDetails[0]?.id || milestones[0]?.id || "";
     setForm({
-      milestone_id: filterMilestone || milestones[0]?.id || "",
+      milestone_id: defaultMilestone,
       title: "",
       summary: "",
       events: "",
@@ -128,16 +140,46 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     onRefresh();
   };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("milestone_details").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Đã xóa bài viết." });
+      onRefresh();
+    }
+    setDeleteTarget(null);
+  };
+
   const getMilestoneTitle = (id: string) => milestones.find(m => m.id === id)?.title || id;
+
+  // Content completeness indicator
+  const getCompleteness = (d: MilestoneDetailRow) => {
+    let filled = 0;
+    let total = 4;
+    if (d.events) filled++;
+    if (d.results) filled++;
+    if (d.significance) filled++;
+    if (d.summary) filled++;
+    return { filled, total };
+  };
 
   return (
     <>
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex justify-between items-center">
           <h3 className="font-serif text-xl">Nội dung chi tiết ({details.length})</h3>
-          <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
-            <Plus className="w-4 h-4 mr-2" /> Thêm
-          </Button>
+          <div className="flex items-center gap-2">
+            {milestonesWithoutDetails.length > 0 && (
+              <span className="text-xs text-muted-foreground hidden sm:block">
+                {milestonesWithoutDetails.length} cột mốc chưa có bài viết
+              </span>
+            )}
+            <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
+              <Plus className="w-4 h-4 mr-2" /> Thêm
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -176,40 +218,54 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
             <TableRow>
               <TableHead className="min-w-[120px] w-[120px]">Cột mốc</TableHead>
               <TableHead className="min-w-[200px]">Tiêu đề</TableHead>
+              <TableHead className="w-20 text-center">Nội dung</TableHead>
               <TableHead className="w-16 text-center">NV</TableHead>
               <TableHead className="w-16 text-center">DT</TableHead>
               <TableHead className="w-16 text-center">Ảnh</TableHead>
-              <TableHead className="w-14"></TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDetails.map((d) => (
-              <TableRow key={d.id}>
-                <TableCell>
-                  <span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(d.milestone_id)}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="line-clamp-2 text-sm leading-snug">{d.title}</span>
-                </TableCell>
-                <TableCell className="text-center text-xs text-muted-foreground">{d.hero_names?.length || 0}</TableCell>
-                <TableCell className="text-center text-xs text-muted-foreground">{d.landmark_names?.length || 0}</TableCell>
-                <TableCell className="text-center">
-                  {d.image_urls && d.image_urls.length > 0 ? (
-                    <span className="text-xs text-accent font-medium">{d.image_urls.length}</span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground/50">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(d)} className="h-8 w-8">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredDetails.map((d) => {
+              const { filled, total } = getCompleteness(d);
+              return (
+                <TableRow key={d.id}>
+                  <TableCell>
+                    <span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(d.milestone_id)}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="line-clamp-2 text-sm leading-snug">{d.title}</span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className={`text-xs font-medium ${filled === total ? "text-green-500" : filled >= 2 ? "text-accent" : "text-destructive"}`}>
+                      {filled}/{total}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center text-xs text-muted-foreground">{d.hero_names?.length || 0}</TableCell>
+                  <TableCell className="text-center text-xs text-muted-foreground">{d.landmark_names?.length || 0}</TableCell>
+                  <TableCell className="text-center">
+                    {d.image_urls && d.image_urls.length > 0 ? (
+                      <span className="text-xs text-accent font-medium">{d.image_urls.length}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(d)} className="h-8 w-8">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(d)} className="h-8 w-8 text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {filteredDetails.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   {details.length === 0 ? "Chưa có nội dung chi tiết nào" : "Không tìm thấy bài viết phù hợp"}
                 </TableCell>
               </TableRow>
@@ -218,32 +274,44 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
         </Table>
       </div>
 
+      {/* Edit/Create Dialog — wider for markdown editing */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">
+            <DialogTitle className="font-serif text-xl flex items-center gap-3">
               {editing ? "Sửa nội dung chi tiết" : "Thêm nội dung chi tiết"}
+              {editing && (
+                <a
+                  href={`/milestone/${editing.milestone_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-accent hover:underline flex items-center gap-1 font-normal"
+                >
+                  Xem trang <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label>Cột mốc</Label>
-              <select
-                value={form.milestone_id}
-                onChange={(e) => setForm({ ...form, milestone_id: e.target.value })}
-                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                disabled={!!editing}
-              >
-                {milestones.map((m) => (
-                  <option key={m.id} value={m.id}>{m.title}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <Label>Tiêu đề</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Cột mốc</Label>
+                <select
+                  value={form.milestone_id}
+                  onChange={(e) => setForm({ ...form, milestone_id: e.target.value })}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  disabled={!!editing}
+                >
+                  {milestones.map((m) => (
+                    <option key={m.id} value={m.id}>{m.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>Tiêu đề</Label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              </div>
             </div>
 
             <MarkdownEditor
@@ -258,7 +326,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
               label="Diễn biến"
               value={form.events}
               onChange={(v) => setForm({ ...form, events: v })}
-              rows={6}
+              rows={8}
               placeholder="## Giai đoạn 1&#10;Nội dung...&#10;&#10;## Giai đoạn 2&#10;Nội dung..."
             />
 
@@ -266,7 +334,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
               label="Kết quả"
               value={form.results}
               onChange={(v) => setForm({ ...form, results: v })}
-              rows={4}
+              rows={5}
               placeholder="- Kết quả 1&#10;- Kết quả 2"
             />
 
@@ -274,18 +342,29 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
               label="Ý nghĩa lịch sử"
               value={form.significance}
               onChange={(v) => setForm({ ...form, significance: v })}
-              rows={4}
+              rows={5}
               placeholder="**Ý nghĩa quan trọng**: ..."
             />
 
-            <div>
-              <Label>Nhân vật lịch sử (cách nhau bằng dấu phẩy)</Label>
-              <Input value={form.hero_names} onChange={(e) => setForm({ ...form, hero_names: e.target.value })} placeholder="Trần Hưng Đạo, Lê Lợi, ..." />
-            </div>
-
-            <div>
-              <Label>Di tích liên quan (cách nhau bằng dấu phẩy)</Label>
-              <Input value={form.landmark_names} onChange={(e) => setForm({ ...form, landmark_names: e.target.value })} placeholder="Bạch Đằng, Đống Đa, ..." />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Nhân vật lịch sử (cách nhau bằng dấu phẩy)</Label>
+                <Input value={form.hero_names} onChange={(e) => setForm({ ...form, hero_names: e.target.value })} placeholder="Trần Hưng Đạo, Lê Lợi, ..." />
+                {form.hero_names && (
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {form.hero_names.split(",").filter(s => s.trim()).length} nhân vật
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label>Di tích liên quan (cách nhau bằng dấu phẩy)</Label>
+                <Input value={form.landmark_names} onChange={(e) => setForm({ ...form, landmark_names: e.target.value })} placeholder="Bạch Đằng, Đống Đa, ..." />
+                {form.landmark_names && (
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {form.landmark_names.split(",").filter(s => s.trim()).length} di tích
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -295,8 +374,15 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                 onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
                 rows={2}
                 placeholder="https://example.com/image1.jpg"
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
               />
+              {form.image_urls && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
+                    <img key={i} src={url.trim()} alt="" className="w-16 h-16 object-cover rounded border border-border" />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -306,6 +392,24 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa bài viết?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa bài viết "{deleteTarget?.title}"? Toàn bộ nội dung (diễn biến, kết quả, ý nghĩa) sẽ bị xóa vĩnh viễn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
