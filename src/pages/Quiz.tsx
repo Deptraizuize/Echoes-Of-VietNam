@@ -118,7 +118,8 @@ const Quiz = () => {
 
   const submitQuiz = async (finalAnswers: number[]) => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("submit_quiz", { p_milestone_id: milestoneId, p_answers: finalAnswers });
+    const questionIds = questions.map((q) => q.id);
+    const { data, error } = await supabase.rpc("submit_quiz", { p_milestone_id: milestoneId, p_answers: finalAnswers, p_question_ids: questionIds } as any);
     if (error) {
       setResult({ score: 0, total: questions.length, points_earned: 0, hearts_lost: 0, hearts_remaining: 0, double_points_used: false, is_completed: false, error: error.message });
     } else {
@@ -126,11 +127,11 @@ const Quiz = () => {
     }
 
     // Fetch correct answers for review
-    const questionIds = questions.map((q) => q.id);
+    const reviewIds = questions.map((q) => q.id);
     const { data: fullQuestions } = await supabase
       .from("quiz_questions")
       .select("id, question, options, image_url, correct_answer")
-      .in("id", questionIds);
+      .in("id", reviewIds);
     if (fullQuestions) {
       const ordered = questions.map((q) => {
         const full = fullQuestions.find((fq) => fq.id === q.id);
