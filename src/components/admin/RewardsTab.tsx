@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Gift, Plus, Trash2, Edit, CheckCircle, Clock, XCircle, Award, Shield, Crown, X } from "lucide-react";
+import { Gift, Plus, Trash2, Edit, CheckCircle, XCircle, Award, Shield, Crown, X, Inbox, Package } from "lucide-react";
 
 interface BadgeReq {
   badge_type: string;
@@ -203,36 +203,65 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
 
   return (
     <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
+          <Gift className="w-5 h-5 text-accent" /> Quản lý phần thưởng
+        </h3>
+        <p className="text-sm text-muted-foreground">Thiết lập phần thưởng và duyệt yêu cầu đổi thưởng từ người dùng.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Phần thưởng", value: rewards.length, icon: <Gift className="w-4 h-4" /> },
+          { label: "Chờ duyệt", value: pendingRedemptions.length, icon: <Package className="w-4 h-4" />, accent: pendingRedemptions.length > 0 },
+          { label: "Đã đổi", value: redemptions.filter(r => r.status === "approved").length, icon: <CheckCircle className="w-4 h-4" /> },
+        ].map((s, i) => (
+          <Card key={i} className={`border-border/60 shadow-none ${s.accent ? "ring-1 ring-accent/20" : ""}`}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.accent ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                {s.icon}
+              </div>
+              <div>
+                <div className="text-xl font-bold">{s.value}</div>
+                <div className="text-[11px] text-muted-foreground">{s.label}</div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {/* Pending Redemptions */}
       {pendingRedemptions.length > 0 && (
-        <div>
-          <h4 className="font-serif text-lg mb-3">Yêu cầu đổi thưởng chờ duyệt ({pendingRedemptions.length})</h4>
-          <div className="border border-border rounded-lg overflow-hidden">
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Yêu cầu đổi thưởng chờ duyệt</h4>
+          <Card className="border-border/60 shadow-none overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
                   <TableHead>Người dùng</TableHead>
                   <TableHead>Phần thưởng</TableHead>
-                  <TableHead>Điểm</TableHead>
-                  <TableHead>Ngày</TableHead>
+                  <TableHead className="text-right">Điểm</TableHead>
+                  <TableHead className="w-28">Ngày</TableHead>
                   <TableHead className="w-32"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pendingRedemptions.map((r) => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className="bg-accent/[0.02]">
                     <TableCell className="text-sm font-medium">
                       {userNames[r.user_id] || r.user_id.slice(0, 8) + "..."}
                     </TableCell>
                     <TableCell className="text-sm">{getRewardTitle(r.reward_id)}</TableCell>
-                    <TableCell className="text-sm font-bold text-accent">{r.points_spent}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("vi-VN")}</TableCell>
+                    <TableCell className="text-right font-bold text-accent tabular-nums">{r.points_spent}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground tabular-nums">{new Date(r.created_at).toLocaleDateString("vi-VN")}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button size="sm" variant="outline" onClick={() => updateRedemptionStatus(r.id, "approved")} className="h-7 text-xs">
                           <CheckCircle className="w-3 h-3 mr-1" /> Duyệt
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => updateRedemptionStatus(r.id, "rejected")} className="h-7 text-xs text-destructive">
+                        <Button size="sm" variant="ghost" onClick={() => updateRedemptionStatus(r.id, "rejected")} className="h-7 text-xs text-destructive hover:text-destructive">
                           <XCircle className="w-3 h-3" />
                         </Button>
                       </div>
@@ -241,51 +270,50 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         </div>
       )}
 
       {/* Rewards List */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-serif text-xl flex items-center gap-2">
-            <Gift className="w-5 h-5 text-accent" />
-            Phần thưởng ({rewards.length})
-          </h3>
-          <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground">
-            <Plus className="w-4 h-4 mr-2" /> Thêm phần thưởng
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Danh sách phần thưởng ({rewards.length})</h4>
+          <Button size="sm" onClick={openNew} className="bg-accent text-accent-foreground h-8">
+            <Plus className="w-3 h-3 mr-1.5" /> Thêm
           </Button>
         </div>
 
         {rewards.length > 0 ? (
-          <div className="border border-border rounded-lg overflow-hidden">
+          <Card className="border-border/60 shadow-none overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
                   <TableHead>Tên</TableHead>
                   <TableHead>Loại</TableHead>
-                  <TableHead>Điểm</TableHead>
-                  <TableHead>Kho</TableHead>
-                  <TableHead>Huy hiệu YC</TableHead>
-                  <TableHead className="w-24"></TableHead>
+                  <TableHead className="text-right">Điểm</TableHead>
+                  <TableHead className="text-center">Kho</TableHead>
+                  <TableHead className="hidden md:table-cell">Huy hiệu YC</TableHead>
+                  <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rewards.map((r) => (
                   <TableRow key={r.id} className={!r.is_active ? "opacity-50" : ""}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {r.image_url && <img src={r.image_url} alt="" className="w-8 h-8 rounded object-cover border border-border" />}
+                      <div className="flex items-center gap-2.5">
+                        {r.image_url && <img src={r.image_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-border" />}
                         <div>
                           <span className="font-medium text-sm">{r.title}</span>
-                          {!r.is_active && <span className="text-[10px] text-muted-foreground ml-2">(ẩn)</span>}
+                          {!r.is_active && <span className="text-[10px] text-muted-foreground ml-1.5">(ẩn)</span>}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{r.reward_type}</TableCell>
-                    <TableCell className="text-sm font-bold text-accent">{r.points_cost}</TableCell>
-                    <TableCell className="text-sm">{r.stock ?? "∞"}</TableCell>
                     <TableCell>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/60 capitalize">{r.reward_type}</span>
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-accent tabular-nums">{r.points_cost}</TableCell>
+                    <TableCell className="text-center text-sm tabular-nums">{r.stock ?? "∞"}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {r.required_badges && r.required_badges.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {r.required_badges.map((b, i) => (
@@ -295,25 +323,28 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground/40">—</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8"><Edit className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-8 w-8 text-destructive"><Trash2 className="w-4 h-4" /></Button>
+                      <div className="flex gap-0.5">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8 text-muted-foreground hover:text-foreground"><Edit className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-8 w-8 text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <Gift className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">Chưa có phần thưởng nào.</p>
-          </div>
+          <Card className="border-border/60 shadow-none">
+            <CardContent className="py-16 text-center text-muted-foreground">
+              <Inbox className="w-10 h-10 mx-auto mb-3 opacity-20" />
+              <p className="text-sm font-medium">Chưa có phần thưởng nào</p>
+              <p className="text-xs mt-1">Tạo phần thưởng đầu tiên để bắt đầu.</p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -321,31 +352,31 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
       <Dialog open={rewardDialog} onOpenChange={setRewardDialog}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">{editing ? "Sửa phần thưởng" : "Thêm phần thưởng"}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{editing ? "Sửa phần thưởng" : "Thêm phần thưởng"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Tên phần thưởng</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="VD: Voucher 50k" maxLength={200} />
+              <Label className="text-xs font-medium">Tên phần thưởng</Label>
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="VD: Voucher 50k" maxLength={200} className="mt-1.5" />
             </div>
             <div>
-              <Label>Mô tả</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Chi tiết..." maxLength={500} />
+              <Label className="text-xs font-medium">Mô tả</Label>
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Chi tiết..." maxLength={500} className="mt-1.5 resize-none" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Điểm cần đổi</Label>
-                <Input type="number" value={form.points_cost} onChange={(e) => setForm({ ...form, points_cost: parseInt(e.target.value) || 0 })} />
+                <Label className="text-xs font-medium">Điểm cần đổi</Label>
+                <Input type="number" value={form.points_cost} onChange={(e) => setForm({ ...form, points_cost: parseInt(e.target.value) || 0 })} className="mt-1.5" />
               </div>
               <div>
-                <Label>Số lượng (trống = vô hạn)</Label>
-                <Input value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="∞" />
+                <Label className="text-xs font-medium">Số lượng (trống = ∞)</Label>
+                <Input value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="∞" className="mt-1.5" />
               </div>
             </div>
             <div>
-              <Label>Loại</Label>
+              <Label className="text-xs font-medium">Loại</Label>
               <Select value={form.reward_type} onValueChange={(v) => setForm({ ...form, reward_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="voucher">Voucher</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
@@ -354,15 +385,15 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
               </Select>
             </div>
             <div>
-              <Label>URL hình ảnh</Label>
-              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
-              {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-lg border border-border" />}
+              <Label className="text-xs font-medium">URL hình ảnh</Label>
+              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="mt-1.5" />
+              {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-xl border border-border" />}
             </div>
 
             {/* Badge Requirements */}
             <div className="border-t border-border pt-4">
-              <Label className="text-sm font-semibold mb-2 block">Điều kiện huy hiệu (tùy chọn)</Label>
-              <p className="text-xs text-muted-foreground mb-3">Người dùng cần có đủ các huy hiệu này để đổi phần thưởng.</p>
+              <Label className="text-xs font-semibold mb-2 block">Điều kiện huy hiệu (tùy chọn)</Label>
+              <p className="text-[11px] text-muted-foreground mb-3">Người dùng cần có đủ các huy hiệu này để đổi phần thưởng.</p>
 
               {badgeReqs.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -395,7 +426,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button size="sm" variant="outline" onClick={addBadgeReq} disabled={!badgePickerId}>
+                <Button size="sm" variant="outline" onClick={addBadgeReq} disabled={!badgePickerId} className="h-9 w-9 p-0">
                   <Plus className="w-3 h-3" />
                 </Button>
               </div>

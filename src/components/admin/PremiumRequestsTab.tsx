@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -9,8 +10,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Clock, Crown, ImageIcon, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { CheckCircle, XCircle, Clock, Crown, ImageIcon, Inbox, AlertCircle } from "lucide-react";
 
 const PLAN_MAP: Record<string, { label: string; days: number; price: string }> = {
   monthly: { label: "1 Tháng", days: 30, price: "19.000đ" },
@@ -42,15 +43,11 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  // Fetch display names for all user_ids in requests
   useEffect(() => {
     const userIds = [...new Set(requests.map((r) => r.user_id))];
     if (userIds.length === 0) return;
     const fetchNames = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, display_name")
-        .in("user_id", userIds);
+      const { data } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
       if (data) {
         const map: Record<string, string> = {};
         data.forEach((p) => { map[p.user_id] = p.display_name || "Không tên"; });
@@ -72,7 +69,6 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
 
     const plan = PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly;
 
-    // Update request status
     const { error } = await supabase
       .from("premium_requests")
       .update({
@@ -89,31 +85,24 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
     }
 
     if (action === "approved") {
-      // Fetch current premium_expires_at to support cumulative time
       const { data: currentProfile } = await supabase
         .from("profiles")
         .select("is_premium, premium_expires_at")
         .eq("user_id", selectedRequest.user_id)
         .single();
 
-      // Calculate new expiry: if currently premium and not expired, add from current expiry
       const now = new Date();
       let baseDate = now;
       if (currentProfile?.premium_expires_at) {
         const currentExpiry = new Date(currentProfile.premium_expires_at);
-        if (currentExpiry > now) {
-          baseDate = currentExpiry; // Cumulative: add from current expiry
-        }
+        if (currentExpiry > now) baseDate = currentExpiry;
       }
 
       const newExpiry = new Date(baseDate.getTime() + plan.days * 24 * 60 * 60 * 1000);
 
       const { error: updateErr } = await supabase
         .from("profiles")
-        .update({
-          is_premium: true,
-          premium_expires_at: newExpiry.toISOString(),
-        })
+        .update({ is_premium: true, premium_expires_at: newExpiry.toISOString() })
         .eq("user_id", selectedRequest.user_id);
 
       if (updateErr) {
@@ -139,72 +128,96 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
   const processed = requests.filter((r) => r.status !== "pending");
 
   const statusBadge = (status: string) => {
-    if (status === "approved") return <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Đã duyệt</Badge>;
-    if (status === "rejected") return <Badge variant="destructive" className="text-xs">Từ chối</Badge>;
-    return <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">Chờ duyệt</Badge>;
+    if (status === "approved") return <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 font-medium"><CheckCircle className="w-3 h-3" />Đã duyệt</span>;
+    if (status === "rejected") return <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-destructive/10 text-destructive border border-destructive/20 font-medium"><XCircle className="w-3 h-3" />Từ chối</span>;
+    return <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 font-medium"><Clock className="w-3 h-3" />Chờ duyệt</span>;
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-serif text-xl flex items-center gap-2">
-          <Crown className="w-5 h-5 text-accent" />
-          Yêu cầu nâng cấp ({pending.length} chờ duyệt)
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
+          <Crown className="w-5 h-5 text-accent" /> Yêu cầu nâng cấp Premium
         </h3>
+        <p className="text-sm text-muted-foreground">Duyệt yêu cầu nâng cấp tài khoản Premium từ người dùng.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Chờ duyệt", value: pending.length, icon: <AlertCircle className="w-4 h-4" />, accent: pending.length > 0 },
+          { label: "Đã duyệt", value: requests.filter(r => r.status === "approved").length, icon: <CheckCircle className="w-4 h-4" /> },
+          { label: "Từ chối", value: requests.filter(r => r.status === "rejected").length, icon: <XCircle className="w-4 h-4" /> },
+        ].map((s, i) => (
+          <Card key={i} className={`border-border/60 shadow-none ${s.accent ? "ring-1 ring-accent/20" : ""}`}>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.accent ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                {s.icon}
+              </div>
+              <div>
+                <div className="text-xl font-bold">{s.value}</div>
+                <div className="text-[11px] text-muted-foreground">{s.label}</div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Pending Requests */}
       {pending.length > 0 && (
-        <div className="mb-6">
-          <h4 className="text-sm font-medium text-muted-foreground mb-3">Chờ duyệt</h4>
-          <div className="space-y-3">
-            {pending.map((r) => {
-              const plan = PLAN_MAP[r.plan_type] || PLAN_MAP.monthly;
-              return (
-                <div key={r.id} className="border border-accent/20 bg-accent/5 rounded-xl p-4 flex flex-col sm:flex-row gap-4">
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Chờ duyệt</h4>
+          {pending.map((r) => {
+            const plan = PLAN_MAP[r.plan_type] || PLAN_MAP.monthly;
+            return (
+              <Card key={r.id} className="border-accent/20 bg-accent/[0.03] shadow-none hover:shadow-sm transition-shadow">
+                <CardContent className="p-4 flex flex-col sm:flex-row gap-4">
                   {r.proof_image_url ? (
                     <button onClick={() => setImagePreview(r.proof_image_url)} className="shrink-0">
-                      <img src={r.proof_image_url} alt="Ảnh CK" className="w-20 h-20 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity" />
+                      <img src={r.proof_image_url} alt="Ảnh CK" className="w-20 h-20 object-cover rounded-xl border border-border hover:opacity-80 transition-opacity" />
                     </button>
                   ) : (
-                    <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center shrink-0">
-                      <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                    <div className="w-20 h-20 bg-muted rounded-xl flex items-center justify-center shrink-0">
+                      <ImageIcon className="w-6 h-6 text-muted-foreground/40" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm text-foreground">{userNames[r.user_id] || "..."}</span>
-                      <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">{plan.label} — {plan.price}</Badge>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="font-semibold text-sm">{userNames[r.user_id] || "..."}</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 font-medium">
+                        {plan.label} — {plan.price}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground tabular-nums">
                       {new Date(r.created_at).toLocaleString("vi-VN")}
                     </p>
-                    {r.note && <p className="text-sm text-foreground mt-1">{r.note}</p>}
+                    {r.note && <p className="text-sm text-foreground mt-1.5 line-clamp-2">{r.note}</p>}
                   </div>
-                  <Button size="sm" onClick={() => openReview(r)} className="self-start shrink-0">
-                    Duyệt
+                  <Button size="sm" onClick={() => openReview(r)} className="self-start shrink-0 bg-accent text-accent-foreground">
+                    Xem & Duyệt
                   </Button>
-                </div>
-              );
-            })}
-          </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Processed Requests */}
       {processed.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium text-muted-foreground mb-3">Đã xử lý ({processed.length})</h4>
-          <div className="border border-border rounded-lg overflow-hidden">
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Đã xử lý ({processed.length})</h4>
+          <Card className="border-border/60 shadow-none overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Trạng thái</TableHead>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className="w-28">Trạng thái</TableHead>
                   <TableHead>Người dùng</TableHead>
                   <TableHead>Gói</TableHead>
-                  <TableHead>Ảnh CK</TableHead>
-                  <TableHead>Ghi chú</TableHead>
-                  <TableHead className="w-32">Thời gian</TableHead>
+                  <TableHead className="w-16">Ảnh</TableHead>
+                  <TableHead className="hidden md:table-cell">Ghi chú</TableHead>
+                  <TableHead className="w-28">Ngày</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -213,17 +226,17 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                   return (
                     <TableRow key={r.id}>
                       <TableCell>{statusBadge(r.status)}</TableCell>
-                      <TableCell className="text-sm">{userNames[r.user_id] || r.user_id.slice(0, 8) + "..."}</TableCell>
-                      <TableCell className="text-xs">{plan.label}</TableCell>
+                      <TableCell className="text-sm font-medium">{userNames[r.user_id] || r.user_id.slice(0, 8) + "..."}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{plan.label}</TableCell>
                       <TableCell>
                         {r.proof_image_url ? (
                           <button onClick={() => setImagePreview(r.proof_image_url)}>
-                            <img src={r.proof_image_url} alt="" className="w-8 h-8 object-cover rounded border border-border hover:opacity-80" />
+                            <img src={r.proof_image_url} alt="" className="w-9 h-9 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity" />
                           </button>
-                        ) : <span className="text-xs text-muted-foreground">—</span>}
+                        ) : <span className="text-xs text-muted-foreground/40">—</span>}
                       </TableCell>
-                      <TableCell className="text-xs max-w-xs truncate">{r.admin_note || "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-xs text-muted-foreground max-w-xs truncate hidden md:table-cell">{r.admin_note || "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground tabular-nums">
                         {new Date(r.created_at).toLocaleDateString("vi-VN")}
                       </TableCell>
                     </TableRow>
@@ -231,23 +244,24 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                 })}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         </div>
       )}
 
       {requests.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Crown className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Chưa có yêu cầu nâng cấp nào.</p>
-        </div>
+        <Card className="border-border/60 shadow-none">
+          <CardContent className="py-16 text-center text-muted-foreground">
+            <Inbox className="w-10 h-10 mx-auto mb-3 opacity-20" />
+            <p className="text-sm font-medium">Chưa có yêu cầu nâng cấp nào</p>
+            <p className="text-xs mt-1">Yêu cầu nâng cấp Premium sẽ hiển thị tại đây.</p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Image Preview Dialog */}
       <Dialog open={!!imagePreview} onOpenChange={() => setImagePreview(null)}>
         <DialogContent className="max-w-lg p-2">
-          {imagePreview && (
-            <img src={imagePreview} alt="Ảnh chuyển khoản" className="w-full rounded-lg" />
-          )}
+          {imagePreview && <img src={imagePreview} alt="Ảnh chuyển khoản" className="w-full rounded-lg" />}
         </DialogContent>
       </Dialog>
 
@@ -255,7 +269,7 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
       <Dialog open={reviewDialog} onOpenChange={setReviewDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Duyệt yêu cầu nâng cấp</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Duyệt yêu cầu nâng cấp</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-4">
@@ -264,46 +278,49 @@ const PremiumRequestsTab = ({ requests, onRefresh }: Props) => {
                   <img
                     src={selectedRequest.proof_image_url}
                     alt="Ảnh CK"
-                    className="w-32 h-32 object-cover rounded-lg border border-border cursor-pointer hover:opacity-80"
+                    className="w-28 h-28 object-cover rounded-xl border border-border cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setImagePreview(selectedRequest.proof_image_url)}
                   />
                 )}
-                <div className="space-y-2 flex-1">
+                <div className="space-y-3 flex-1">
                   <div>
-                    <p className="text-xs text-muted-foreground">Người dùng</p>
-                    <p className="text-sm font-medium">{userNames[selectedRequest.user_id] || "Không tên"}</p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-0.5">Người dùng</p>
+                    <p className="text-sm font-semibold">{userNames[selectedRequest.user_id] || "Không tên"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Gói đăng ký</p>
-                    <Badge className="bg-accent/10 text-accent border-accent/20">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-0.5">Gói đăng ký</p>
+                    <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 font-medium">
                       {(PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly).label} — {(PLAN_MAP[selectedRequest.plan_type] || PLAN_MAP.monthly).price}
-                    </Badge>
+                    </span>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Ngày gửi</p>
-                    <p className="text-sm">{new Date(selectedRequest.created_at).toLocaleString("vi-VN")}</p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-0.5">Ngày gửi</p>
+                    <p className="text-sm tabular-nums">{new Date(selectedRequest.created_at).toLocaleString("vi-VN")}</p>
                   </div>
                 </div>
               </div>
               {selectedRequest.note && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Ghi chú người dùng</p>
-                  <p className="text-sm">{selectedRequest.note}</p>
-                </div>
+                <Card className="border-border/60 shadow-none">
+                  <CardContent className="p-3">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">Ghi chú người dùng</p>
+                    <p className="text-sm">{selectedRequest.note}</p>
+                  </CardContent>
+                </Card>
               )}
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Ghi chú admin</p>
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5">Ghi chú admin</p>
                 <Textarea
                   value={adminNote}
                   onChange={(e) => setAdminNote(e.target.value)}
                   placeholder="Ghi chú (tùy chọn)..."
                   maxLength={500}
+                  className="resize-none"
                 />
               </div>
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => handleAction("rejected")} disabled={processing} className="text-destructive">
+            <Button variant="outline" onClick={() => handleAction("rejected")} disabled={processing} className="text-destructive hover:text-destructive">
               <XCircle className="w-4 h-4 mr-2" /> Từ chối
             </Button>
             <Button onClick={() => handleAction("approved")} disabled={processing} className="bg-accent text-accent-foreground">
