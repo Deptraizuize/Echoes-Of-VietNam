@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles, ExternalLink, FileText, ChevronUp } from "lucide-react";
+import { ArrowLeft, MapPin, User, Award, BookOpen, Sparkles, ExternalLink, FileText, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import UserHeader from "@/components/layout/UserHeader";
 import AIChatButton from "@/components/ai/AIChatButton";
 import milestonePlaceholder from "@/assets/milestone-placeholder.jpg";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MilestoneDetailData {
   id: string;
@@ -248,72 +248,101 @@ const MilestoneDetail = () => {
               {detail.image_urls && detail.image_urls.length > 1 && (() => {
                 const galleryImages = detail.image_urls!.slice(1);
                 const galleryCaptions = detail.image_captions?.slice(1) || [];
-                const count = galleryImages.length;
 
-                const ImageFigure = ({ url, caption, idx, className = "" }: { url: string; caption: string | null; idx: number; className?: string }) => (
-                  <motion.figure
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: idx * 0.08 }}
-                    className={`overflow-hidden rounded-xl border border-border bg-card group ${className}`}
-                  >
-                    <div className="overflow-hidden">
-                      <img
-                        src={url}
-                        alt={caption || `Tư liệu ${idx + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
-                    {caption && (
-                      <figcaption className="px-4 py-3 text-sm text-muted-foreground italic border-t border-border bg-muted/30">
-                        {caption}
-                      </figcaption>
-                    )}
-                  </motion.figure>
-                );
+                const GalleryCarousel = () => {
+                  const [current, setCurrent] = useState(0);
+                  const count = galleryImages.length;
 
-                // Smart layout based on image count
-                const renderGallery = () => {
-                  if (count === 1) {
-                    return (
-                      <div className="max-w-2xl mx-auto">
-                        <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} />
-                      </div>
-                    );
-                  }
-                  if (count === 2) {
-                    return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {galleryImages.map((url, i) => (
-                          <ImageFigure key={i} url={url} caption={galleryCaptions[i] || null} idx={i} />
-                        ))}
-                      </div>
-                    );
-                  }
-                  if (count === 3) {
-                    return (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2 sm:col-span-1 sm:row-span-2">
-                          <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} className="h-full [&_img]:h-full" />
-                        </div>
-                        <ImageFigure url={galleryImages[1]} caption={galleryCaptions[1] || null} idx={1} />
-                        <ImageFigure url={galleryImages[2]} caption={galleryCaptions[2] || null} idx={2} />
-                      </div>
-                    );
-                  }
-                  // 4+ images: featured first + grid rest
+                  const go = useCallback((dir: 1 | -1) => {
+                    setCurrent((prev) => (prev + dir + count) % count);
+                  }, [count]);
+
                   return (
-                    <div className="space-y-4">
-                      <div className="max-w-3xl mx-auto">
-                        <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} />
+                    <div className="relative select-none">
+                      {/* Main slide area */}
+                      <div className="relative overflow-hidden rounded-xl border border-border bg-card">
+                        <div className="relative aspect-[16/10] sm:aspect-[16/9]">
+                          <AnimatePresence mode="popLayout">
+                            <motion.div
+                              key={current}
+                              initial={{ opacity: 0, scale: 1.05 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              className="absolute inset-0"
+                            >
+                              <img
+                                src={galleryImages[current]}
+                                alt={galleryCaptions[current] || `Tư liệu ${current + 1}`}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                              {/* Gradient overlay bottom */}
+                              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                            </motion.div>
+                          </AnimatePresence>
+
+                          {/* Caption overlay */}
+                          <AnimatePresence mode="wait">
+                            {galleryCaptions[current] && (
+                              <motion.div
+                                key={`cap-${current}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3, delay: 0.15 }}
+                                className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-8 z-10"
+                              >
+                                <p className="text-white/90 text-sm md:text-base italic leading-relaxed max-w-2xl">
+                                  {galleryCaptions[current]}
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Counter */}
+                          <div className="absolute top-3 right-3 z-10 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-2.5 py-1 rounded-full">
+                            {current + 1} / {count}
+                          </div>
+
+                          {/* Nav arrows */}
+                          {count > 1 && (
+                            <>
+                              <button
+                                onClick={() => go(-1)}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-colors"
+                              >
+                                <ChevronLeft className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => go(1)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/50 transition-colors"
+                              >
+                                <ChevronRight className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {galleryImages.slice(1).map((url, i) => (
-                          <ImageFigure key={i} url={url} caption={galleryCaptions[i + 1] || null} idx={i + 1} />
-                        ))}
-                      </div>
+
+                      {/* Thumbnail strip with blur effect */}
+                      {count > 1 && (
+                        <div className="flex gap-2 mt-3 justify-center overflow-x-auto py-1 px-4">
+                          {galleryImages.map((url, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setCurrent(i)}
+                              className={`relative shrink-0 w-16 h-11 sm:w-20 sm:h-14 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                                i === current
+                                  ? "border-accent ring-1 ring-accent/30 scale-105"
+                                  : "border-transparent opacity-50 hover:opacity-80 grayscale hover:grayscale-0"
+                              }`}
+                            >
+                              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 };
@@ -326,7 +355,7 @@ const MilestoneDetail = () => {
                     transition={{ duration: 0.6 }}
                   >
                     <SectionHeading icon={BookOpen} title="Hình ảnh tư liệu" />
-                    {renderGallery()}
+                    <GalleryCarousel />
                   </motion.section>
                 );
               })()}
