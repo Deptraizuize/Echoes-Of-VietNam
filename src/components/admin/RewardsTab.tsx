@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -49,6 +53,26 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
   const [editing, setEditing] = useState<Reward | null>(null);
   const [form, setForm] = useState({ title: "", description: "", points_cost: 100, image_url: "", reward_type: "voucher", stock: "" });
   const [processing, setProcessing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  // Fetch display names for redemption user_ids
+  useEffect(() => {
+    const userIds = [...new Set(redemptions.map((r) => r.user_id))];
+    if (userIds.length === 0) return;
+    const fetchNames = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((p) => { map[p.user_id] = p.display_name || "Không tên"; });
+        setUserNames(map);
+      }
+    };
+    fetchNames();
+  }, [redemptions]);
 
   const openNew = () => {
     setEditing(null);
@@ -98,9 +122,16 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
     onRefresh();
   };
 
-  const deleteReward = async (id: string) => {
-    await supabase.from("rewards").delete().eq("id", id);
-    onRefresh();
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("rewards").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Đã xóa phần thưởng." });
+      onRefresh();
+    }
+    setDeleteTarget(null);
   };
 
   const updateRedemptionStatus = async (id: string, status: string) => {
@@ -108,6 +139,8 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
     toast({ title: "Đã cập nhật!" });
     onRefresh();
   };
+
+  const getRewardTitle = (rewardId: string) => rewards.find(r => r.id === rewardId)?.title || "—";
 
   const pendingRedemptions = redemptions.filter((r) => r.status === "pending");
 
@@ -128,7 +161,8 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User ID</TableHead>
+                  <TableHead>Người dùng</TableHead>
+                  <TableHead>Phần thưởng</TableHead>
                   <TableHead>Điểm</TableHead>
                   <TableHead>Ngày</TableHead>
                   <TableHead className="w-32"></TableHead>
@@ -137,8 +171,11 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
               <TableBody>
                 {pendingRedemptions.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.user_id.slice(0, 8)}...</TableCell>
-                    <TableCell className="text-sm font-medium">{r.points_spent}</TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {userNames[r.user_id] || r.user_id.slice(0, 8) + "..."}
+                    </TableCell>
+                    <TableCell className="text-sm">{getRewardTitle(r.reward_id)}</TableCell>
+                    <TableCell className="text-sm font-bold text-accent">{r.points_spent}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("vi-VN")}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
@@ -184,8 +221,18 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
               </TableHeader>
               <TableBody>
                 {rewards.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium text-sm">{r.title}</TableCell>
+                  <TableRow key={r.id} className={!r.is_active ? "opacity-50" : ""}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {r.image_url && (
+                          <img src={r.image_url} alt="" className="w-8 h-8 rounded object-cover border border-border" />
+                        )}
+                        <div>
+                          <span className="font-medium text-sm">{r.title}</span>
+                          {!r.is_active && <span className="text-[10px] text-muted-foreground ml-2">(ẩn)</span>}
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{r.reward_type}</TableCell>
                     <TableCell className="text-sm font-bold text-accent">{r.points_cost}</TableCell>
                     <TableCell className="text-sm">{r.stock ?? "∞"}</TableCell>
@@ -194,7 +241,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                         <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => deleteReward(r.id)} className="h-8 w-8 text-destructive">
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-8 w-8 text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -251,6 +298,9 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
             <div>
               <Label>URL hình ảnh</Label>
               <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
+              {form.image_url && (
+                <img src={form.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-lg border border-border" />
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -259,6 +309,24 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa phần thưởng?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa "{deleteTarget?.title}"? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

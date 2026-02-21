@@ -10,8 +10,12 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Image, Search, Filter } from "lucide-react";
+import { Plus, Trash2, Edit, Search } from "lucide-react";
 
 interface MilestoneRow {
   id: string;
@@ -42,6 +46,7 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
   const [filterMilestone, setFilterMilestone] = useState("");
   const [filterHasImage, setFilterHasImage] = useState<"all" | "yes" | "no">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<QuestionRow | null>(null);
   const [form, setForm] = useState({
     milestone_id: "",
     question: "",
@@ -62,6 +67,13 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
       return true;
     });
   }, [questions, filterMilestone, filterHasImage, searchQuery]);
+
+  // Group questions by milestone for stats
+  const milestoneStats = useMemo(() => {
+    const map: Record<string, number> = {};
+    questions.forEach((q) => { map[q.milestone_id] = (map[q.milestone_id] || 0) + 1; });
+    return map;
+  }, [questions]);
 
   const openNew = () => {
     setEditing(null);
@@ -100,10 +112,15 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
       return;
     }
 
+    if (form.correct_answer >= options.length) {
+      toast({ title: "Lỗi", description: "Đáp án đúng không hợp lệ", variant: "destructive" });
+      return;
+    }
+
     const payload = {
       milestone_id: form.milestone_id,
       question: form.question,
-      options: JSON.stringify(options),
+      options: options, // FIX: Send array directly, not JSON.stringify
       correct_answer: form.correct_answer,
       image_url: form.image_url || null,
     };
@@ -121,9 +138,16 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
     onRefresh();
   };
 
-  const deleteQuestion = async (id: string) => {
-    const { error } = await supabase.from("quiz_questions").delete().eq("id", id);
-    if (!error) onRefresh();
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("quiz_questions").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Đã xóa câu hỏi." });
+      onRefresh();
+    }
+    setDeleteTarget(null);
   };
 
   const getMilestoneTitle = (id: string) => milestones.find(m => m.id === id)?.title || id;
@@ -156,7 +180,9 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
           >
             <option value="">Tất cả cột mốc</option>
             {milestones.map((m) => (
-              <option key={m.id} value={m.id}>{m.title}</option>
+              <option key={m.id} value={m.id}>
+                {m.title} ({milestoneStats[m.id] || 0})
+              </option>
             ))}
           </select>
           <select
@@ -214,7 +240,7 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(q)} className="h-8 w-8">
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => deleteQuestion(q.id)} className="h-8 w-8 text-destructive">
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(q)} className="h-8 w-8 text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -232,6 +258,13 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
         </Table>
       </div>
 
+      {filteredQuestions.length > 50 && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Hiển thị 50/{filteredQuestions.length} câu hỏi. Sử dụng bộ lọc để thu hẹp kết quả.
+        </p>
+      )}
+
+      {/* Edit/Create Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -276,18 +309,26 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
             </div>
 
             {["A", "B", "C", "D"].map((letter, i) => (
-              <div key={letter}>
-                <Label>Đáp án {letter}</Label>
-                <Input
-                  value={
-                    i === 0 ? form.option_a : i === 1 ? form.option_b : i === 2 ? form.option_c : form.option_d
-                  }
-                  onChange={(e) => {
-                    const key = `option_${letter.toLowerCase()}` as keyof typeof form;
-                    setForm({ ...form, [key]: e.target.value });
-                  }}
-                  placeholder={`Đáp án ${letter}`}
-                />
+              <div key={letter} className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Label className="flex items-center gap-2">
+                    Đáp án {letter}
+                    {form.correct_answer === i && (
+                      <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">✓ Đúng</span>
+                    )}
+                  </Label>
+                  <Input
+                    value={
+                      i === 0 ? form.option_a : i === 1 ? form.option_b : i === 2 ? form.option_c : form.option_d
+                    }
+                    onChange={(e) => {
+                      const key = `option_${letter.toLowerCase()}` as keyof typeof form;
+                      setForm({ ...form, [key]: e.target.value });
+                    }}
+                    placeholder={`Đáp án ${letter}`}
+                    className={form.correct_answer === i ? "border-accent/50 bg-accent/5" : ""}
+                  />
+                </div>
               </div>
             ))}
 
@@ -298,10 +339,10 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
                 onChange={(e) => setForm({ ...form, correct_answer: parseInt(e.target.value) })}
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
               >
-                <option value={0}>A</option>
-                <option value={1}>B</option>
-                <option value={2}>C</option>
-                <option value={3}>D</option>
+                <option value={0}>A{form.option_a ? ` — ${form.option_a.slice(0, 40)}` : ""}</option>
+                <option value={1}>B{form.option_b ? ` — ${form.option_b.slice(0, 40)}` : ""}</option>
+                <option value={2}>C{form.option_c ? ` — ${form.option_c.slice(0, 40)}` : ""}</option>
+                <option value={3}>D{form.option_d ? ` — ${form.option_d.slice(0, 40)}` : ""}</option>
               </select>
             </div>
           </div>
@@ -312,6 +353,29 @@ const QuestionsTab = ({ milestones, questions, onRefresh }: Props) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa câu hỏi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget && (
+                <span className="block mt-2 text-sm">
+                  "{deleteTarget.question.slice(0, 100)}{deleteTarget.question.length > 100 ? "..." : ""}"
+                </span>
+              )}
+              <span className="block mt-2">Hành động này không thể hoàn tác.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

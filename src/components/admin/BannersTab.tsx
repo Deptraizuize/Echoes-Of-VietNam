@@ -12,7 +12,11 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Image, Plus, Trash2, Edit, Eye, EyeOff } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Image, Plus, Trash2, Edit } from "lucide-react";
 
 interface AdBanner {
   id: string;
@@ -35,6 +39,8 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
   const [editing, setEditing] = useState<AdBanner | null>(null);
   const [form, setForm] = useState({ title: "", image_url: "", link_url: "", description: "", display_order: 0 });
   const [processing, setProcessing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdBanner | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const openNew = () => {
     setEditing(null);
@@ -87,9 +93,16 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
     onRefresh();
   };
 
-  const deleteBanner = async (id: string) => {
-    await supabase.from("ad_banners").delete().eq("id", id);
-    onRefresh();
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await supabase.from("ad_banners").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Đã xóa banner." });
+      onRefresh();
+    }
+    setDeleteTarget(null);
   };
 
   return (
@@ -109,7 +122,8 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead className="w-16">Trạng thái</TableHead>
+                <TableHead className="w-16">Ảnh</TableHead>
                 <TableHead>Tiêu đề</TableHead>
                 <TableHead className="hidden md:table-cell">Link</TableHead>
                 <TableHead className="w-16">Thứ tự</TableHead>
@@ -118,21 +132,39 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
             </TableHeader>
             <TableBody>
               {banners.map((b) => (
-                <TableRow key={b.id}>
+                <TableRow key={b.id} className={!b.is_active ? "opacity-50" : ""}>
                   <TableCell>
                     <Switch checked={b.is_active} onCheckedChange={() => toggleActive(b.id, b.is_active)} />
                   </TableCell>
-                  <TableCell className="font-medium text-sm">{b.title}</TableCell>
+                  <TableCell>
+                    {b.image_url ? (
+                      <button onClick={() => setImagePreview(b.image_url)}>
+                        <img src={b.image_url} alt="" className="w-10 h-10 rounded object-cover border border-border hover:opacity-80 transition-opacity" />
+                      </button>
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                        <Image className="w-4 h-4 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <span className="font-medium text-sm">{b.title}</span>
+                      {b.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{b.description}</p>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate hidden md:table-cell">
                     {b.link_url || "—"}
                   </TableCell>
-                  <TableCell className="text-sm">{b.display_order}</TableCell>
+                  <TableCell className="text-sm text-center">{b.display_order}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(b)} className="h-8 w-8">
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => deleteBanner(b.id)} className="h-8 w-8 text-destructive">
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(b)} className="h-8 w-8 text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -149,6 +181,7 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
         </div>
       )}
 
+      {/* Edit/Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -162,6 +195,9 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
             <div>
               <Label>URL hình ảnh</Label>
               <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
+              {form.image_url && (
+                <img src={form.image_url} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-lg border border-border" />
+              )}
             </div>
             <div>
               <Label>Link đích (khi click)</Label>
@@ -182,6 +218,33 @@ const BannersTab = ({ banners, onRefresh }: Props) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!imagePreview} onOpenChange={() => setImagePreview(null)}>
+        <DialogContent className="max-w-lg p-2">
+          {imagePreview && (
+            <img src={imagePreview} alt="Xem ảnh banner" className="w-full rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa banner?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa banner "{deleteTarget?.title}"? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
