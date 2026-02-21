@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HomeHeader = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin, loading } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-foreground/95 backdrop-blur-sm border-b border-primary-foreground/10">
@@ -36,19 +36,31 @@ const HomeHeader = () => {
             ))}
           </nav>
 
-          {user ? (
+          {loading ? null : user ? (
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/profile")}
-                className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-sm gap-2"
-              >
-                <User className="w-4 h-4" />
-                <span className="hidden sm:inline">
-                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "Profile"}
-                </span>
-              </Button>
+              {isAdmin ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/admin")}
+                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-sm gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/profile")}
+                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 text-sm gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {user.user_metadata?.full_name || user.email?.split("@")[0] || "Profile"}
+                  </span>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
