@@ -25,6 +25,7 @@ interface MilestoneRow {
   phase_id: string;
   phase_title: string;
   sort_order: number;
+  year: string | null;
 }
 
 interface Props {
@@ -47,6 +48,7 @@ const MilestonesTab = ({ milestones, onRefresh }: Props) => {
     phase_id: "",
     phase_title: "",
     sort_order: 0,
+    year: "",
   });
 
   const filteredMilestones = useMemo(() => {
@@ -76,6 +78,7 @@ const MilestonesTab = ({ milestones, onRefresh }: Props) => {
       phase_id: m.phase_id,
       phase_title: m.phase_title,
       sort_order: m.sort_order,
+      year: m.year || "",
     });
     setShowDialog(true);
   };
@@ -93,6 +96,7 @@ const MilestonesTab = ({ milestones, onRefresh }: Props) => {
       phase_id: defaultPhase?.id || "",
       phase_title: defaultPhase?.name || "",
       sort_order: maxSort,
+      year: "",
     });
     setShowDialog(true);
   };
@@ -141,6 +145,7 @@ const MilestonesTab = ({ milestones, onRefresh }: Props) => {
       phase_id: form.phase_id,
       phase_title: form.phase_title,
       sort_order: form.sort_order,
+      year: form.year || null,
     };
 
     if (editing) {
@@ -281,6 +286,11 @@ const MilestonesTab = ({ milestones, onRefresh }: Props) => {
             <div>
               <Label>Thứ tự sắp xếp</Label>
               <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} />
+            </div>
+
+            <div>
+              <Label>Mốc thời gian (VD: "938", "1945", "Thế kỷ X")</Label>
+              <Input value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} placeholder="Năm 938" />
             </div>
           </div>
 

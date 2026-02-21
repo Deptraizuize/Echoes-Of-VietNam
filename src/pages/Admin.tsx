@@ -21,7 +21,7 @@ import MilestonesTab from "@/components/admin/MilestonesTab";
 import PaymentSettingsTab from "@/components/admin/PaymentSettingsTab";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
-interface MilestoneRow { id: string; title: string; period_id: string; period_title: string; phase_id: string; phase_title: string; sort_order: number; }
+interface MilestoneRow { id: string; title: string; period_id: string; period_title: string; phase_id: string; phase_title: string; sort_order: number; year: string | null; }
 interface QuestionRow { id: string; milestone_id: string; question: string; options: string[]; correct_answer: number; image_url: string | null; }
 interface ProfileRow { id: string; user_id: string; display_name: string | null; is_premium: boolean; premium_expires_at: string | null; total_points: number; created_at: string; }
 
@@ -59,7 +59,7 @@ const Admin = () => {
 
   const fetchAll = async () => {
     const [m, q, p, pr, fb, bn, rw, rd, md, ps, roles] = await Promise.all([
-      supabase.from("milestones").select("id, title, period_id, period_title, phase_id, phase_title, sort_order").order("sort_order"),
+      supabase.from("milestones").select("id, title, period_id, period_title, phase_id, phase_title, sort_order, year").order("sort_order"),
       supabase.from("quiz_questions").select("id, milestone_id, question, options, correct_answer, image_url").order("created_at"),
       supabase.from("profiles").select("id, user_id, display_name, is_premium, premium_expires_at, total_points, created_at").order("created_at", { ascending: false }),
       supabase.from("premium_requests").select("*").order("created_at", { ascending: false }),

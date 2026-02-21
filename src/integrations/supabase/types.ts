@@ -199,6 +199,7 @@ export type Database = {
           phase_title: string
           sort_order: number
           title: string
+          year: string | null
         }
         Insert: {
           created_at?: string
@@ -209,6 +210,7 @@ export type Database = {
           phase_title: string
           sort_order?: number
           title: string
+          year?: string | null
         }
         Update: {
           created_at?: string
@@ -219,6 +221,7 @@ export type Database = {
           phase_title?: string
           sort_order?: number
           title?: string
+          year?: string | null
         }
         Relationships: []
       }
