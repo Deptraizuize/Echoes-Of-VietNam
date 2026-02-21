@@ -89,8 +89,8 @@ const MilestoneDetail = () => {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroImage} alt="" className="w-full h-full object-cover scale-105" />
-          <div className="absolute inset-0 bg-foreground/70 backdrop-blur-[2px]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-foreground/40 to-transparent" />
+          <div className="absolute inset-0 bg-black/65" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/40" />
           <div className="absolute inset-0 dong-son-pattern opacity-[0.06]" />
         </div>
 
@@ -114,12 +114,12 @@ const MilestoneDetail = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="max-w-3xl"
             >
-              <p className="text-accent uppercase tracking-[0.2em] text-sm mb-4 font-medium">Cột mốc lịch sử</p>
-              <h1 className="text-primary-foreground text-3xl md:text-4xl lg:text-5xl mb-6 leading-[1.15] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]">
+              <p className="text-accent uppercase tracking-[0.2em] text-sm mb-4 font-medium drop-shadow-md">Cột mốc lịch sử</p>
+              <h1 className="text-white text-3xl md:text-4xl lg:text-5xl mb-6 leading-[1.15] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere] [text-shadow:0_2px_8px_rgba(0,0,0,0.5),0_1px_3px_rgba(0,0,0,0.4)]">
                 {detail?.title || milestoneTitle}
               </h1>
               {detail?.summary && (
-                <p className="text-primary-foreground/60 text-lg md:text-xl leading-relaxed max-w-2xl">
+                <p className="text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
                   {detail.summary}
                 </p>
               )}
