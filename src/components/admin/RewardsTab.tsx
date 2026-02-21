@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -18,7 +19,13 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Gift, Plus, Trash2, Edit, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Gift, Plus, Trash2, Edit, CheckCircle, Clock, XCircle, Award, Shield, Crown, X } from "lucide-react";
+
+interface BadgeReq {
+  badge_type: string;
+  id: string;
+  name?: string;
+}
 
 interface Reward {
   id: string;
@@ -29,6 +36,7 @@ interface Reward {
   reward_type: string;
   is_active: boolean;
   stock: number | null;
+  required_badges?: BadgeReq[];
 }
 
 interface Redemption {
@@ -39,6 +47,15 @@ interface Redemption {
   status: string;
   admin_note: string | null;
   created_at: string;
+}
+
+interface Milestone {
+  id: string;
+  title: string;
+  phase_id: string;
+  phase_title: string;
+  period_id: string;
+  period_title: string;
 }
 
 interface Props {
@@ -52,19 +69,19 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
   const [rewardDialog, setRewardDialog] = useState(false);
   const [editing, setEditing] = useState<Reward | null>(null);
   const [form, setForm] = useState({ title: "", description: "", points_cost: 100, image_url: "", reward_type: "voucher", stock: "" });
+  const [badgeReqs, setBadgeReqs] = useState<BadgeReq[]>([]);
   const [processing, setProcessing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [badgePickerType, setBadgePickerType] = useState<string>("milestone");
+  const [badgePickerId, setBadgePickerId] = useState<string>("");
 
-  // Fetch display names for redemption user_ids
   useEffect(() => {
     const userIds = [...new Set(redemptions.map((r) => r.user_id))];
     if (userIds.length === 0) return;
     const fetchNames = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, display_name")
-        .in("user_id", userIds);
+      const { data } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
       if (data) {
         const map: Record<string, string> = {};
         data.forEach((p) => { map[p.user_id] = p.display_name || "Không tên"; });
@@ -74,9 +91,36 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
     fetchNames();
   }, [redemptions]);
 
+  useEffect(() => {
+    supabase.from("milestones").select("id, title, phase_id, phase_title, period_id, period_title").order("sort_order").then(({ data }) => {
+      if (data) setMilestones(data);
+    });
+  }, []);
+
+  const phases = [...new Map(milestones.map(m => [m.phase_id, { id: m.phase_id, title: m.phase_title }])).values()];
+  const periods = [...new Map(milestones.map(m => [m.period_id, { id: m.period_id, title: m.period_title }])).values()];
+
+  const getPickerOptions = () => {
+    if (badgePickerType === "milestone") return milestones.map(m => ({ id: m.id, name: m.title }));
+    if (badgePickerType === "phase") return phases.map(p => ({ id: p.id, name: p.title }));
+    return periods.map(p => ({ id: p.id, name: p.title }));
+  };
+
+  const addBadgeReq = () => {
+    if (!badgePickerId) return;
+    if (badgeReqs.some(b => b.badge_type === badgePickerType && b.id === badgePickerId)) return;
+    const opts = getPickerOptions();
+    const found = opts.find(o => o.id === badgePickerId);
+    setBadgeReqs([...badgeReqs, { badge_type: badgePickerType, id: badgePickerId, name: found?.name || badgePickerId }]);
+    setBadgePickerId("");
+  };
+
+  const removeBadgeReq = (idx: number) => setBadgeReqs(badgeReqs.filter((_, i) => i !== idx));
+
   const openNew = () => {
     setEditing(null);
     setForm({ title: "", description: "", points_cost: 100, image_url: "", reward_type: "voucher", stock: "" });
+    setBadgeReqs([]);
     setRewardDialog(true);
   };
 
@@ -90,6 +134,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
       reward_type: r.reward_type,
       stock: r.stock?.toString() || "",
     });
+    setBadgeReqs(r.required_badges || []);
     setRewardDialog(true);
   };
 
@@ -106,13 +151,14 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
       image_url: form.image_url.trim() || null,
       reward_type: form.reward_type,
       stock: form.stock ? parseInt(form.stock) : null,
+      required_badges: badgeReqs.length > 0 ? badgeReqs : [],
     };
 
     if (editing) {
-      const { error } = await supabase.from("rewards").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("rewards").update(payload as any).eq("id", editing.id);
       if (error) { toast({ title: "Lỗi", description: error.message, variant: "destructive" }); setProcessing(false); return; }
     } else {
-      const { error } = await supabase.from("rewards").insert(payload);
+      const { error } = await supabase.from("rewards").insert(payload as any);
       if (error) { toast({ title: "Lỗi", description: error.message, variant: "destructive" }); setProcessing(false); return; }
     }
 
@@ -141,14 +187,18 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
   };
 
   const getRewardTitle = (rewardId: string) => rewards.find(r => r.id === rewardId)?.title || "—";
-
   const pendingRedemptions = redemptions.filter((r) => r.status === "pending");
 
-  const statusIcon: Record<string, React.ReactNode> = {
-    pending: <Clock className="w-3.5 h-3.5 text-accent" />,
-    approved: <CheckCircle className="w-3.5 h-3.5 text-green-500" />,
-    rejected: <XCircle className="w-3.5 h-3.5 text-destructive" />,
-    delivered: <Gift className="w-3.5 h-3.5 text-accent" />,
+  const badgeTypeIcon: Record<string, React.ReactNode> = {
+    milestone: <Award className="w-3 h-3" />,
+    phase: <Shield className="w-3 h-3" />,
+    period: <Crown className="w-3 h-3" />,
+  };
+
+  const badgeTypeColor: Record<string, string> = {
+    milestone: "bg-accent/10 text-accent border-accent/20",
+    phase: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    period: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   };
 
   return (
@@ -216,6 +266,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                   <TableHead>Loại</TableHead>
                   <TableHead>Điểm</TableHead>
                   <TableHead>Kho</TableHead>
+                  <TableHead>Huy hiệu YC</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -224,9 +275,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                   <TableRow key={r.id} className={!r.is_active ? "opacity-50" : ""}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {r.image_url && (
-                          <img src={r.image_url} alt="" className="w-8 h-8 rounded object-cover border border-border" />
-                        )}
+                        {r.image_url && <img src={r.image_url} alt="" className="w-8 h-8 rounded object-cover border border-border" />}
                         <div>
                           <span className="font-medium text-sm">{r.title}</span>
                           {!r.is_active && <span className="text-[10px] text-muted-foreground ml-2">(ẩn)</span>}
@@ -237,13 +286,22 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                     <TableCell className="text-sm font-bold text-accent">{r.points_cost}</TableCell>
                     <TableCell className="text-sm">{r.stock ?? "∞"}</TableCell>
                     <TableCell>
+                      {r.required_badges && r.required_badges.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {r.required_badges.map((b, i) => (
+                            <span key={i} className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full border ${badgeTypeColor[b.badge_type] || ""}`}>
+                              {badgeTypeIcon[b.badge_type]} {b.name || b.id}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-8 w-8 text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8"><Edit className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(r)} className="h-8 w-8 text-destructive"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -261,7 +319,7 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
 
       {/* Reward Dialog */}
       <Dialog open={rewardDialog} onOpenChange={setRewardDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif text-xl">{editing ? "Sửa phần thưởng" : "Thêm phần thưởng"}</DialogTitle>
           </DialogHeader>
@@ -291,16 +349,56 @@ const RewardsTab = ({ rewards, redemptions, onRefresh }: Props) => {
                 <SelectContent>
                   <SelectItem value="voucher">Voucher</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
-                  <SelectItem value="badge">Huy hiệu</SelectItem>
+                  <SelectItem value="ticket">Vé tham quan</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>URL hình ảnh</Label>
               <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
-              {form.image_url && (
-                <img src={form.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-lg border border-border" />
+              {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-lg border border-border" />}
+            </div>
+
+            {/* Badge Requirements */}
+            <div className="border-t border-border pt-4">
+              <Label className="text-sm font-semibold mb-2 block">Điều kiện huy hiệu (tùy chọn)</Label>
+              <p className="text-xs text-muted-foreground mb-3">Người dùng cần có đủ các huy hiệu này để đổi phần thưởng.</p>
+
+              {badgeReqs.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {badgeReqs.map((b, i) => (
+                    <span key={i} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${badgeTypeColor[b.badge_type] || ""}`}>
+                      {badgeTypeIcon[b.badge_type]}
+                      {b.name || b.id}
+                      <button onClick={() => removeBadgeReq(i)} className="ml-1 hover:text-destructive">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
               )}
+
+              <div className="flex gap-2">
+                <Select value={badgePickerType} onValueChange={v => { setBadgePickerType(v); setBadgePickerId(""); }}>
+                  <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="milestone">Mốc</SelectItem>
+                    <SelectItem value="phase">Giai đoạn</SelectItem>
+                    <SelectItem value="period">Thời kỳ</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={badgePickerId} onValueChange={setBadgePickerId}>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder="Chọn..." /></SelectTrigger>
+                  <SelectContent>
+                    {getPickerOptions().map(o => (
+                      <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={addBadgeReq} disabled={!badgePickerId}>
+                  <Plus className="w-3 h-3" />
+                </Button>
+              </div>
             </div>
           </div>
           <DialogFooter>
