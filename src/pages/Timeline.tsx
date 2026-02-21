@@ -13,7 +13,7 @@ const Timeline = () => {
     const fetchMilestones = async () => {
       const { data } = await supabase
         .from("milestones")
-        .select("id, title, period_id, phase_id, sort_order")
+        .select("id, title, period_id, phase_id, sort_order, year")
         .order("sort_order");
       setDbMilestones(data);
     };
@@ -32,6 +32,7 @@ const Timeline = () => {
       byPeriodPhase[m.period_id][m.phase_id].push({
         id: m.id,
         title: m.title,
+        year: m.year || undefined,
       });
     });
 
