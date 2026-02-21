@@ -433,10 +433,11 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
             )}
 
             {activeTab === "media" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
+                {/* URL Input */}
                 <div>
                   <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">Ảnh đầu tiên sẽ làm ảnh bìa (hero). Các ảnh còn lại hiển thị trong gallery bài viết.</p>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">Ảnh đầu tiên sẽ làm ảnh bìa (hero). Các ảnh còn lại hiển thị trong gallery.</p>
                   <textarea
                     value={form.image_urls}
                     onChange={(e) => {
@@ -445,66 +446,83 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
                       const newCaptions = syncCaptions(newUrlList);
                       setForm({ ...form, image_urls: newUrls, image_captions: newCaptions });
                     }}
-                    rows={5}
-                    placeholder={"https://example.com/hero-image.jpg\nhttps://example.com/image2.jpg\nhttps://example.com/image3.jpg"}
+                    rows={4}
+                    placeholder={"https://example.com/hero-image.jpg\nhttps://example.com/image2.jpg"}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
                   />
                 </div>
+
+                {/* Hero image preview */}
                 {imageUrls.length > 0 && (
-                  <div className="space-y-3">
-                    <Label className="text-xs text-muted-foreground">Xem trước & chú thích ({imageUrls.length} ảnh)</Label>
-                    <div className="space-y-4">
-                      {imageUrls.map((url, i) => (
-                        <div key={i} className="flex gap-3 bg-muted/30 rounded-lg p-3 border border-border">
-                          <div className="relative shrink-0 w-28 h-20 rounded-lg overflow-hidden border border-border">
-                            <img
-                              src={url}
-                              alt={`Ảnh ${i + 1}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23999' font-size='12'%3ELỗi ảnh%3C/text%3E%3C/svg%3E";
-                              }}
-                            />
-                            <div className="absolute top-1 left-1">
-                              <span className={cn(
-                                "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                                i === 0
-                                  ? "bg-accent text-accent-foreground"
-                                  : "bg-foreground/60 text-primary-foreground"
-                              )}>
-                                {i === 0 ? "Ảnh bìa" : `#${i + 1}`}
-                              </span>
-                            </div>
+                  <div className="space-y-4">
+                    {/* Hero card - larger */}
+                    <div className="relative rounded-xl overflow-hidden border-2 border-accent/30 bg-card group">
+                      <div className="flex gap-4 p-3">
+                        <div className="relative shrink-0 w-40 h-28 rounded-lg overflow-hidden border border-border">
+                          <img src={imageUrls[0]} alt="Ảnh bìa" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <div className="absolute top-1.5 left-1.5">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-accent text-accent-foreground shadow-sm">★ Ảnh bìa</span>
                           </div>
-                          <div className="flex-1 flex flex-col gap-1.5">
-                            <Input
-                              value={captions[i] || ""}
-                              onChange={(e) => {
-                                const newCaptions = [...captions];
-                                newCaptions[i] = e.target.value;
-                                setForm({ ...form, image_captions: newCaptions });
-                              }}
-                              placeholder={i === 0 ? "Chú thích ảnh bìa (tùy chọn)" : `Chú thích ảnh #${i + 1}`}
-                              className="h-8 text-sm"
-                            />
-                            <p className="text-[10px] text-muted-foreground truncate">{url}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const lines = form.image_urls.split("\n");
-                              lines.splice(i, 1);
-                              const newCaps = [...captions];
-                              newCaps.splice(i, 1);
-                              setForm({ ...form, image_urls: lines.join("\n"), image_captions: newCaps });
-                            }}
-                            className="shrink-0 w-7 h-7 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors text-xs self-start"
-                          >
-                            ✕
-                          </button>
                         </div>
-                      ))}
+                        <div className="flex-1 flex flex-col gap-2 min-w-0">
+                          <Input
+                            value={captions[0] || ""}
+                            onChange={(e) => {
+                              const newCaptions = [...captions];
+                              newCaptions[0] = e.target.value;
+                              setForm({ ...form, image_captions: newCaptions });
+                            }}
+                            placeholder="Chú thích ảnh bìa (tùy chọn)"
+                            className="h-8 text-sm"
+                          />
+                          <p className="text-[10px] text-muted-foreground truncate font-mono">{imageUrls[0]}</p>
+                        </div>
+                        <button type="button" onClick={() => {
+                          const lines = form.image_urls.split("\n"); lines.splice(0, 1);
+                          const newCaps = [...captions]; newCaps.splice(0, 1);
+                          setForm({ ...form, image_urls: lines.join("\n"), image_captions: newCaps });
+                        }} className="shrink-0 w-7 h-7 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors text-xs self-start">✕</button>
+                      </div>
                     </div>
+
+                    {/* Gallery grid - compact cards */}
+                    {imageUrls.length > 1 && (
+                      <div>
+                        <Label className="text-xs text-muted-foreground mb-2 block">Gallery ({imageUrls.length - 1} ảnh)</Label>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                          {imageUrls.slice(1).map((url, idx) => {
+                            const i = idx + 1;
+                            return (
+                              <div key={i} className="relative rounded-lg overflow-hidden border border-border bg-card group hover:border-accent/30 transition-colors">
+                                <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                                  <img src={url} alt={`Ảnh ${i + 1}`} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  <div className="absolute top-1.5 left-1.5">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-foreground/60 text-primary-foreground">#{i + 1}</span>
+                                  </div>
+                                  <button type="button" onClick={() => {
+                                    const lines = form.image_urls.split("\n"); lines.splice(i, 1);
+                                    const newCaps = [...captions]; newCaps.splice(i, 1);
+                                    setForm({ ...form, image_urls: lines.join("\n"), image_captions: newCaps });
+                                  }} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-destructive/80 text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px]">✕</button>
+                                </div>
+                                <div className="p-2">
+                                  <Input
+                                    value={captions[i] || ""}
+                                    onChange={(e) => {
+                                      const newCaptions = [...captions];
+                                      newCaptions[i] = e.target.value;
+                                      setForm({ ...form, image_captions: newCaptions });
+                                    }}
+                                    placeholder={`Chú thích #${i + 1}`}
+                                    className="h-7 text-xs border-0 bg-transparent px-1 focus-visible:ring-1"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
