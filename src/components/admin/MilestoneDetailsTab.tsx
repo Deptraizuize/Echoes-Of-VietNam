@@ -14,7 +14,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Plus, Search, Trash2, ExternalLink } from "lucide-react";
+import { Edit, Plus, Search, Trash2, ExternalLink, Link, X } from "lucide-react";
 import MarkdownEditor from "./MarkdownEditor";
 
 interface MilestoneRow {
@@ -34,6 +34,8 @@ interface MilestoneDetailRow {
   significance: string | null;
   hero_names: string[] | null;
   landmark_names: string[] | null;
+  hero_urls: string[] | null;
+  landmark_urls: string[] | null;
   image_urls: string[] | null;
 }
 
@@ -43,6 +45,11 @@ interface Props {
   onRefresh: () => void;
 }
 
+interface LinkedItem {
+  name: string;
+  url: string;
+}
+
 const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
@@ -50,6 +57,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
   const [filterMilestone, setFilterMilestone] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<MilestoneDetailRow | null>(null);
+  const [activeTab, setActiveTab] = useState<"content" | "links" | "media">("content");
   const [form, setForm] = useState({
     milestone_id: "",
     title: "",
@@ -57,10 +65,10 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     events: "",
     results: "",
     significance: "",
-    hero_names: "",
-    landmark_names: "",
     image_urls: "",
   });
+  const [heroes, setHeroes] = useState<LinkedItem[]>([]);
+  const [landmarks, setLandmarks] = useState<LinkedItem[]>([]);
 
   const filteredDetails = useMemo(() => {
     return details.filter((d) => {
@@ -70,11 +78,18 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
     });
   }, [details, filterMilestone, searchQuery]);
 
-  // Check which milestones don't have details yet
   const milestonesWithoutDetails = useMemo(() => {
     const detailedIds = new Set(details.map(d => d.milestone_id));
     return milestones.filter(m => !detailedIds.has(m.id));
   }, [milestones, details]);
+
+  const parseLinkedItems = (names: string[] | null, urls: string[] | null): LinkedItem[] => {
+    if (!names) return [];
+    return names.map((name, i) => ({
+      name,
+      url: urls?.[i] || `https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`,
+    }));
+  };
 
   const openEdit = (d: MilestoneDetailRow) => {
     setEditing(d);
@@ -85,10 +100,11 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       events: d.events || "",
       results: d.results || "",
       significance: d.significance || "",
-      hero_names: d.hero_names?.join(", ") || "",
-      landmark_names: d.landmark_names?.join(", ") || "",
       image_urls: d.image_urls?.join("\n") || "",
     });
+    setHeroes(parseLinkedItems(d.hero_names, d.hero_urls));
+    setLandmarks(parseLinkedItems(d.landmark_names, d.landmark_urls));
+    setActiveTab("content");
     setShowDialog(true);
   };
 
@@ -102,10 +118,11 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       events: "",
       results: "",
       significance: "",
-      hero_names: "",
-      landmark_names: "",
       image_urls: "",
     });
+    setHeroes([]);
+    setLandmarks([]);
+    setActiveTab("content");
     setShowDialog(true);
   };
 
@@ -115,15 +132,17 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
       return;
     }
 
-    const payload = {
+    const payload: any = {
       milestone_id: form.milestone_id,
       title: form.title,
       summary: form.summary || null,
       events: form.events || null,
       results: form.results || null,
       significance: form.significance || null,
-      hero_names: form.hero_names ? form.hero_names.split(",").map(s => s.trim()).filter(Boolean) : null,
-      landmark_names: form.landmark_names ? form.landmark_names.split(",").map(s => s.trim()).filter(Boolean) : null,
+      hero_names: heroes.length > 0 ? heroes.map(h => h.name) : null,
+      hero_urls: heroes.length > 0 ? heroes.map(h => h.url) : null,
+      landmark_names: landmarks.length > 0 ? landmarks.map(l => l.name) : null,
+      landmark_urls: landmarks.length > 0 ? landmarks.map(l => l.url) : null,
       image_urls: form.image_urls ? form.image_urls.split("\n").map(s => s.trim()).filter(Boolean) : null,
     };
 
@@ -154,16 +173,80 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
 
   const getMilestoneTitle = (id: string) => milestones.find(m => m.id === id)?.title || id;
 
-  // Content completeness indicator
   const getCompleteness = (d: MilestoneDetailRow) => {
     let filled = 0;
-    let total = 4;
+    const total = 4;
     if (d.events) filled++;
     if (d.results) filled++;
     if (d.significance) filled++;
     if (d.summary) filled++;
     return { filled, total };
   };
+
+  const addLinkedItem = (list: LinkedItem[], setList: (v: LinkedItem[]) => void) => {
+    setList([...list, { name: "", url: "" }]);
+  };
+
+  const updateLinkedItem = (list: LinkedItem[], setList: (v: LinkedItem[]) => void, index: number, field: "name" | "url", value: string) => {
+    const updated = [...list];
+    updated[index] = { ...updated[index], [field]: value };
+    setList(updated);
+  };
+
+  const removeLinkedItem = (list: LinkedItem[], setList: (v: LinkedItem[]) => void, index: number) => {
+    setList(list.filter((_, i) => i !== index));
+  };
+
+  const LinkedItemsEditor = ({ items, setItems, label, placeholder }: { items: LinkedItem[]; setItems: (v: LinkedItem[]) => void; label: string; placeholder: string }) => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium">{label} ({items.length})</Label>
+        <Button type="button" variant="outline" size="sm" onClick={() => addLinkedItem(items, setItems)} className="h-7 text-xs gap-1">
+          <Plus className="w-3 h-3" /> Thêm
+        </Button>
+      </div>
+      {items.length === 0 && (
+        <p className="text-xs text-muted-foreground py-3 text-center border border-dashed border-border rounded-lg">
+          Chưa có mục nào. Nhấn "Thêm" để bắt đầu.
+        </p>
+      )}
+      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+            <div className="flex-1 grid grid-cols-2 gap-2">
+              <Input
+                value={item.name}
+                onChange={(e) => updateLinkedItem(items, setItems, i, "name", e.target.value)}
+                placeholder={placeholder}
+                className="h-8 text-sm"
+              />
+              <div className="flex items-center gap-1">
+                <Link className="w-3 h-3 text-muted-foreground shrink-0" />
+                <Input
+                  value={item.url}
+                  onChange={(e) => updateLinkedItem(items, setItems, i, "url", e.target.value)}
+                  placeholder="https://vi.wikipedia.org/wiki/..."
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+            </div>
+            <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkedItem(items, setItems, i)} className="h-7 w-7 shrink-0 text-destructive hover:text-destructive">
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Để trống URL sẽ tự động link đến Wikipedia tiếng Việt
+      </p>
+    </div>
+  );
+
+  const tabs = [
+    { id: "content" as const, label: "Nội dung", count: null },
+    { id: "links" as const, label: "Liên kết", count: heroes.length + landmarks.length },
+    { id: "media" as const, label: "Hình ảnh", count: form.image_urls ? form.image_urls.split("\n").filter(s => s.trim()).length : 0 },
+  ];
 
   return (
     <>
@@ -182,22 +265,12 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[180px]">
             <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm tiêu đề..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-sm"
-            />
+            <Input placeholder="Tìm tiêu đề..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-9 text-sm" />
           </div>
-          <select
-            value={filterMilestone}
-            onChange={(e) => setFilterMilestone(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[150px]"
-          >
+          <select value={filterMilestone} onChange={(e) => setFilterMilestone(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[150px]">
             <option value="">Tất cả cột mốc</option>
             {milestones.map((m) => (
               <option key={m.id} value={m.id}>{m.title}</option>
@@ -206,9 +279,7 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
         </div>
 
         {filteredDetails.length !== details.length && (
-          <p className="text-xs text-muted-foreground">
-            Hiển thị {filteredDetails.length}/{details.length} bài viết
-          </p>
+          <p className="text-xs text-muted-foreground">Hiển thị {filteredDetails.length}/{details.length} bài viết</p>
         )}
       </div>
 
@@ -230,34 +301,20 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
               const { filled, total } = getCompleteness(d);
               return (
                 <TableRow key={d.id}>
-                  <TableCell>
-                    <span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(d.milestone_id)}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="line-clamp-2 text-sm leading-snug">{d.title}</span>
-                  </TableCell>
+                  <TableCell><span className="line-clamp-1 text-xs text-muted-foreground">{getMilestoneTitle(d.milestone_id)}</span></TableCell>
+                  <TableCell><span className="line-clamp-2 text-sm leading-snug">{d.title}</span></TableCell>
                   <TableCell className="text-center">
-                    <span className={`text-xs font-medium ${filled === total ? "text-green-500" : filled >= 2 ? "text-accent" : "text-destructive"}`}>
-                      {filled}/{total}
-                    </span>
+                    <span className={`text-xs font-medium ${filled === total ? "text-green-500" : filled >= 2 ? "text-accent" : "text-destructive"}`}>{filled}/{total}</span>
                   </TableCell>
                   <TableCell className="text-center text-xs text-muted-foreground">{d.hero_names?.length || 0}</TableCell>
                   <TableCell className="text-center text-xs text-muted-foreground">{d.landmark_names?.length || 0}</TableCell>
                   <TableCell className="text-center">
-                    {d.image_urls && d.image_urls.length > 0 ? (
-                      <span className="text-xs text-accent font-medium">{d.image_urls.length}</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
+                    {d.image_urls && d.image_urls.length > 0 ? <span className="text-xs text-accent font-medium">{d.image_urls.length}</span> : <span className="text-xs text-muted-foreground/50">—</span>}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(d)} className="h-8 w-8">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(d)} className="h-8 w-8 text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(d)} className="h-8 w-8"><Edit className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(d)} className="h-8 w-8 text-destructive"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -274,139 +331,110 @@ const MilestoneDetailsTab = ({ milestones, details, onRefresh }: Props) => {
         </Table>
       </div>
 
-      {/* Edit/Create Dialog — wider for markdown editing */}
+      {/* Full-width Edit Dialog with tabs */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-5xl w-[95vw] max-h-[92vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-5 pb-3 border-b border-border shrink-0">
             <DialogTitle className="font-serif text-xl flex items-center gap-3">
               {editing ? "Sửa nội dung chi tiết" : "Thêm nội dung chi tiết"}
               {editing && (
-                <a
-                  href={`/milestone/${editing.milestone_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-accent hover:underline flex items-center gap-1 font-normal"
-                >
+                <a href={`/milestone/${editing.milestone_id}`} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1 font-normal">
                   Xem trang <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </DialogTitle>
+            {/* Tabs */}
+            <div className="flex gap-1 mt-3">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 text-sm rounded-t-lg transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-accent/10 text-accent font-medium border-b-2 border-accent"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.count !== null && tab.count > 0 && (
+                    <span className="ml-1.5 bg-accent/20 text-accent text-[10px] px-1.5 py-0.5 rounded-full">{tab.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </DialogHeader>
 
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Cột mốc</Label>
-                <select
-                  value={form.milestone_id}
-                  onChange={(e) => setForm({ ...form, milestone_id: e.target.value })}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  disabled={!!editing}
-                >
-                  {milestones.map((m) => (
-                    <option key={m.id} value={m.id}>{m.title}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Tiêu đề</Label>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-              </div>
-            </div>
-
-            <MarkdownEditor
-              label="Tóm tắt"
-              value={form.summary}
-              onChange={(v) => setForm({ ...form, summary: v })}
-              rows={2}
-              placeholder="Tóm tắt ngắn gọn..."
-            />
-
-            <MarkdownEditor
-              label="Diễn biến"
-              value={form.events}
-              onChange={(v) => setForm({ ...form, events: v })}
-              rows={8}
-              placeholder="## Giai đoạn 1&#10;Nội dung...&#10;&#10;## Giai đoạn 2&#10;Nội dung..."
-            />
-
-            <MarkdownEditor
-              label="Kết quả"
-              value={form.results}
-              onChange={(v) => setForm({ ...form, results: v })}
-              rows={5}
-              placeholder="- Kết quả 1&#10;- Kết quả 2"
-            />
-
-            <MarkdownEditor
-              label="Ý nghĩa lịch sử"
-              value={form.significance}
-              onChange={(v) => setForm({ ...form, significance: v })}
-              rows={5}
-              placeholder="**Ý nghĩa quan trọng**: ..."
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Nhân vật lịch sử (cách nhau bằng dấu phẩy)</Label>
-                <Input value={form.hero_names} onChange={(e) => setForm({ ...form, hero_names: e.target.value })} placeholder="Trần Hưng Đạo, Lê Lợi, ..." />
-                {form.hero_names && (
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {form.hero_names.split(",").filter(s => s.trim()).length} nhân vật
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label>Di tích liên quan (cách nhau bằng dấu phẩy)</Label>
-                <Input value={form.landmark_names} onChange={(e) => setForm({ ...form, landmark_names: e.target.value })} placeholder="Bạch Đằng, Đống Đa, ..." />
-                {form.landmark_names && (
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {form.landmark_names.split(",").filter(s => s.trim()).length} di tích
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
-              <textarea
-                value={form.image_urls}
-                onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
-                rows={2}
-                placeholder="https://example.com/image1.jpg"
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
-              />
-              {form.image_urls && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
-                    <img key={i} src={url.trim()} alt="" className="w-16 h-16 object-cover rounded border border-border" />
-                  ))}
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            {activeTab === "content" && (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Cột mốc</Label>
+                    <select value={form.milestone_id} onChange={(e) => setForm({ ...form, milestone_id: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" disabled={!!editing}>
+                      {milestones.map((m) => (<option key={m.id} value={m.id}>{m.title}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Tiêu đề</Label>
+                    <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                  </div>
                 </div>
-              )}
-            </div>
+
+                <MarkdownEditor label="Tóm tắt" value={form.summary} onChange={(v) => setForm({ ...form, summary: v })} rows={2} placeholder="Tóm tắt ngắn gọn..." />
+                <MarkdownEditor label="Diễn biến" value={form.events} onChange={(v) => setForm({ ...form, events: v })} rows={10} placeholder="## Giai đoạn 1&#10;Nội dung..." splitView />
+                <MarkdownEditor label="Kết quả" value={form.results} onChange={(v) => setForm({ ...form, results: v })} rows={6} placeholder="- Kết quả 1&#10;- Kết quả 2" splitView />
+                <MarkdownEditor label="Ý nghĩa lịch sử" value={form.significance} onChange={(v) => setForm({ ...form, significance: v })} rows={6} placeholder="**Ý nghĩa quan trọng**: ..." splitView />
+              </div>
+            )}
+
+            {activeTab === "links" && (
+              <div className="space-y-8">
+                <LinkedItemsEditor items={heroes} setItems={setHeroes} label="Nhân vật lịch sử" placeholder="Trần Hưng Đạo" />
+                <div className="border-t border-border" />
+                <LinkedItemsEditor items={landmarks} setItems={setLandmarks} label="Di tích liên quan" placeholder="Bạch Đằng" />
+              </div>
+            )}
+
+            {activeTab === "media" && (
+              <div>
+                <Label>URL hình ảnh (mỗi dòng 1 URL)</Label>
+                <textarea
+                  value={form.image_urls}
+                  onChange={(e) => setForm({ ...form, image_urls: e.target.value })}
+                  rows={4}
+                  placeholder="https://example.com/image1.jpg"
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono mt-2"
+                />
+                {form.image_urls && (
+                  <div className="flex gap-3 mt-3 flex-wrap">
+                    {form.image_urls.split("\n").filter(s => s.trim()).map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url.trim()} alt="" className="w-24 h-24 object-cover rounded-lg border border-border" />
+                        <span className="absolute bottom-1 left-1 bg-foreground/70 text-primary-foreground text-[9px] px-1 rounded">#{i + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
             <Button variant="outline" onClick={() => setShowDialog(false)}>Hủy</Button>
-            <Button onClick={save} className="bg-accent text-accent-foreground">Lưu</Button>
+            <Button onClick={save} className="bg-accent text-accent-foreground">Lưu thay đổi</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xóa bài viết?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc muốn xóa bài viết "{deleteTarget?.title}"? Toàn bộ nội dung (diễn biến, kết quả, ý nghĩa) sẽ bị xóa vĩnh viễn.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Bạn có chắc muốn xóa bài viết "{deleteTarget?.title}"? Toàn bộ nội dung sẽ bị xóa vĩnh viễn.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Xóa
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Xóa</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

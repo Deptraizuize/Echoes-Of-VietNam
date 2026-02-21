@@ -129,9 +129,11 @@ export type Database = {
           created_at: string
           events: string | null
           hero_names: string[] | null
+          hero_urls: string[] | null
           id: string
           image_urls: string[] | null
           landmark_names: string[] | null
+          landmark_urls: string[] | null
           milestone_id: string
           results: string | null
           significance: string | null
@@ -143,9 +145,11 @@ export type Database = {
           created_at?: string
           events?: string | null
           hero_names?: string[] | null
+          hero_urls?: string[] | null
           id?: string
           image_urls?: string[] | null
           landmark_names?: string[] | null
+          landmark_urls?: string[] | null
           milestone_id: string
           results?: string | null
           significance?: string | null
@@ -157,9 +161,11 @@ export type Database = {
           created_at?: string
           events?: string | null
           hero_names?: string[] | null
+          hero_urls?: string[] | null
           id?: string
           image_urls?: string[] | null
           landmark_names?: string[] | null
+          landmark_urls?: string[] | null
           milestone_id?: string
           results?: string | null
           significance?: string | null

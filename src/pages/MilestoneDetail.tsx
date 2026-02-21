@@ -21,6 +21,8 @@ interface MilestoneDetailData {
   significance: string | null;
   hero_names: string[] | null;
   landmark_names: string[] | null;
+  hero_urls: string[] | null;
+  landmark_urls: string[] | null;
   image_urls: string[] | null;
 }
 
@@ -197,20 +199,17 @@ const MilestoneDetail = () => {
                       <h3 className="text-lg font-bold text-foreground">Nhân vật lịch sử</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {detail.hero_names.map((name) => (
-                        <a
-                          key={name}
-                          href={`https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group"
-                        >
-                          <Badge variant="outline" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
-                            {name}
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </Badge>
-                        </a>
-                      ))}
+                      {detail.hero_names.map((name, i) => {
+                        const url = detail.hero_urls?.[i] || `https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`;
+                        return (
+                          <a key={name} href={url} target="_blank" rel="noopener noreferrer" className="group">
+                            <Badge variant="outline" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
+                              {name}
+                              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Badge>
+                          </a>
+                        );
+                      })}
                     </div>
                   </section>
                 )}
@@ -221,21 +220,18 @@ const MilestoneDetail = () => {
                       <h3 className="text-lg font-bold text-foreground">Di tích liên quan</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {detail.landmark_names.map((name) => (
-                        <a
-                          key={name}
-                          href={`https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group"
-                        >
-                          <Badge variant="secondary" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
-                            <MapPin className="w-3 h-3" />
-                            {name}
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </Badge>
-                        </a>
-                      ))}
+                      {detail.landmark_names.map((name, i) => {
+                        const url = detail.landmark_urls?.[i] || `https://vi.wikipedia.org/wiki/${encodeURIComponent(name.replace(/ /g, "_"))}`;
+                        return (
+                          <a key={name} href={url} target="_blank" rel="noopener noreferrer" className="group">
+                            <Badge variant="secondary" className="text-sm py-1.5 px-3 cursor-pointer hover:border-accent hover:text-accent transition-colors gap-1.5">
+                              <MapPin className="w-3 h-3" />
+                              {name}
+                              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Badge>
+                          </a>
+                        );
+                      })}
                     </div>
                   </section>
                 )}
