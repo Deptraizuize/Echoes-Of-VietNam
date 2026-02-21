@@ -115,7 +115,7 @@ const MilestoneDetail = () => {
               className="max-w-3xl"
             >
               <p className="text-accent uppercase tracking-[0.2em] text-sm mb-4 font-medium">Cột mốc lịch sử</p>
-              <h1 className="text-primary-foreground text-3xl md:text-5xl lg:text-6xl mb-6 leading-tight font-bold">
+              <h1 className="text-primary-foreground text-3xl md:text-4xl lg:text-5xl mb-6 leading-[1.15] font-bold tracking-tight text-balance [word-break:keep-all] [overflow-wrap:anywhere]">
                 {detail?.title || milestoneTitle}
               </h1>
               {detail?.summary && (
