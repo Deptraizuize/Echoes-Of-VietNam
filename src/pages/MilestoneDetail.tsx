@@ -245,45 +245,91 @@ const MilestoneDetail = () => {
               )}
 
               {/* Image Gallery with captions */}
-              {detail.image_urls && detail.image_urls.length > 1 && (
-                <motion.section
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <SectionHeading icon={BookOpen} title="Hình ảnh tư liệu" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {detail.image_urls.slice(1).map((url, i) => {
-                      const caption = detail.image_captions?.[i + 1] || null;
-                      return (
-                        <motion.figure
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.4, delay: i * 0.1 }}
-                          className="overflow-hidden rounded-xl border border-border bg-card group"
-                        >
-                          <div className="overflow-hidden">
-                            <img
-                              src={url}
-                              alt={caption || `Tư liệu ${i + 1}`}
-                              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          </div>
-                          {caption && (
-                            <figcaption className="px-4 py-3 text-sm text-muted-foreground italic border-t border-border bg-muted/30">
-                              {caption}
-                            </figcaption>
-                          )}
-                        </motion.figure>
-                      );
-                    })}
-                  </div>
-                </motion.section>
-              )}
+              {detail.image_urls && detail.image_urls.length > 1 && (() => {
+                const galleryImages = detail.image_urls!.slice(1);
+                const galleryCaptions = detail.image_captions?.slice(1) || [];
+                const count = galleryImages.length;
+
+                const ImageFigure = ({ url, caption, idx, className = "" }: { url: string; caption: string | null; idx: number; className?: string }) => (
+                  <motion.figure
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: idx * 0.08 }}
+                    className={`overflow-hidden rounded-xl border border-border bg-card group ${className}`}
+                  >
+                    <div className="overflow-hidden">
+                      <img
+                        src={url}
+                        alt={caption || `Tư liệu ${idx + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                    {caption && (
+                      <figcaption className="px-4 py-3 text-sm text-muted-foreground italic border-t border-border bg-muted/30">
+                        {caption}
+                      </figcaption>
+                    )}
+                  </motion.figure>
+                );
+
+                // Smart layout based on image count
+                const renderGallery = () => {
+                  if (count === 1) {
+                    return (
+                      <div className="max-w-2xl mx-auto">
+                        <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} />
+                      </div>
+                    );
+                  }
+                  if (count === 2) {
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {galleryImages.map((url, i) => (
+                          <ImageFigure key={i} url={url} caption={galleryCaptions[i] || null} idx={i} />
+                        ))}
+                      </div>
+                    );
+                  }
+                  if (count === 3) {
+                    return (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 sm:col-span-1 sm:row-span-2">
+                          <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} className="h-full [&_img]:h-full" />
+                        </div>
+                        <ImageFigure url={galleryImages[1]} caption={galleryCaptions[1] || null} idx={1} />
+                        <ImageFigure url={galleryImages[2]} caption={galleryCaptions[2] || null} idx={2} />
+                      </div>
+                    );
+                  }
+                  // 4+ images: featured first + grid rest
+                  return (
+                    <div className="space-y-4">
+                      <div className="max-w-3xl mx-auto">
+                        <ImageFigure url={galleryImages[0]} caption={galleryCaptions[0] || null} idx={0} />
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {galleryImages.slice(1).map((url, i) => (
+                          <ImageFigure key={i} url={url} caption={galleryCaptions[i + 1] || null} idx={i + 1} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                };
+
+                return (
+                  <motion.section
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <SectionHeading icon={BookOpen} title="Hình ảnh tư liệu" />
+                    {renderGallery()}
+                  </motion.section>
+                );
+              })()}
 
               {/* References + Quiz CTA */}
               <motion.section
