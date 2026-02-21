@@ -299,7 +299,7 @@ const MilestoneDetail = () => {
                     <SectionHeading icon={FileText} title="Nguồn tham khảo" />
                     <div className="pl-[52px]">
                       <div className="bg-muted/30 border border-border rounded-xl p-6">
-                        <div className={`text-muted-foreground text-sm leading-relaxed ${proseClasses} prose-base prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-accent`}>
+                        <div className="text-muted-foreground text-sm leading-relaxed [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-1.5 [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_strong]:text-foreground [&_em]:text-muted-foreground/90 [&_li]:pl-1">
                           <ReactMarkdown>{detail.source_references}</ReactMarkdown>
                         </div>
                       </div>
