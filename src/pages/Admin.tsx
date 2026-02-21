@@ -20,6 +20,7 @@ import MilestoneDetailsTab from "@/components/admin/MilestoneDetailsTab";
 import MilestonesTab from "@/components/admin/MilestonesTab";
 import PaymentSettingsTab from "@/components/admin/PaymentSettingsTab";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import LeaderboardTab from "@/components/admin/LeaderboardTab";
 
 interface MilestoneRow { id: string; title: string; period_id: string; period_title: string; phase_id: string; phase_title: string; sort_order: number; year: string | null; }
 interface QuestionRow { id: string; milestone_id: string; question: string; options: string[]; correct_answer: number; image_url: string | null; }
@@ -107,6 +108,7 @@ const Admin = () => {
       case "banners": return <BannersTab banners={banners} onRefresh={fetchAll} />;
       case "rewards": return <RewardsTab rewards={rewardsList} redemptions={redemptionsList} onRefresh={fetchAll} />;
       case "users": return <UsersSection profiles={profiles} adminUserIds={adminUserIds} onRefresh={fetchAll} />;
+      case "leaderboard": return <LeaderboardTab profiles={profiles} adminUserIds={adminUserIds} />;
       case "payment": return <PaymentSettingsTab settings={paymentSettings} onRefresh={fetchAll} />;
       default: return null;
     }

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import {
   Crown, MessageSquare, HelpCircle, BookOpen, Image, Gift, Users, CreditCard, BarChart3,
-  ChevronDown, Menu, X,
+  ChevronDown, Menu, X, Trophy,
 } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +30,7 @@ const groups: NavGroup[] = [
     items: [
       { id: "premium", label: "Yêu cầu nâng cấp", icon: Crown },
       { id: "users", label: "Người dùng", icon: Users },
+      { id: "leaderboard", label: "Xếp hạng & Huy hiệu", icon: Trophy },
       { id: "feedback", label: "Góp ý", icon: MessageSquare },
     ],
   },
